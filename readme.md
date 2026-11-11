@@ -1,4 +1,4 @@
-# Algoritmo A*
+# Algoritmo A* (em desenvolvimento)
 
 Esse projeto tem como finalidade comparar implementações do algoritmo `A*` popularmente utilizado para encontrar caminhos. Se trata de um projeto da disciplina de grafos da `UFRN`.
 
