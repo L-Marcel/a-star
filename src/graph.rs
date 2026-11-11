@@ -35,8 +35,8 @@ impl Graph {
         }
     }
 
-    fn get_index(&self, x: usize, y: usize) -> usize {
-        (y * self.width) + x
+    fn get_index(&self, column: usize, row: usize) -> usize {
+        (row * self.width) + column
     }
 
     pub fn get_width(&self) -> usize {
@@ -47,12 +47,12 @@ impl Graph {
         self.height
     }
 
-    pub fn get(&self, x: usize, y: usize) -> NodeType {
-        self.nodes[self.get_index(x, y)]
+    pub fn get(&self, column: usize, row: usize) -> NodeType {
+        self.nodes[self.get_index(column, row)]
     }
 
-    pub fn put(&mut self, x: usize, y: usize, node: NodeType) {
-        let index: usize = self.get_index(x, y);
+    pub fn put(&mut self, column: usize, row: usize, node: NodeType) {
+        let index: usize = self.get_index(column, row);
         self.nodes[index] = node;
     }
 }
