@@ -10,8 +10,11 @@ struct Cli {
     #[arg(short, long, value_name = "FILE")]
     pub file: PathBuf,
 
-    #[arg(short, long)]
+    #[arg(short, long, default_value_t = false)]
     pub concurrent: bool,
+
+    #[arg(short, long, default_value_t = false)]
+    pub with_water: bool,
 }
 
 pub struct Context {
@@ -23,7 +26,11 @@ pub struct Context {
 
 pub fn load_context() -> Context {
     let start_time = Instant::now();
-    let Cli { file, concurrent } = Cli::parse();
+    let Cli {
+        file,
+        concurrent,
+        with_water,
+    } = Cli::parse();
 
     if concurrent {
         println!("[info] Versão concorrente do algoritmo selecionada");
@@ -49,20 +56,21 @@ pub fn load_context() -> Context {
 
     for (row, part) in parts.enumerate() {
         for (column, character) in part.chars().enumerate() {
-            match character {
-                'A' => {
+            match (character, with_water) {
+                ('A', _) => {
                     graph[(column, row)] = NodeType::START;
                     println!("[info] Origem encontrada {:?}", (column, row));
                     start = Some((column, row));
                 }
-                'B' => {
+                ('B', _) => {
                     graph[(column, row)] = NodeType::END;
                     println!("[info] Destino encontrado {:?}", (column, row));
                     end = Some((column, row));
                 }
-                ' ' => graph[(column, row)] = NodeType::PATH,
-                '_' => graph[(column, row)] = NodeType::WATER,
-                '#' => graph[(column, row)] = NodeType::WALL,
+                (' ', _) => graph[(column, row)] = NodeType::PATH,
+                ('_', true) => graph[(column, row)] = NodeType::WATER,
+                ('_', false) => graph[(column, row)] = NodeType::WALL,
+                ('#', _) => graph[(column, row)] = NodeType::WALL,
                 _ => panic!("[error] Caractere inválido"),
             }
         }
