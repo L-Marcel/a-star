@@ -10,4 +10,6 @@ fn main() {
     // context.graph[(column, row)] -> retorna um elemento do grafo nessa posição
     // context.graph[position] -> também retorna um elemento do grafo nessa posição
     // na prática Position = (Column, Row)
+
+    // lembrando que para alterar tem que ser declarado mutável
 }
