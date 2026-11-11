@@ -19,6 +19,10 @@ impl NodeType {
     }
 }
 
+pub type Column = usize;
+pub type Row = usize;
+pub type Position = (Column, Row);
+
 #[derive(Debug)]
 pub struct Graph {
     nodes: Vec<NodeType>,
@@ -35,7 +39,7 @@ impl Graph {
         }
     }
 
-    fn get_index(&self, column: usize, row: usize) -> usize {
+    fn get_index(&self, column: Column, row: Row) -> usize {
         (row * self.width) + column
     }
 
@@ -47,11 +51,11 @@ impl Graph {
         self.height
     }
 
-    pub fn get(&self, column: usize, row: usize) -> NodeType {
+    pub fn get(&self, column: Column, row: Row) -> NodeType {
         self.nodes[self.get_index(column, row)]
     }
 
-    pub fn put(&mut self, column: usize, row: usize, node: NodeType) {
+    pub fn put(&mut self, column: Column, row: Row, node: NodeType) {
         let index: usize = self.get_index(column, row);
         self.nodes[index] = node;
     }

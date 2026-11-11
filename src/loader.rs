@@ -2,7 +2,7 @@ use std::{fs::read_to_string, path::PathBuf, time::Instant};
 
 use clap::Parser;
 
-use crate::graph::{Graph, NodeType};
+use crate::graph::{Graph, NodeType, Position};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -16,8 +16,8 @@ struct Cli {
 
 pub struct Context {
     pub graph: Graph,
-    pub start: (usize, usize),
-    pub end: (usize, usize),
+    pub start: Position,
+    pub end: Position,
     pub concurrent: bool,
 }
 
@@ -44,8 +44,8 @@ pub fn load_context() -> Context {
 
     println!("[info] Montando grafo {}x{}", dimensions, dimensions);
     let mut graph: Graph = Graph::new(dimensions, dimensions);
-    let mut start: Option<(usize, usize)> = None;
-    let mut end: Option<(usize, usize)> = None;
+    let mut start: Option<Position> = None;
+    let mut end: Option<Position> = None;
 
     for (row, part) in parts.enumerate() {
         for (column, character) in part.chars().enumerate() {
