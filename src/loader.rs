@@ -38,9 +38,9 @@ pub fn load_context() -> Context {
 
     let dimensions: usize = parts
         .next()
-        .unwrap_or_else(|| panic!("Primeira linha é obrigatória"))
+        .unwrap_or_else(|| panic!("[error] Primeira linha é obrigatória"))
         .parse()
-        .unwrap_or_else(|_| panic!("Primeira linha deve ser um número inteiro não negativo que represente as dimensões do grafo"));
+        .unwrap_or_else(|_| panic!("[error] Primeira linha deve ser um número inteiro não negativo que represente as dimensões do grafo"));
 
     println!("[info] Montando grafo {}x{}", dimensions, dimensions);
     let mut graph: Graph = Graph::new(dimensions, dimensions);
@@ -51,25 +51,25 @@ pub fn load_context() -> Context {
         for (column, character) in part.chars().enumerate() {
             match character {
                 'A' => {
-                    graph.put(column, row, NodeType::START);
+                    graph[(column, row)] = NodeType::START;
                     println!("[info] Origem encontrada {:?}", (column, row));
                     start = Some((column, row));
                 }
                 'B' => {
-                    graph.put(column, row, NodeType::END);
+                    graph[(column, row)] = NodeType::END;
                     println!("[info] Destino encontrado {:?}", (column, row));
                     end = Some((column, row));
                 }
-                ' ' => graph.put(column, row, NodeType::PATH),
-                '_' => graph.put(column, row, NodeType::WATER),
-                '#' => graph.put(column, row, NodeType::WALL),
-                _ => panic!("Caractere inválido"),
+                ' ' => graph[(column, row)] = NodeType::PATH,
+                '_' => graph[(column, row)] = NodeType::WATER,
+                '#' => graph[(column, row)] = NodeType::WALL,
+                _ => panic!("[error] Caractere inválido"),
             }
         }
     }
 
-    let start = start.unwrap_or_else(|| panic!("Origem não encontrado"));
-    let end = end.unwrap_or_else(|| panic!("Destino não encontrado"));
+    let start = start.unwrap_or_else(|| panic!("[error] Origem não encontrado"));
+    let end = end.unwrap_or_else(|| panic!("[error] Destino não encontrado"));
 
     println!("[time] Contexto carregado em {:?}", start_time.elapsed());
 

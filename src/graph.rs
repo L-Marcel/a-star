@@ -1,3 +1,5 @@
+use std::ops::{Index, IndexMut};
+
 #[derive(Debug, Clone, Copy)]
 pub enum NodeType {
     START,
@@ -50,13 +52,18 @@ impl Graph {
     pub fn get_height(&self) -> usize {
         self.height
     }
+}
 
-    pub fn get(&self, column: Column, row: Row) -> NodeType {
-        self.nodes[self.get_index(column, row)]
+impl Index<Position> for Graph {
+    type Output = NodeType;
+    fn index(&self, (col, row): Position) -> &Self::Output {
+        &self.nodes[self.get_index(col, row)]
     }
+}
 
-    pub fn put(&mut self, column: Column, row: Row, node: NodeType) {
-        let index: usize = self.get_index(column, row);
-        self.nodes[index] = node;
+impl IndexMut<Position> for Graph {
+    fn index_mut(&mut self, (col, row): Position) -> &mut Self::Output {
+        let index = self.get_index(col, row);
+        &mut self.nodes[index]
     }
 }
