@@ -29,3 +29,7 @@ Para a lista completa de comandos:
 ```sh
 cargo run -- -h
 ```
+
+## Instruções para desenvolvedores
+
+Se você utiliza o `VSCode` ou `Antigravity IDE`, é recomendado utilizar a extensão `rust-analyzer`.
