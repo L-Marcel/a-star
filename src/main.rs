@@ -1,16 +1,28 @@
-use crate::loader::{Context, load_context};
+use crate::{
+  algorithm::simple::a_star,
+  loader::{Context, load_context},
+};
 
+pub mod algorithm;
 pub mod graph;
 pub mod loader;
 pub mod matrix;
 
 fn main() {
-  let _: Context = load_context();
+  let Context {
+    graph,
+    start,
+    end,
+    concurrent,
+    print_result,
+  } = load_context();
 
-  // Observação, vocês consegueriam usar o grafo (que está dentro do contexto) assim:
-  // context.graph[(column, row)] -> retorna um elemento do grafo nessa posição
-  // context.graph[position] -> também retorna um elemento do grafo nessa posição
-  // na prática Position = (Column, Row)
-
-  // lembrando que para alterar tem que ser declarado mutável
+  if !concurrent {
+    let result = a_star(&graph, start, end);
+    if print_result && let Some(path) = result {
+      for position in path {
+        println!("{:?}", position);
+      }
+    }
+  }
 }
