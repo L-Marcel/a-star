@@ -1,4 +1,7 @@
-use std::ops::{Index, IndexMut};
+use std::{
+  ops::{Index, IndexMut},
+  vec,
+};
 
 pub type Column = usize;
 pub type Row = usize;
@@ -12,7 +15,11 @@ pub struct Matrix<T: Clone> {
 }
 
 impl<T: Clone> Matrix<T> {
-  pub fn new(width: usize, height: usize, default: T) -> Self {
+  pub fn new(
+    width: usize,
+    height: usize,
+    default: T,
+  ) -> Self {
     Self {
       nodes: vec![default; width * height],
       width,
@@ -31,6 +38,31 @@ impl<T: Clone> Matrix<T> {
   pub fn get_height(&self) -> usize {
     self.height
   }
+
+  pub fn get_neightbor_of(
+    &self,
+    (column, row): Position,
+  ) -> Vec<Position> {
+    let mut neighbors = Vec::with_capacity(4);
+
+    if row > 0 {
+      neighbors.push((column, row - 1));
+    }
+
+    if row + 1 < self.height {
+      neighbors.push((column, row + 1));
+    }
+
+    if column > 0 {
+      neighbors.push((column - 1, row));
+    }
+
+    if column + 1 < self.width {
+      neighbors.push((column + 1, row));
+    }
+
+    neighbors
+  }
 }
 
 impl<T: Clone> Index<Position> for Matrix<T> {
@@ -41,7 +73,10 @@ impl<T: Clone> Index<Position> for Matrix<T> {
 }
 
 impl<T: Clone> IndexMut<Position> for Matrix<T> {
-  fn index_mut(&mut self, (col, row): Position) -> &mut Self::Output {
+  fn index_mut(
+    &mut self,
+    (col, row): Position,
+  ) -> &mut Self::Output {
     let index = self.get_index(col, row);
     &mut self.nodes[index]
   }
