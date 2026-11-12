@@ -1,69 +1,20 @@
-use std::ops::{Index, IndexMut};
-
 #[derive(Debug, Clone, Copy)]
 pub enum NodeType {
-    START,
-    END,
-    PATH,
-    WATER,
-    WALL,
+  START,
+  END,
+  PATH,
+  WATER,
+  WALL,
 }
 
 impl NodeType {
-    pub fn get_cost_to(&self, node: NodeType) -> Option<u8> {
-        match (self, node) {
-            (_, NodeType::WALL) => None,
-            (NodeType::WALL, _) => None,
-            (_, NodeType::WATER) => Some(2),
-            (NodeType::WATER, _) => Some(2),
-            (_, _) => Some(1),
-        }
+  pub fn get_cost_to(&self, node: NodeType) -> Option<u8> {
+    match (self, node) {
+      (_, NodeType::WALL) => None,
+      (NodeType::WALL, _) => None,
+      (_, NodeType::WATER) => Some(2),
+      (NodeType::WATER, _) => Some(2),
+      (_, _) => Some(1),
     }
-}
-
-pub type Column = usize;
-pub type Row = usize;
-pub type Position = (Column, Row);
-
-#[derive(Debug)]
-pub struct Graph {
-    nodes: Vec<NodeType>,
-    width: usize,
-    height: usize,
-}
-
-impl Graph {
-    pub fn new(width: usize, height: usize) -> Self {
-        Self {
-            nodes: vec![NodeType::WALL; width * height],
-            width,
-            height,
-        }
-    }
-
-    fn get_index(&self, column: Column, row: Row) -> usize {
-        (row * self.width) + column
-    }
-
-    pub fn get_width(&self) -> usize {
-        self.width
-    }
-
-    pub fn get_height(&self) -> usize {
-        self.height
-    }
-}
-
-impl Index<Position> for Graph {
-    type Output = NodeType;
-    fn index(&self, (col, row): Position) -> &Self::Output {
-        &self.nodes[self.get_index(col, row)]
-    }
-}
-
-impl IndexMut<Position> for Graph {
-    fn index_mut(&mut self, (col, row): Position) -> &mut Self::Output {
-        let index = self.get_index(col, row);
-        &mut self.nodes[index]
-    }
+  }
 }
