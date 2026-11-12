@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum NodeType {
   START,
   END,
@@ -16,5 +16,9 @@ impl NodeType {
       (NodeType::WATER, _) => Some(2),
       (_, _) => Some(1),
     }
+  }
+
+  pub fn is_wall(&self) -> bool {
+    matches!(self, NodeType::WALL)
   }
 }
