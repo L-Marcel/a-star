@@ -23,6 +23,9 @@ struct Cli {
 
   #[arg(short, long, default_value_t = false)]
   pub print_result: bool,
+
+  #[arg(short, long, default_value_t = false)]
+  pub keep_history: bool,
 }
 
 pub struct Context {
@@ -31,6 +34,19 @@ pub struct Context {
   pub end: Position,
   pub concurrent: bool,
   pub print_result: bool,
+  pub keep_history: bool,
+}
+
+fn print_config(
+  enabled: bool,
+  enabled_message: &str,
+  disabled_message: &str,
+) {
+  if enabled {
+    println!("{}", enabled_message);
+  } else {
+    println!("{}", disabled_message);
+  }
 }
 
 pub fn load_context() -> Context {
@@ -41,22 +57,38 @@ pub fn load_context() -> Context {
     concurrent,
     with_water,
     print_result,
+    keep_history,
   } = Cli::parse();
 
-  if concurrent {
-    println!(
-      "[info] Versão concorrente do algoritmo selecionada"
-    );
-  } else {
-    println!(
-      "[info] Versão simples do algoritmo selecionada"
-    )
-  }
+  print_config(
+    concurrent,
+    "[info] Versão concorrente do algoritmo selecionada",
+    "[info] Versão simples do algoritmo selecionada",
+  );
+
+  print_config(
+    print_result,
+    "[info] Impressão do resultado habilitada",
+    "[info] Impressão do resultado desabilitada",
+  );
+
+  print_config(
+    with_water,
+    "[info] Conversão de blocos de água para paredes desabilitada",
+    "[info] Conversão de blocos de água para paredes habilitada",
+  );
+
+  print_config(
+    keep_history,
+    "[info] Mantimento do histórico de execução habilitado",
+    "[info] Mantimento do histórico de execução desabilitado",
+  );
 
   println!("[info] Carregando arquivo: {:?}", file);
 
   let content = read_to_string(&file)
     .unwrap_or_else(|_| panic!("Arquivo não encontrado"));
+
   let mut parts = content.split("\n");
 
   let dimensions: usize = parts
@@ -110,6 +142,7 @@ pub fn load_context() -> Context {
   let start = start.unwrap_or_else(|| {
     panic!("[error] Origem não encontrado")
   });
+
   let end = end.unwrap_or_else(|| {
     panic!("[error] Destino não encontrado")
   });
@@ -123,6 +156,7 @@ pub fn load_context() -> Context {
     graph,
     concurrent,
     print_result,
+    keep_history,
     start,
     end,
   }
