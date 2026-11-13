@@ -1,11 +1,13 @@
 use std::{
   ops::{Index, IndexMut},
+  time::Duration,
   vec,
 };
 
 pub type Column = usize;
 pub type Row = usize;
 pub type Position = (Column, Row);
+pub type Step = (Position, Duration);
 
 #[derive(Debug)]
 pub struct Matrix<T: Clone> {

@@ -4,8 +4,10 @@ use crate::{
   algorithm::{
     context::Context, distance::manhattan_distance_to,
   },
-  graph::matrix::{Matrix, Position},
-  graph::nodes::NodeType,
+  graph::{
+    matrix::{Matrix, Position, Step},
+    nodes::NodeType,
+  },
 };
 
 pub struct AStar<'a> {
@@ -29,11 +31,13 @@ impl<'a> AStar<'a> {
 
   pub fn start_keeping_history(
     &mut self,
-  ) -> (Option<Vec<Position>>, Vec<Position>) {
-    let mut history: Vec<Position> = Vec::new();
+  ) -> (Option<Vec<Position>>, Vec<Step>) {
+    let start = Instant::now();
+    let mut history: Vec<Step> = Vec::new();
 
-    let result =
-      self.execute(|position| history.push(position));
+    let result = self.execute(|position| {
+      history.push((position, start.elapsed()))
+    });
 
     (result, history)
   }
