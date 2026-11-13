@@ -4,8 +4,8 @@ use crate::{
   algorithm::{
     context::Context, distance::manhattan_distance_to,
   },
-  graph::NodeType,
-  matrix::{Matrix, Position},
+  graph::matrix::{Matrix, Position},
+  graph::nodes::NodeType,
 };
 
 pub struct AStar<'a> {

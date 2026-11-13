@@ -1,4 +1,4 @@
-use crate::matrix::Position;
+use crate::graph::matrix::Position;
 
 pub fn manhattan_distance_to(
   from: &Position,

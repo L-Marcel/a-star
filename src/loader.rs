@@ -5,8 +5,8 @@ use std::{
 use clap::Parser;
 
 use crate::{
-  graph::NodeType,
-  matrix::{Matrix, Position},
+  graph::matrix::{Matrix, Position},
+  graph::nodes::NodeType,
 };
 
 #[derive(Parser)]
@@ -21,11 +21,11 @@ struct Cli {
   #[arg(short, long, default_value_t = false)]
   pub with_water: bool,
 
-  #[arg(short, long, default_value_t = false)]
-  pub print_result: bool,
-
-  #[arg(short, long, default_value_t = false)]
+  #[arg(short, long, default_value_t = true)]
   pub keep_history: bool,
+
+  #[arg(short, long, default_value_t = true)]
+  pub render_window: bool,
 }
 
 pub struct Context {
@@ -33,7 +33,7 @@ pub struct Context {
   pub start: Position,
   pub end: Position,
   pub concurrent: bool,
-  pub print_result: bool,
+  pub render_window: bool,
   pub keep_history: bool,
 }
 
@@ -56,7 +56,7 @@ pub fn load_context() -> Context {
     file,
     concurrent,
     with_water,
-    print_result,
+    render_window,
     keep_history,
   } = Cli::parse();
 
@@ -67,9 +67,9 @@ pub fn load_context() -> Context {
   );
 
   print_config(
-    print_result,
-    "[info] Impressão do resultado habilitada",
-    "[info] Impressão do resultado desabilitada",
+    render_window,
+    "[info] Aplicação habilitada",
+    "[info] Aplicação desabilitada",
   );
 
   print_config(
@@ -155,7 +155,7 @@ pub fn load_context() -> Context {
   Context {
     graph,
     concurrent,
-    print_result,
+    render_window,
     keep_history,
     start,
     end,

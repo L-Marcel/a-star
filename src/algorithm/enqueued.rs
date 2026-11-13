@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::matrix::Position;
+use crate::graph::matrix::Position;
 
 pub struct Enqueued(pub Position, pub usize);
 

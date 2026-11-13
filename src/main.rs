@@ -1,21 +1,15 @@
+use std::rc::Rc;
+
 use crate::{
   algorithm::simple::AStar,
   loader::{Context, load_context},
-  matrix::Position,
+  render::app::App,
 };
 
 pub mod algorithm;
 pub mod graph;
 pub mod loader;
-pub mod matrix;
-
-pub fn print_result(result: Option<Vec<Position>>) {
-  if let Some(path) = result {
-    for position in path {
-      println!("{:?}", position);
-    }
-  }
-}
+pub mod render;
 
 fn main() {
   let Context {
@@ -23,26 +17,28 @@ fn main() {
     start,
     end,
     concurrent,
-    print_result: should_print_result,
     keep_history,
+    render_window,
   } = load_context();
 
   let mut algorithm = AStar::new(&graph, start, end);
 
-  match (concurrent, keep_history) {
-    (false, false) => {
-      let result = algorithm.start();
-      if should_print_result {
-        print_result(result);
-      }
-    }
+  let (result, history) = match (concurrent, keep_history) {
+    (false, false) => (algorithm.start(), None),
     (false, true) => {
-      let (result, _) = algorithm.start_keeping_history();
-      if should_print_result {
-        print_result(result);
-      }
+      let (result, history) =
+        algorithm.start_keeping_history();
+      (result, Some(history))
     }
-    (true, false) => {}
-    (true, true) => {}
+    (true, false) => (None, None),
+    (true, true) => (None, None),
   };
+
+  if render_window {
+    App::new(Rc::new(graph), result, history)
+      .initialize()
+      .unwrap_or_else(|error| {
+        panic!("Aplicação encerrada com erro: {}", error)
+      });
+  }
 }

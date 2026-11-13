@@ -7,7 +7,7 @@ use crate::{
   algorithm::{
     distance::manhattan_distance_to, enqueued::Enqueued,
   },
-  matrix::Position,
+  graph::matrix::Position,
 };
 
 pub struct Context {
