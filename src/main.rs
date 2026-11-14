@@ -20,13 +20,15 @@ fn main() {
     no_render,
   } = load_context();
 
-  let mut algorithm = AStar::new(&graph, start, end);
+  let algorithm = AStar::new(&graph, start, end);
 
   let (result, history) = match (concurrent, no_render) {
     (false, true) => (algorithm.start(), vec![]),
     (false, false) => algorithm.start_keeping_history(),
-    (true, true) => (None, vec![]),
-    (true, false) => (None, vec![]),
+    (true, true) => (algorithm.start_parallel(), vec![]),
+    (true, false) => {
+      algorithm.start_parallel_keeping_history()
+    }
   };
 
   if !no_render {

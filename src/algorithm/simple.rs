@@ -11,9 +11,9 @@ use crate::{
 };
 
 pub struct AStar<'a> {
-  matrix: &'a Matrix<NodeType>,
-  start: Position,
-  end: Position,
+  pub matrix: &'a Matrix<NodeType>,
+  pub start: Position,
+  pub end: Position,
 }
 
 impl<'a> AStar<'a> {
@@ -25,12 +25,12 @@ impl<'a> AStar<'a> {
     Self { matrix, start, end }
   }
 
-  pub fn start(&mut self) -> Option<Vec<Position>> {
+  pub fn start(&self) -> Option<Vec<Position>> {
     self.execute(|_| {})
   }
 
   pub fn start_keeping_history(
-    &mut self,
+    &self,
   ) -> (Option<Vec<Position>>, Vec<Step>) {
     let start = Instant::now();
     let mut history: Vec<Step> = Vec::new();
@@ -43,7 +43,7 @@ impl<'a> AStar<'a> {
   }
 
   fn execute(
-    &mut self,
+    &self,
     mut on_visit: impl FnMut(Position),
   ) -> Option<Vec<Position>> {
     println!("[info] Iniciando busca do melhor caminho");
