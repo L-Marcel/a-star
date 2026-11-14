@@ -21,4 +21,8 @@ impl NodeType {
   pub fn is_wall(&self) -> bool {
     matches!(self, NodeType::WALL)
   }
+
+  pub fn is_princial(&self) -> bool {
+    matches!(self, NodeType::START | NodeType::END)
+  }
 }

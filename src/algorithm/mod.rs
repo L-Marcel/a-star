@@ -1,5 +1,5 @@
 pub mod concurrent;
-pub mod context;
-pub mod distance;
-pub mod enqueued;
+mod context;
+mod distance;
+mod enqueued;
 pub mod simple;

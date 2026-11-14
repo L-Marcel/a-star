@@ -69,17 +69,20 @@ impl<T: Clone> Matrix<T> {
 
 impl<T: Clone> Index<Position> for Matrix<T> {
   type Output = T;
-  fn index(&self, (col, row): Position) -> &Self::Output {
-    &self.nodes[self.get_index(col, row)]
+  fn index(
+    &self,
+    (column, row): Position,
+  ) -> &Self::Output {
+    &self.nodes[self.get_index(column, row)]
   }
 }
 
 impl<T: Clone> IndexMut<Position> for Matrix<T> {
   fn index_mut(
     &mut self,
-    (col, row): Position,
+    (column, row): Position,
   ) -> &mut Self::Output {
-    let index = self.get_index(col, row);
+    let index = self.get_index(column, row);
     &mut self.nodes[index]
   }
 }

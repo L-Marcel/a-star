@@ -1,0 +1,182 @@
+use std::rc::Rc;
+
+use eframe::egui::{Color32, ColorImage};
+
+use crate::{
+  graph::{
+    matrix::{Matrix, Position, Step},
+    nodes::NodeType,
+  },
+  render::theme::{
+    RESULT_COLOR, VISITED_COLOR, node_color,
+  },
+};
+
+pub struct GridImage {
+  matrix: Rc<Matrix<NodeType>>,
+  result: Option<Vec<Position>>,
+  history: Option<Vec<Step>>,
+  image: ColorImage,
+}
+
+impl GridImage {
+  pub fn new(
+    matrix: Rc<Matrix<NodeType>>,
+    result: Option<Vec<Position>>,
+    history: Option<Vec<Step>>,
+  ) -> Self {
+    let mut image = build_base_image(&matrix);
+
+    if history.is_none()
+      && let Some(path) = result.as_ref()
+    {
+      paint_path(&mut image, &matrix, path, RESULT_COLOR);
+    }
+
+    Self {
+      matrix,
+      result,
+      history,
+      image,
+    }
+  }
+
+  pub fn history(&self) -> Option<&[Step]> {
+    self.history.as_deref()
+  }
+
+  pub fn as_color_image(&self) -> &ColorImage {
+    &self.image
+  }
+
+  pub fn is_empty(&self) -> bool {
+    self.image.width() == 0 || self.image.height() == 0
+  }
+
+  pub fn apply_step(
+    &mut self,
+    from: Option<usize>,
+    to: usize,
+  ) -> bool {
+    let Some(history) = self.history.as_ref() else {
+      return false;
+    };
+
+    if history.is_empty() || from == Some(to) {
+      return false;
+    };
+
+    let final_step = history.len() - 1;
+    let to = to.min(final_step);
+
+    match from {
+      None => {
+        for &(position, _) in &history[..=to] {
+          paint_overlay(
+            &mut self.image,
+            &self.matrix,
+            position,
+            VISITED_COLOR,
+          );
+        }
+      }
+      Some(previous) => {
+        if previous == final_step
+          && to < final_step
+          && let Some(path) = self.result.as_ref()
+        {
+          paint_path(
+            &mut self.image,
+            &self.matrix,
+            path,
+            VISITED_COLOR,
+          );
+        }
+
+        if to > previous {
+          for &(position, _) in
+            &history[(previous + 1)..=to]
+          {
+            paint_overlay(
+              &mut self.image,
+              &self.matrix,
+              position,
+              VISITED_COLOR,
+            );
+          }
+        } else {
+          for &(position, _) in
+            &history[(to + 1)..=previous]
+          {
+            set_pixel(
+              &mut self.image,
+              self.matrix.get_width(),
+              position,
+              node_color(self.matrix[position]),
+            );
+          }
+        }
+      }
+    }
+
+    if to == final_step
+      && let Some(path) = self.result.as_ref()
+    {
+      paint_path(
+        &mut self.image,
+        &self.matrix,
+        path,
+        RESULT_COLOR,
+      );
+    }
+
+    true
+  }
+}
+
+fn build_base_image(
+  matrix: &Matrix<NodeType>,
+) -> ColorImage {
+  let width = matrix.get_width();
+  let height = matrix.get_height();
+  let mut pixels = Vec::with_capacity(width * height);
+
+  for row in 0..height {
+    for column in 0..width {
+      pixels.push(node_color(matrix[(column, row)]));
+    }
+  }
+
+  ColorImage::new([width, height], pixels)
+}
+
+fn paint_path(
+  image: &mut ColorImage,
+  matrix: &Matrix<NodeType>,
+  path: &[Position],
+  color: Color32,
+) {
+  for &position in path {
+    paint_overlay(image, matrix, position, color);
+  }
+}
+
+fn paint_overlay(
+  image: &mut ColorImage,
+  matrix: &Matrix<NodeType>,
+  position: Position,
+  color: Color32,
+) {
+  if !matrix[position].is_princial() {
+    set_pixel(image, matrix.get_width(), position, color);
+  }
+}
+
+fn set_pixel(
+  image: &mut ColorImage,
+  width: usize,
+  (column, row): Position,
+  color: Color32,
+) {
+  image.pixels[row * width + column] = color;
+}
