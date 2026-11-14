@@ -24,6 +24,18 @@ cargo run -- -wf graphs/a.txt
 
 O padrão é converter os nós de água em parede. Os nós de água custam o dobro para serem visitados e para visitar outro nó.
 
+Caso só queira ver o tempo de execução do algoritmo de busca, basta executar:
+
+```sh
+cargo run -- -nf graphs/a.txt
+```
+
+Você pode misturar as flags `-w`, `-n` e `-c` à vontade, por exemplo:
+
+```sh
+cargo run -- -wncf graphs/a.txt
+```
+
 Em `/graphs` você encontrará os demais arquivos guardando os grafos que deixamos prontos para serem utilizados.
 
 Para rodar o código em modo de produção (ou seja, o modo performático):
