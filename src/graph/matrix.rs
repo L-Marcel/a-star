@@ -33,6 +33,10 @@ impl<T: Clone> Matrix<T> {
     (row * self.width) + column
   }
 
+  pub fn get_size(&self) -> usize {
+    self.nodes.len()
+  }
+
   pub fn get_width(&self) -> usize {
     self.width
   }
