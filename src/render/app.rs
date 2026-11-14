@@ -38,7 +38,7 @@ impl App {
   pub fn new(
     matrix: Rc<Matrix<NodeType>>,
     result: Option<Vec<Position>>,
-    history: Option<Vec<Step>>,
+    history: Vec<Step>,
   ) -> App {
     Self {
       grid: GridCanvas::new(matrix, result, history),

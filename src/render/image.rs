@@ -15,7 +15,7 @@ use crate::{
 pub struct GridImage {
   matrix: Rc<Matrix<NodeType>>,
   result: Option<Vec<Position>>,
-  history: Option<Vec<Step>>,
+  history: Vec<Step>,
   image: ColorImage,
 }
 
@@ -23,15 +23,9 @@ impl GridImage {
   pub fn new(
     matrix: Rc<Matrix<NodeType>>,
     result: Option<Vec<Position>>,
-    history: Option<Vec<Step>>,
+    history: Vec<Step>,
   ) -> Self {
-    let mut image = build_base_image(&matrix);
-
-    if history.is_none()
-      && let Some(path) = result.as_ref()
-    {
-      paint_path(&mut image, &matrix, path, RESULT_COLOR);
-    }
+    let image = build_base_image(&matrix);
 
     Self {
       matrix,
@@ -41,8 +35,8 @@ impl GridImage {
     }
   }
 
-  pub fn history(&self) -> Option<&[Step]> {
-    self.history.as_deref()
+  pub fn history(&self) -> &[Step] {
+    &self.history
   }
 
   pub fn as_color_image(&self) -> &ColorImage {
@@ -58,20 +52,16 @@ impl GridImage {
     from: Option<usize>,
     to: usize,
   ) -> bool {
-    let Some(history) = self.history.as_ref() else {
+    if from == Some(to) {
       return false;
     };
 
-    if history.is_empty() || from == Some(to) {
-      return false;
-    };
-
-    let final_step = history.len() - 1;
+    let final_step = self.history.len() - 1;
     let to = to.min(final_step);
 
     match from {
       None => {
-        for &(position, _) in &history[..=to] {
+        for &(position, _) in &self.history[..=to] {
           paint_overlay(
             &mut self.image,
             &self.matrix,
@@ -95,7 +85,7 @@ impl GridImage {
 
         if to > previous {
           for &(position, _) in
-            &history[(previous + 1)..=to]
+            &self.history[(previous + 1)..=to]
           {
             paint_overlay(
               &mut self.image,
@@ -106,7 +96,7 @@ impl GridImage {
           }
         } else {
           for &(position, _) in
-            &history[(to + 1)..=previous]
+            &self.history[(to + 1)..=previous]
           {
             set_pixel(
               &mut self.image,

@@ -17,24 +17,19 @@ fn main() {
     start,
     end,
     concurrent,
-    keep_history,
-    render_window,
+    no_render,
   } = load_context();
 
   let mut algorithm = AStar::new(&graph, start, end);
 
-  let (result, history) = match (concurrent, keep_history) {
-    (false, false) => (algorithm.start(), None),
-    (false, true) => {
-      let (result, history) =
-        algorithm.start_keeping_history();
-      (result, Some(history))
-    }
-    (true, false) => (None, None),
-    (true, true) => (None, None),
+  let (result, history) = match (concurrent, no_render) {
+    (false, true) => (algorithm.start(), vec![]),
+    (false, false) => algorithm.start_keeping_history(),
+    (true, true) => (None, vec![]),
+    (true, false) => (None, vec![]),
   };
 
-  if render_window {
+  if !no_render {
     App::new(Rc::new(graph), result, history)
       .initialize()
       .unwrap_or_else(|error| {

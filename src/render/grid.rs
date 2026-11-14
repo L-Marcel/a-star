@@ -22,7 +22,7 @@ impl GridCanvas {
   pub fn new(
     matrix: Rc<Matrix<NodeType>>,
     result: Option<Vec<Position>>,
-    history: Option<Vec<Step>>,
+    history: Vec<Step>,
   ) -> Self {
     Self {
       buffer: GridImage::new(matrix, result, history),
@@ -31,7 +31,7 @@ impl GridCanvas {
     }
   }
 
-  pub fn history(&self) -> Option<&[Step]> {
+  pub fn history(&self) -> &[Step] {
     self.buffer.history()
   }
 

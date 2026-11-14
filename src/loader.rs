@@ -21,11 +21,8 @@ struct Cli {
   #[arg(short, long, default_value_t = false)]
   pub with_water: bool,
 
-  #[arg(short, long, default_value_t = true)]
-  pub keep_history: bool,
-
-  #[arg(short, long, default_value_t = true)]
-  pub render_window: bool,
+  #[arg(short, long, default_value_t = false)]
+  pub no_render: bool,
 }
 
 pub struct Context {
@@ -33,8 +30,7 @@ pub struct Context {
   pub start: Position,
   pub end: Position,
   pub concurrent: bool,
-  pub render_window: bool,
-  pub keep_history: bool,
+  pub no_render: bool,
 }
 
 fn print_config(
@@ -56,8 +52,7 @@ pub fn load_context() -> Context {
     file,
     concurrent,
     with_water,
-    render_window,
-    keep_history,
+    no_render,
   } = Cli::parse();
 
   print_config(
@@ -67,21 +62,15 @@ pub fn load_context() -> Context {
   );
 
   print_config(
-    render_window,
-    "[info] Aplicação habilitada",
-    "[info] Aplicação desabilitada",
-  );
-
-  print_config(
     with_water,
     "[info] Conversão de blocos de água para paredes desabilitada",
     "[info] Conversão de blocos de água para paredes habilitada",
   );
 
   print_config(
-    keep_history,
-    "[info] Mantimento do histórico de execução habilitado",
-    "[info] Mantimento do histórico de execução desabilitado",
+    no_render,
+    "[info] Renderização desativada",
+    "[info] renderização ativada",
   );
 
   println!("[info] Carregando arquivo: {:?}", file);
@@ -155,8 +144,7 @@ pub fn load_context() -> Context {
   Context {
     graph,
     concurrent,
-    render_window,
-    keep_history,
+    no_render,
     start,
     end,
   }

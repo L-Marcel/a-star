@@ -10,17 +10,13 @@ use crate::{
 
 pub fn render_footer(
   ui: &mut Ui,
-  history: Option<&[Step]>,
+  history: &[Step],
   current_step: &mut usize,
 ) {
   ui.allocate_ui(
     vec2(ui.available_width(), FOOTER_HEIGHT),
     |ui| {
       ui.horizontal(|ui| {
-        let Some(history) = history.as_ref() else {
-          return;
-        };
-
         ui.allocate_ui(
           vec2(CURRENT_STEP_TEXT_WIDTH, FOOTER_HEIGHT),
           |ui| {
