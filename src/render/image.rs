@@ -16,6 +16,7 @@ pub struct GridImage {
   matrix: Rc<Matrix<NodeType>>,
   result: Option<Vec<Position>>,
   history: Vec<Step>,
+  visit_counts: Vec<u16>,
   image: ColorImage,
 }
 
@@ -26,11 +27,14 @@ impl GridImage {
     history: Vec<Step>,
   ) -> Self {
     let image = build_base_image(&matrix);
+    let visit_counts =
+      vec![0; matrix.get_width() * matrix.get_height()];
 
     Self {
       matrix,
       result,
       history,
+      visit_counts,
       image,
     }
   }
@@ -56,37 +60,16 @@ impl GridImage {
       return false;
     };
 
+    let width = self.matrix.get_width();
     let final_step = self.history.len() - 1;
     let to = to.min(final_step);
 
     match from {
       None => {
         for &(position, _) in &self.history[..=to] {
-          paint_overlay(
-            &mut self.image,
-            &self.matrix,
-            position,
-            VISITED_COLOR,
-          );
-        }
-      }
-      Some(previous) => {
-        if previous == final_step
-          && to < final_step
-          && let Some(path) = self.result.as_ref()
-        {
-          paint_path(
-            &mut self.image,
-            &self.matrix,
-            path,
-            VISITED_COLOR,
-          );
-        }
-
-        if to > previous {
-          for &(position, _) in
-            &self.history[(previous + 1)..=to]
-          {
+          let index = pixel_index(width, position);
+          self.visit_counts[index] += 1;
+          if self.visit_counts[index] == 1 {
             paint_overlay(
               &mut self.image,
               &self.matrix,
@@ -94,15 +77,59 @@ impl GridImage {
               VISITED_COLOR,
             );
           }
+        }
+      }
+      Some(previous) => {
+        if to > previous {
+          for &(position, _) in
+            &self.history[(previous + 1)..=to]
+          {
+            let index = pixel_index(width, position);
+            self.visit_counts[index] += 1;
+            if self.visit_counts[index] == 1 {
+              paint_overlay(
+                &mut self.image,
+                &self.matrix,
+                position,
+                VISITED_COLOR,
+              );
+            }
+          }
         } else {
           for &(position, _) in
             &self.history[(to + 1)..=previous]
           {
-            set_pixel(
+            let index = pixel_index(width, position);
+            self.visit_counts[index] -= 1;
+            if self.visit_counts[index] == 0 {
+              set_pixel(
+                &mut self.image,
+                width,
+                position,
+                node_color(self.matrix[position]),
+              );
+            }
+          }
+        }
+
+        if previous == final_step
+          && to < final_step
+          && let Some(path) = self.result.as_ref()
+        {
+          for &position in path {
+            let color = if self.visit_counts
+              [pixel_index(width, position)]
+              > 0
+            {
+              VISITED_COLOR
+            } else {
+              node_color(self.matrix[position])
+            };
+            paint_overlay(
               &mut self.image,
-              self.matrix.get_width(),
+              &self.matrix,
               position,
-              node_color(self.matrix[position]),
+              color,
             );
           }
         }
@@ -162,11 +189,18 @@ fn paint_overlay(
   }
 }
 
+fn pixel_index(
+  width: usize,
+  (column, row): Position,
+) -> usize {
+  row * width + column
+}
+
 fn set_pixel(
   image: &mut ColorImage,
   width: usize,
-  (column, row): Position,
+  position: Position,
   color: Color32,
 ) {
-  image.pixels[row * width + column] = color;
+  image.pixels[pixel_index(width, position)] = color;
 }
