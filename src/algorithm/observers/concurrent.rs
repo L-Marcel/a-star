@@ -16,11 +16,16 @@ pub struct ConcurrentState {
   best_cost: AtomicUsize,
   best_meet: Mutex<Option<(Cost, Position)>>,
   stop: AtomicBool,
+  stop_on_first_meet: bool,
   width: usize,
 }
 
 impl ConcurrentState {
-  pub fn new(width: usize, height: usize) -> Self {
+  pub fn new(
+    width: usize,
+    height: usize,
+    stop_on_first_meet: bool,
+  ) -> Self {
     Self {
       real_costs_forward: (0..width * height)
         .map(|_| AtomicUsize::new(usize::MAX))
@@ -33,6 +38,7 @@ impl ConcurrentState {
       best_cost: AtomicUsize::new(usize::MAX),
       best_meet: Mutex::new(None),
       stop: AtomicBool::new(false),
+      stop_on_first_meet,
       width,
     }
   }
@@ -151,6 +157,11 @@ impl<'a, O: Observer> Observer for ConcurrentObserver<'a, O> {
           .state
           .best_cost
           .store(candidate_cost, Ordering::Relaxed);
+      }
+
+      if self.state.stop_on_first_meet {
+        self.state.stop.store(true, Ordering::Relaxed);
+        return;
       }
     }
 

@@ -79,6 +79,12 @@ impl<T: Clone> Matrix<T> {
   }
 }
 
+impl<T: Clone + PartialEq> Matrix<T> {
+  pub fn contains(&self, value: &T) -> bool {
+    self.nodes.contains(value)
+  }
+}
+
 impl<T: Clone> Index<Position> for Matrix<T> {
   type Output = T;
   fn index(&self, position: Position) -> &Self::Output {

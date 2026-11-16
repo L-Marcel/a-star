@@ -8,14 +8,21 @@ use crate::{
     },
     simple::AStar,
   },
-  graph::matrix::{Position, Step},
+  graph::{
+    matrix::{Position, Step},
+    nodes::NodeType,
+  },
 };
 
 impl<'a> AStar<'a> {
   pub fn start_parallel(&self) -> Option<Vec<Position>> {
+    let stop_on_first_meet =
+      !self.matrix.contains(&NodeType::WATER);
+
     let state = ConcurrentState::new(
       self.matrix.get_width(),
       self.matrix.get_height(),
+      stop_on_first_meet,
     );
 
     let mut forward_observer =
@@ -35,9 +42,14 @@ impl<'a> AStar<'a> {
     &self,
   ) -> (Option<Vec<Position>>, Vec<Step>) {
     let start_time = Instant::now();
+
+    let stop_on_first_meet =
+      !self.matrix.contains(&NodeType::WATER);
+
     let state = ConcurrentState::new(
       self.matrix.get_width(),
       self.matrix.get_height(),
+      stop_on_first_meet,
     );
 
     let mut forward_observer =
