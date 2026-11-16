@@ -15,7 +15,6 @@ pub struct Context {
   min_cost: HashMap<Position, usize>,
   predecessor: HashMap<Position, Position>,
   start: Position,
-  end: Position,
 }
 
 impl Context {
@@ -25,7 +24,6 @@ impl Context {
       min_cost: HashMap::new(),
       predecessor: HashMap::new(),
       start,
-      end,
     };
 
     let expected_cost = manhattan_distance_to(&start, &end);
@@ -34,13 +32,16 @@ impl Context {
     context
   }
 
-  pub fn get_better_path(&self) -> Option<Vec<Position>> {
-    let mut current = self.end;
+  pub fn get_path_to(
+    &self,
+    target: Position,
+  ) -> Option<Vec<Position>> {
+    let mut current = target;
     let mut path = Vec::new();
 
     while current != self.start {
       path.push(current);
-      current = self.predecessor[&current];
+      current = *self.predecessor.get(&current)?;
     }
 
     path.reverse();
@@ -81,12 +82,14 @@ impl Context {
     self.min_cost.insert(position, real_cost);
   }
 
-  pub fn pop(&mut self) -> Option<(Position, usize)> {
+  pub fn pop(
+    &mut self,
+  ) -> Option<(Position, usize, usize)> {
     self.min_heap.pop().map(
-      |Reverse(Enqueued(position, _))| {
+      |Reverse(Enqueued(position, expected_cost))| {
         let real_cost =
           *self.min_cost.get(&position).unwrap();
-        (position, real_cost)
+        (position, real_cost, expected_cost)
       },
     )
   }

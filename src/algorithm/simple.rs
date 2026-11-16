@@ -2,13 +2,17 @@ use std::time::Instant;
 
 use crate::{
   algorithm::{
-    context::Context, distance::manhattan_distance_to,
+    context::Context,
+    distance::manhattan_distance_to,
+    observer::{HistoryObserver, NoObserver, Observer},
   },
   graph::{
     matrix::{Matrix, Position, Step},
     nodes::NodeType,
   },
 };
+
+pub type SearchResult = (Option<Vec<Position>>, Context);
 
 pub struct AStar<'a> {
   pub matrix: &'a Matrix<NodeType>,
@@ -26,33 +30,33 @@ impl<'a> AStar<'a> {
   }
 
   pub fn start(&self) -> Option<Vec<Position>> {
-    self.execute(|_| {})
+    let mut observer = NoObserver::new();
+    let (result, _) = self.execute(&mut observer);
+    result
   }
 
   pub fn start_keeping_history(
     &self,
   ) -> (Option<Vec<Position>>, Vec<Step>) {
-    let start = Instant::now();
-    let mut history: Vec<Step> = Vec::new();
-
-    let result = self.execute(|position| {
-      history.push((position, start.elapsed()))
-    });
-
-    (result, history)
+    let mut observer = HistoryObserver::new();
+    let (result, _) = self.execute(&mut observer);
+    (result, observer.history())
   }
 
-  fn execute(
+  pub fn execute(
     &self,
-    mut on_visit: impl FnMut(Position),
-  ) -> Option<Vec<Position>> {
+    observer: &mut impl Observer,
+  ) -> (Option<Vec<Position>>, Context) {
     println!("[info] Iniciando busca do melhor caminho");
 
     let mut context = Context::new(self.start, self.end);
     let start_time = Instant::now();
 
-    while let Some((current, real_cost)) = context.pop() {
-      on_visit(current);
+    while !observer.should_stop()
+      && let Some((current, real_cost, expected_cost)) =
+        context.pop()
+    {
+      observer.on_expand(current, real_cost, expected_cost);
       if current == self.end {
         break;
       }
@@ -87,13 +91,13 @@ impl<'a> AStar<'a> {
       }
     }
 
-    let result = context.get_better_path();
+    let result = context.get_path_to(self.end);
 
     println!(
       "[time] Resposta encontrada em {:?}",
       start_time.elapsed()
     );
 
-    result
+    (result, context)
   }
 }
