@@ -4,6 +4,7 @@ use std::{
   vec,
 };
 
+pub type Cost = usize;
 pub type Column = usize;
 pub type Row = usize;
 pub type Position = (Column, Row);

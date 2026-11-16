@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 
-use crate::graph::matrix::Position;
+use crate::graph::matrix::{Cost, Position};
 
-pub struct Enqueued(pub Position, pub usize);
+pub struct Enqueued(pub Position, pub Cost);
 
 impl PartialEq for Enqueued {
   fn eq(&self, other: &Self) -> bool {

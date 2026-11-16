@@ -1,3 +1,5 @@
+use crate::graph::matrix::Cost;
+
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum NodeType {
   START,
@@ -8,7 +10,10 @@ pub enum NodeType {
 }
 
 impl NodeType {
-  pub fn get_cost_to(&self, node: NodeType) -> Option<u8> {
+  pub fn get_cost_to(
+    &self,
+    node: NodeType,
+  ) -> Option<Cost> {
     match (self, node) {
       (_, NodeType::WALL) => None,
       (NodeType::WALL, _) => None,

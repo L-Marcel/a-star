@@ -7,7 +7,7 @@ use crate::{
   algorithm::{
     distance::manhattan_distance_to, enqueued::Enqueued,
   },
-  graph::matrix::Position,
+  graph::matrix::{Cost, Position},
 };
 
 pub struct Context {
@@ -63,7 +63,7 @@ impl Context {
   pub fn is_cost_better(
     &self,
     position: Position,
-    real_cost: usize,
+    real_cost: Cost,
   ) -> bool {
     self.min_cost.get(&position).is_none_or(
       |&expected_cost| real_cost < expected_cost,
@@ -73,8 +73,8 @@ impl Context {
   pub fn push(
     &mut self,
     position: Position,
-    real_cost: usize,
-    expected_cost: usize,
+    real_cost: Cost,
+    expected_cost: Cost,
   ) {
     self
       .min_heap
@@ -82,9 +82,7 @@ impl Context {
     self.min_cost.insert(position, real_cost);
   }
 
-  pub fn pop(
-    &mut self,
-  ) -> Option<(Position, usize, usize)> {
+  pub fn pop(&mut self) -> Option<(Position, Cost, Cost)> {
     self.min_heap.pop().map(
       |Reverse(Enqueued(position, expected_cost))| {
         let real_cost =

@@ -4,15 +4,15 @@ use crate::{
   algorithm::{
     context::Context,
     distance::manhattan_distance_to,
-    observer::{HistoryObserver, NoObserver, Observer},
+    observers::simple::{
+      HistoryObserver, NoObserver, Observer,
+    },
   },
   graph::{
     matrix::{Matrix, Position, Step},
     nodes::NodeType,
   },
 };
-
-pub type SearchResult = (Option<Vec<Position>>, Context);
 
 pub struct AStar<'a> {
   pub matrix: &'a Matrix<NodeType>,
@@ -74,8 +74,9 @@ impl<'a> AStar<'a> {
           manhattan_distance_to(&neighbor, &self.end);
 
         let neighbor_real_cost = real_cost
-          + current_type.get_cost_to(neighbor_type).unwrap()
-            as usize;
+          + current_type
+            .get_cost_to(neighbor_type)
+            .unwrap();
 
         let is_better = context
           .is_cost_better(neighbor, neighbor_real_cost);

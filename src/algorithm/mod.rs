@@ -2,5 +2,5 @@ pub mod concurrent;
 pub mod context;
 mod distance;
 mod enqueued;
-mod observer;
+mod observers;
 pub mod simple;
