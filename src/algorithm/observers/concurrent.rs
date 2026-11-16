@@ -19,16 +19,11 @@ pub struct ConcurrentState {
   best_cost: AtomicUsize,
   best_meet: Mutex<Option<(Cost, Position)>>,
   stop: AtomicBool,
-  stop_on_first_meet: bool,
   width: usize,
 }
 
 impl ConcurrentState {
-  pub fn new(
-    width: usize,
-    height: usize,
-    stop_on_first_meet: bool,
-  ) -> Self {
+  pub fn new(width: usize, height: usize) -> Self {
     Self {
       real_costs_forward: (0..width * height)
         .map(|_| AtomicUsize::new(usize::MAX))
@@ -41,7 +36,6 @@ impl ConcurrentState {
       best_cost: AtomicUsize::new(usize::MAX),
       best_meet: Mutex::new(None),
       stop: AtomicBool::new(false),
-      stop_on_first_meet,
       width,
     }
   }
@@ -140,11 +134,11 @@ impl<'a, O: Observer> Observer
     let (min_total, other_min_total) = self.get_mins();
     let current_min = real_cost + expected_cost;
 
-    real_costs[index].store(real_cost, Ordering::Relaxed);
+    real_costs[index].store(real_cost, Ordering::SeqCst);
     min_total.store(current_min, Ordering::Relaxed);
 
     let other_real_cost =
-      other_real_costs[index].load(Ordering::Relaxed);
+      other_real_costs[index].load(Ordering::SeqCst);
 
     if other_real_cost < usize::MAX {
       let candidate_cost = real_cost + other_real_cost;
@@ -162,29 +156,24 @@ impl<'a, O: Observer> Observer
         self
           .state
           .best_cost
-          .store(candidate_cost, Ordering::Relaxed);
-      }
-
-      if self.state.stop_on_first_meet {
-        self.state.stop.store(true, Ordering::Relaxed);
-        return;
+          .store(candidate_cost, Ordering::SeqCst);
       }
     }
 
     let best_cost =
-      self.state.best_cost.load(Ordering::Relaxed);
+      self.state.best_cost.load(Ordering::SeqCst);
 
     let other_min = other_min_total.load(Ordering::Relaxed);
 
     if best_cost < usize::MAX
       && current_min.max(other_min) >= best_cost
     {
-      self.state.stop.store(true, Ordering::Relaxed);
+      self.state.stop.store(true, Ordering::SeqCst);
     }
   }
 
   fn should_stop(&self) -> bool {
-    self.state.stop.load(Ordering::Relaxed)
+    self.state.stop.load(Ordering::SeqCst)
       || self.inner.should_stop()
   }
 

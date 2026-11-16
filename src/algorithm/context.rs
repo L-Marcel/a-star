@@ -74,19 +74,33 @@ impl Context {
     real_cost: Cost,
     expected_cost: Cost,
   ) {
-    self
-      .min_heap
-      .push(Reverse(Enqueued(position, expected_cost)));
+    let total_cost = real_cost + expected_cost;
+    self.min_heap.push(Reverse(Enqueued {
+      position,
+      total_cost,
+      real_cost,
+    }));
     self.min_cost.insert(position, real_cost);
   }
 
   pub fn pop(&mut self) -> Option<(Position, Cost, Cost)> {
-    self.min_heap.pop().map(
-      |Reverse(Enqueued(position, expected_cost))| {
-        let real_cost =
-          *self.min_cost.get(&position).unwrap();
-        (position, real_cost, expected_cost)
-      },
-    )
+    while let Some(Reverse(Enqueued {
+      position,
+      total_cost,
+      real_cost,
+    })) = self.min_heap.pop()
+    {
+      let best_real_cost =
+        *self.min_cost.get(&position).unwrap();
+
+      if real_cost > best_real_cost {
+        continue;
+      }
+
+      let expected_cost = total_cost - real_cost;
+      return Some((position, real_cost, expected_cost));
+    }
+
+    None
   }
 }

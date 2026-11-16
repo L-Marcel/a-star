@@ -2,11 +2,17 @@ use std::cmp::Ordering;
 
 use crate::graph::matrix::{Cost, Position};
 
-pub struct Enqueued(pub Position, pub Cost);
+pub struct Enqueued {
+  pub position: Position,
+  pub total_cost: Cost,
+  pub real_cost: Cost,
+}
 
 impl PartialEq for Enqueued {
   fn eq(&self, other: &Self) -> bool {
-    self.1 == other.1 && self.0 == other.0
+    self.total_cost == other.total_cost
+      && self.real_cost == other.real_cost
+      && self.position == other.position
   }
 }
 
@@ -14,7 +20,11 @@ impl Eq for Enqueued {}
 
 impl Ord for Enqueued {
   fn cmp(&self, other: &Self) -> Ordering {
-    self.1.cmp(&other.1).then_with(|| self.0.cmp(&other.0))
+    self
+      .total_cost
+      .cmp(&other.total_cost)
+      .then_with(|| other.real_cost.cmp(&self.real_cost))
+      .then_with(|| self.position.cmp(&other.position))
   }
 }
 
