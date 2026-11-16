@@ -64,7 +64,7 @@ impl Context {
     real_cost: Cost,
   ) -> bool {
     self.min_cost.get(&position).is_none_or(
-      |&expected_cost| real_cost < expected_cost,
+      |&min_real_cost| real_cost < min_real_cost,
     )
   }
 
