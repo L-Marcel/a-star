@@ -56,14 +56,14 @@ impl<'a> AStar<'a> {
       ConcurrentObserver::with_observer(
         &state,
         true,
-        HistoryObserver::with_start(start_time),
+        HistoryObserver::with_start(start_time, true),
       );
 
     let mut backward_observer =
       ConcurrentObserver::with_observer(
         &state,
         false,
-        HistoryObserver::with_start(start_time),
+        HistoryObserver::with_start(start_time, false),
       );
 
     let result = self.execute_parallel(
@@ -78,7 +78,7 @@ impl<'a> AStar<'a> {
     history
       .extend(backward_observer.into_inner().history());
 
-    history.sort_by(|(_, instant_a), (_, instant_b)| {
+    history.sort_by(|(_, instant_a, _), (_, instant_b, _)| {
       instant_a.cmp(instant_b)
     });
 

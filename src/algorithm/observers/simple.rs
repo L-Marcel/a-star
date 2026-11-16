@@ -35,17 +35,22 @@ impl Observer for NoObserver {
 
 pub struct HistoryObserver {
   start: Instant,
+  is_forward: bool,
   history: Vec<Step>,
 }
 
 impl HistoryObserver {
   pub fn new() -> Self {
-    Self::with_start(Instant::now())
+    Self::with_start(Instant::now(), true)
   }
 
-  pub fn with_start(start: Instant) -> Self {
+  pub fn with_start(
+    start: Instant,
+    is_forward: bool,
+  ) -> Self {
     HistoryObserver {
       start,
+      is_forward,
       history: vec![],
     }
   }
@@ -62,6 +67,10 @@ impl Observer for HistoryObserver {
     _real_cost: Cost,
     _expected_cost: Cost,
   ) {
-    self.history.push((position, self.start.elapsed()));
+    self.history.push((
+      position,
+      self.start.elapsed(),
+      self.is_forward,
+    ));
   }
 }

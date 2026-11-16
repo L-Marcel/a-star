@@ -9,8 +9,13 @@ pub const FOOTER_HEIGHT: f32 = 60.0;
 pub const STEP_TEXT_WIDTH: f32 = 140.0;
 pub const CURRENT_STEP_TEXT_WIDTH: f32 = 160.0;
 
-pub const VISITED_COLOR: Color32 =
+pub const VISITED_ALPHA: u8 = 140;
+
+pub const FORWARD_VISITED_COLOR: Color32 =
   Color32::from_rgb(241, 196, 15);
+
+pub const BACKWARD_VISITED_COLOR: Color32 =
+  Color32::from_rgb(232, 67, 147);
 
 pub const RESULT_COLOR: Color32 =
   Color32::from_rgb(155, 89, 182);

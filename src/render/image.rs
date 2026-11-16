@@ -8,7 +8,8 @@ use crate::{
     nodes::NodeType,
   },
   render::theme::{
-    RESULT_COLOR, VISITED_COLOR, node_color,
+    BACKWARD_VISITED_COLOR, FORWARD_VISITED_COLOR,
+    RESULT_COLOR, VISITED_ALPHA, node_color,
   },
 };
 
@@ -16,7 +17,8 @@ pub struct GridImage {
   matrix: Rc<Matrix<NodeType>>,
   result: Option<Vec<Position>>,
   history: Vec<Step>,
-  visit_counts: Vec<u16>,
+  forward_counts: Vec<u16>,
+  backward_counts: Vec<u16>,
   image: ColorImage,
 }
 
@@ -27,13 +29,14 @@ impl GridImage {
     history: Vec<Step>,
   ) -> Self {
     let image = build_base_image(&matrix);
-    let visit_counts = vec![0; matrix.get_size()];
+    let size = matrix.get_size();
 
     Self {
       matrix,
       result,
       history,
-      visit_counts,
+      forward_counts: vec![0; size],
+      backward_counts: vec![0; size],
       image,
     }
   }
@@ -81,46 +84,89 @@ impl GridImage {
 
   fn visit_range(&mut self, start: usize, end: usize) {
     for step in start..=end {
-      let (position, _) = self.history[step];
-      self.mark_visited(position);
+      let (position, _, is_forward) = self.history[step];
+      self.mark_visited(position, is_forward);
     }
   }
 
   fn unvisit_range(&mut self, start: usize, end: usize) {
     for step in start..=end {
-      let (position, _) = self.history[step];
-      self.unmark_visited(position);
+      let (position, _, is_forward) = self.history[step];
+      self.unmark_visited(position, is_forward);
     }
   }
 
-  fn mark_visited(&mut self, position: Position) {
+  fn mark_visited(
+    &mut self,
+    position: Position,
+    is_forward: bool,
+  ) {
     let width = self.matrix.get_width();
     let index = pixel_index(width, position);
-    self.visit_counts[index] += 1;
 
-    if self.visit_counts[index] == 1 {
+    let counts = if is_forward {
+      &mut self.forward_counts
+    } else {
+      &mut self.backward_counts
+    };
+
+    counts[index] += 1;
+
+    if counts[index] == 1 {
+      let color = self.visited_color(position);
       paint_overlay(
         &mut self.image,
         &self.matrix,
         position,
-        VISITED_COLOR,
+        color,
       );
     }
   }
 
-  fn unmark_visited(&mut self, position: Position) {
+  fn unmark_visited(
+    &mut self,
+    position: Position,
+    is_forward: bool,
+  ) {
     let width = self.matrix.get_width();
     let index = pixel_index(width, position);
-    self.visit_counts[index] -= 1;
 
-    if self.visit_counts[index] == 0 {
-      set_pixel(
+    let counts = if is_forward {
+      &mut self.forward_counts
+    } else {
+      &mut self.backward_counts
+    };
+
+    counts[index] -= 1;
+
+    if counts[index] == 0 {
+      let color = self.visited_color(position);
+      paint_overlay(
         &mut self.image,
-        width,
+        &self.matrix,
         position,
-        node_color(self.matrix[position]),
+        color,
       );
     }
+  }
+
+  fn visited_color(&self, position: Position) -> Color32 {
+    let index =
+      pixel_index(self.matrix.get_width(), position);
+
+    let mut color = node_color(self.matrix[position]);
+
+    if self.forward_counts[index] > 0 {
+      color =
+        blend(color, FORWARD_VISITED_COLOR, VISITED_ALPHA);
+    }
+
+    if self.backward_counts[index] > 0 {
+      color =
+        blend(color, BACKWARD_VISITED_COLOR, VISITED_ALPHA);
+    }
+
+    color
   }
 
   fn sync_result_path(
@@ -147,16 +193,8 @@ impl GridImage {
       return;
     }
 
-    let width = self.matrix.get_width();
     for &position in path {
-      let index = pixel_index(width, position);
-      let visit_counts = self.visit_counts[index];
-
-      let color = if visit_counts > 0 {
-        VISITED_COLOR
-      } else {
-        node_color(self.matrix[position])
-      };
+      let color = self.visited_color(position);
 
       paint_overlay(
         &mut self.image,
@@ -211,6 +249,29 @@ fn pixel_index(
   (column, row): Position,
 ) -> usize {
   row * width + column
+}
+
+fn blend(
+  base: Color32,
+  overlay: Color32,
+  alpha: u8,
+) -> Color32 {
+  let alpha = alpha as u16;
+  let inverse = 255 - alpha;
+
+  let red = (base.r() as u16 * inverse
+    + overlay.r() as u16 * alpha)
+    / 255;
+
+  let green = (base.g() as u16 * inverse
+    + overlay.g() as u16 * alpha)
+    / 255;
+
+  let blue = (base.b() as u16 * inverse
+    + overlay.b() as u16 * alpha)
+    / 255;
+
+  Color32::from_rgb(red as u8, green as u8, blue as u8)
 }
 
 fn set_pixel(

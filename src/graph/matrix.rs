@@ -8,7 +8,7 @@ pub type Cost = usize;
 pub type Column = usize;
 pub type Row = usize;
 pub type Position = (Column, Row);
-pub type Step = (Position, Duration);
+pub type Step = (Position, Duration, bool);
 
 pub fn position_to_index(
   (column, row): Position,
