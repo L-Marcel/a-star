@@ -78,9 +78,11 @@ impl<'a> AStar<'a> {
     history
       .extend(backward_observer.into_inner().history());
 
-    history.sort_by(|(_, instant_a, _), (_, instant_b, _)| {
-      instant_a.cmp(instant_b)
-    });
+    history.sort_by(
+      |(_, instant_a, _), (_, instant_b, _)| {
+        instant_a.cmp(instant_b)
+      },
+    );
 
     (result, history)
   }
@@ -91,6 +93,9 @@ impl<'a> AStar<'a> {
     forward_observer: &mut ConcurrentObserver<'_, O>,
     backward_observer: &mut ConcurrentObserver<'_, O>,
   ) -> Option<Vec<Position>> {
+    println!("[info] Iniciando busca do melhor caminho");
+    let start_time = Instant::now();
+
     let algorithm =
       AStar::new(self.matrix, self.end, self.start);
 
@@ -107,22 +112,35 @@ impl<'a> AStar<'a> {
       (forward.join().unwrap(), backward.join().unwrap())
     });
 
-    let Some(meet_node) = state.meet_position() else {
-      return direct_forward;
-    };
+    println!(
+      "[time] Unificando resultados em {:?}",
+      start_time.elapsed()
+    );
 
-    let mut foward_path =
-      context_forward.get_path_to(meet_node)?;
+    let result =
+      if let Some(meet_node) = state.meet_position() {
+        let mut forward_path =
+          context_forward.get_path_to(meet_node)?;
 
-    if meet_node != self.end {
-      let mut backward_path =
-        context_backward.get_path_to(meet_node)?;
+        if meet_node != self.end {
+          let mut backward_path =
+            context_backward.get_path_to(meet_node)?;
 
-      backward_path.pop();
-      backward_path.reverse();
-      foward_path.extend(backward_path);
-    }
+          backward_path.pop();
+          backward_path.reverse();
+          forward_path.extend(backward_path);
+        }
 
-    Some(foward_path)
+        Some(forward_path)
+      } else {
+        direct_forward
+      };
+
+    println!(
+      "[time] Resposta encontrada em {:?}",
+      start_time.elapsed()
+    );
+
+    result
   }
 }

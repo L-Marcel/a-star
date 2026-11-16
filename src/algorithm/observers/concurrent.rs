@@ -1,6 +1,9 @@
-use std::sync::{
-  Mutex,
-  atomic::{AtomicBool, AtomicUsize, Ordering},
+use std::{
+  sync::{
+    Mutex,
+    atomic::{AtomicBool, AtomicUsize, Ordering},
+  },
+  time::Duration,
 };
 
 use crate::{
@@ -52,7 +55,8 @@ impl ConcurrentState {
   }
 }
 
-pub struct ConcurrentObserver<'a, O: Observer = NoObserver> {
+pub struct ConcurrentObserver<'a, O: Observer = NoObserver>
+{
   state: &'a ConcurrentState,
   is_forward: bool,
   inner: O,
@@ -119,14 +123,20 @@ impl<'a, O: Observer> ConcurrentObserver<'a, O> {
   }
 }
 
-impl<'a, O: Observer> Observer for ConcurrentObserver<'a, O> {
+impl<'a, O: Observer> Observer
+  for ConcurrentObserver<'a, O>
+{
   fn on_expand(
     &mut self,
     position: Position,
     real_cost: Cost,
     expected_cost: Cost,
   ) {
-    self.inner.on_expand(position, real_cost, expected_cost);
+    self.inner.on_expand(
+      position,
+      real_cost,
+      expected_cost,
+    );
     let index =
       position_to_index(position, self.state.width);
 
@@ -180,5 +190,18 @@ impl<'a, O: Observer> Observer for ConcurrentObserver<'a, O> {
   fn should_stop(&self) -> bool {
     self.state.stop.load(Ordering::Relaxed)
       || self.inner.should_stop()
+  }
+
+  fn on_finish(&mut self, elapsed: Duration) {
+    let side = if self.is_forward {
+      "forward"
+    } else {
+      "backward"
+    };
+
+    println!(
+      "[time][{}] Thread sendo encerrada em {:?}",
+      side, elapsed
+    );
   }
 }

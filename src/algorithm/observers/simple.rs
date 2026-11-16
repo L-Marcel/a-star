@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::graph::matrix::{Cost, Position, Step};
 
@@ -13,6 +13,8 @@ pub trait Observer {
   fn should_stop(&self) -> bool {
     false
   }
+
+  fn on_finish(&mut self, _elapsed: Duration) {}
 }
 
 pub struct NoObserver;

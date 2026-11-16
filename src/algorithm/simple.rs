@@ -31,24 +31,37 @@ impl<'a> AStar<'a> {
 
   pub fn start(&self) -> Option<Vec<Position>> {
     let mut observer = NoObserver::new();
-    let (result, _) = self.execute(&mut observer);
-    result
+    self.start_with_log(&mut observer)
   }
 
   pub fn start_keeping_history(
     &self,
   ) -> (Option<Vec<Position>>, Vec<Step>) {
     let mut observer = HistoryObserver::new();
-    let (result, _) = self.execute(&mut observer);
+    let result = self.start_with_log(&mut observer);
     (result, observer.history())
+  }
+
+  fn start_with_log(
+    &self,
+    observer: &mut impl Observer,
+  ) -> Option<Vec<Position>> {
+    println!("[info] Iniciando busca do melhor caminho");
+    let start_time = Instant::now();
+    let (result, _) = self.execute(observer);
+
+    println!(
+      "[time] Resposta encontrada em {:?}",
+      start_time.elapsed()
+    );
+
+    result
   }
 
   pub fn execute(
     &self,
     observer: &mut impl Observer,
   ) -> (Option<Vec<Position>>, Context) {
-    println!("[info] Iniciando busca do melhor caminho");
-
     let mut context = Context::new(self.start, self.end);
     let start_time = Instant::now();
 
@@ -93,11 +106,7 @@ impl<'a> AStar<'a> {
     }
 
     let result = context.get_path_to(self.end);
-
-    println!(
-      "[time] Resposta encontrada em {:?}",
-      start_time.elapsed()
-    );
+    observer.on_finish(start_time.elapsed());
 
     (result, context)
   }
