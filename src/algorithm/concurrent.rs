@@ -103,10 +103,12 @@ impl<'a> AStar<'a> {
       context_forward.get_path_to(meet_node)?;
 
     if meet_node != self.end {
-      let backward_path =
+      let mut backward_path =
         context_backward.get_path_to(meet_node)?;
 
-      foward_path.extend(&backward_path[1..]);
+      backward_path.pop();
+      backward_path.reverse();
+      foward_path.extend(backward_path);
     }
 
     Some(foward_path)

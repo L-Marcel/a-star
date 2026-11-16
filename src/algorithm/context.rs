@@ -44,9 +44,9 @@ impl Context {
       current = *self.predecessor.get(&current)?;
     }
 
-    path.reverse();
     if current == self.start {
       path.push(self.start);
+      path.reverse();
       Some(path)
     } else {
       None
