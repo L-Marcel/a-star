@@ -31,6 +31,19 @@ fn main() {
     }
   };
 
+  if let Some(result) = &result
+    && let Some(last) = result.last()
+  {
+    println!(
+      "[info] Custo do menor caminho foi {}",
+      last.1
+    );
+    println!(
+      "[info] Menor caminho tem {} nós",
+      result.len()
+    )
+  }
+
   if !no_render {
     App::new(Rc::new(graph), result, history)
       .initialize()

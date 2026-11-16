@@ -8,7 +8,7 @@ use eframe::{
 use crate::{
   graph::{
     matrix::{Matrix, Position, Step},
-    nodes::NodeType,
+    nodes::{Node, NodeType},
   },
   render::{
     footer::render_footer, grid::GridCanvas,
@@ -37,7 +37,7 @@ impl eframe::App for App {
 impl App {
   pub fn new(
     matrix: Rc<Matrix<NodeType>>,
-    result: Option<Vec<Position>>,
+    result: Option<Vec<Node>>,
     history: Vec<Step>,
   ) -> App {
     Self {

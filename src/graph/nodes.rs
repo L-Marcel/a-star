@@ -1,4 +1,6 @@
-use crate::graph::matrix::Cost;
+use crate::graph::matrix::{Cost, Position};
+
+pub type Node = (Position, Cost);
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum NodeType {

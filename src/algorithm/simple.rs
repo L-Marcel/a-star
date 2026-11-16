@@ -10,7 +10,7 @@ use crate::{
   },
   graph::{
     matrix::{Matrix, Position, Step},
-    nodes::NodeType,
+    nodes::{Node, NodeType},
   },
 };
 
@@ -29,14 +29,14 @@ impl<'a> AStar<'a> {
     Self { matrix, start, end }
   }
 
-  pub fn start(&self) -> Option<Vec<Position>> {
+  pub fn start(&self) -> Option<Vec<Node>> {
     let mut observer = NoObserver::new();
     self.start_with_log(&mut observer)
   }
 
   pub fn start_keeping_history(
     &self,
-  ) -> (Option<Vec<Position>>, Vec<Step>) {
+  ) -> (Option<Vec<Node>>, Vec<Step>) {
     let mut observer = HistoryObserver::new();
     let result = self.start_with_log(&mut observer);
     (result, observer.history())
@@ -45,7 +45,7 @@ impl<'a> AStar<'a> {
   fn start_with_log(
     &self,
     observer: &mut impl Observer,
-  ) -> Option<Vec<Position>> {
+  ) -> Option<Vec<Node>> {
     println!("[info] Iniciando busca do melhor caminho");
     let start_time = Instant::now();
     let (result, _) = self.execute(observer);
@@ -61,7 +61,7 @@ impl<'a> AStar<'a> {
   pub fn execute(
     &self,
     observer: &mut impl Observer,
-  ) -> (Option<Vec<Position>>, Context) {
+  ) -> (Option<Vec<Node>>, Context) {
     let mut context = Context::new(self.start, self.end);
     let start_time = Instant::now();
 
@@ -70,6 +70,7 @@ impl<'a> AStar<'a> {
         context.pop()
     {
       observer.on_expand(current, real_cost, expected_cost);
+
       if current == self.end {
         break;
       }
@@ -106,6 +107,7 @@ impl<'a> AStar<'a> {
     }
 
     let result = context.get_path_to(self.end);
+
     observer.on_finish(start_time.elapsed());
 
     (result, context)
