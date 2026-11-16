@@ -10,6 +10,13 @@ pub type Row = usize;
 pub type Position = (Column, Row);
 pub type Step = (Position, Duration);
 
+pub fn position_to_index(
+  (column, row): Position,
+  width: usize,
+) -> usize {
+  (row * width) + column
+}
+
 #[derive(Debug)]
 pub struct Matrix<T: Clone> {
   nodes: Vec<T>,
@@ -30,8 +37,8 @@ impl<T: Clone> Matrix<T> {
     }
   }
 
-  fn get_index(&self, column: Column, row: Row) -> usize {
-    (row * self.width) + column
+  fn get_index(&self, position: Position) -> usize {
+    position_to_index(position, self.width)
   }
 
   pub fn get_size(&self) -> usize {
@@ -74,20 +81,17 @@ impl<T: Clone> Matrix<T> {
 
 impl<T: Clone> Index<Position> for Matrix<T> {
   type Output = T;
-  fn index(
-    &self,
-    (column, row): Position,
-  ) -> &Self::Output {
-    &self.nodes[self.get_index(column, row)]
+  fn index(&self, position: Position) -> &Self::Output {
+    &self.nodes[self.get_index(position)]
   }
 }
 
 impl<T: Clone> IndexMut<Position> for Matrix<T> {
   fn index_mut(
     &mut self,
-    (column, row): Position,
+    position: Position,
   ) -> &mut Self::Output {
-    let index = self.get_index(column, row);
+    let index = self.get_index(position);
     &mut self.nodes[index]
   }
 }

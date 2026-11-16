@@ -40,8 +40,12 @@ pub struct HistoryObserver {
 
 impl HistoryObserver {
   pub fn new() -> Self {
+    Self::with_start(Instant::now())
+  }
+
+  pub fn with_start(start: Instant) -> Self {
     HistoryObserver {
-      start: Instant::now(),
+      start,
       history: vec![],
     }
   }

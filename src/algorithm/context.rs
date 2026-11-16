@@ -46,6 +46,7 @@ impl Context {
 
     path.reverse();
     if current == self.start {
+      path.push(self.start);
       Some(path)
     } else {
       None
