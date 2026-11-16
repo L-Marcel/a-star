@@ -9,13 +9,15 @@ use crate::{
     simple::AStar,
   },
   graph::{
-    matrix::Step,
-    nodes::{Node, NodeType},
+    matrix::{Cost, Position, Step},
+    nodes::NodeType,
   },
 };
 
 impl<'a> AStar<'a> {
-  pub fn start_parallel(&self) -> Option<Vec<Node>> {
+  pub fn start_parallel(
+    &self,
+  ) -> Option<(Vec<Position>, Cost)> {
     let stop_on_first_meet =
       !self.matrix.contains(&NodeType::WATER);
 
@@ -40,7 +42,7 @@ impl<'a> AStar<'a> {
 
   pub fn start_parallel_keeping_history(
     &self,
-  ) -> (Option<Vec<Node>>, Vec<Step>) {
+  ) -> (Option<(Vec<Position>, Cost)>, Vec<Step>) {
     let start_time = Instant::now();
 
     let stop_on_first_meet =
@@ -92,7 +94,7 @@ impl<'a> AStar<'a> {
     state: &ConcurrentState,
     forward_observer: &mut ConcurrentObserver<'_, O>,
     backward_observer: &mut ConcurrentObserver<'_, O>,
-  ) -> Option<Vec<Node>> {
+  ) -> Option<(Vec<Position>, Cost)> {
     println!("[info] Iniciando busca do melhor caminho");
     let start_time = Instant::now();
 
@@ -118,28 +120,21 @@ impl<'a> AStar<'a> {
     );
 
     let result =
-      if let Some(meet_node) = state.meet_position() {
-        let mut forward_path =
+      if let Some((total_cost, meet_node)) = state.best_meet()
+      {
+        let (mut forward_path, _) =
           context_forward.get_path_to(meet_node)?;
 
         if meet_node != self.end {
-          let mut backward_path =
+          let (mut backward_path, _) =
             context_backward.get_path_to(meet_node)?;
 
-          let (_, meet_cost_forward) = *forward_path.last()?;
-          let (_, meet_cost_backward) =
-            backward_path.pop()?;
-
+          backward_path.pop();
           backward_path.reverse();
-          for (_, cost) in &mut backward_path {
-            *cost = meet_cost_forward
-              + (meet_cost_backward - *cost);
-          }
-
           forward_path.extend(backward_path);
         }
 
-        Some(forward_path)
+        Some((forward_path, total_cost))
       } else {
         direct_forward
       };

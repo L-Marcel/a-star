@@ -7,7 +7,7 @@ use eframe::egui::{
 use crate::{
   graph::{
     matrix::{Matrix, Position, Step},
-    nodes::{Node, NodeType},
+    nodes::NodeType,
   },
   render::{image::GridImage, theme::FOOTER_HEIGHT},
 };
@@ -21,7 +21,7 @@ pub struct GridCanvas {
 impl GridCanvas {
   pub fn new(
     matrix: Rc<Matrix<NodeType>>,
-    result: Option<Vec<Node>>,
+    result: Option<Vec<Position>>,
     history: Vec<Step>,
   ) -> Self {
     Self {

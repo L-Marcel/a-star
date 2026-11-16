@@ -9,8 +9,8 @@ use crate::{
     },
   },
   graph::{
-    matrix::{Matrix, Position, Step},
-    nodes::{Node, NodeType},
+    matrix::{Cost, Matrix, Position, Step},
+    nodes::NodeType,
   },
 };
 
@@ -29,14 +29,14 @@ impl<'a> AStar<'a> {
     Self { matrix, start, end }
   }
 
-  pub fn start(&self) -> Option<Vec<Node>> {
+  pub fn start(&self) -> Option<(Vec<Position>, Cost)> {
     let mut observer = NoObserver::new();
     self.start_with_log(&mut observer)
   }
 
   pub fn start_keeping_history(
     &self,
-  ) -> (Option<Vec<Node>>, Vec<Step>) {
+  ) -> (Option<(Vec<Position>, Cost)>, Vec<Step>) {
     let mut observer = HistoryObserver::new();
     let result = self.start_with_log(&mut observer);
     (result, observer.history())
@@ -45,7 +45,7 @@ impl<'a> AStar<'a> {
   fn start_with_log(
     &self,
     observer: &mut impl Observer,
-  ) -> Option<Vec<Node>> {
+  ) -> Option<(Vec<Position>, Cost)> {
     println!("[info] Iniciando busca do melhor caminho");
     let start_time = Instant::now();
     let (result, _) = self.execute(observer);
@@ -61,7 +61,7 @@ impl<'a> AStar<'a> {
   pub fn execute(
     &self,
     observer: &mut impl Observer,
-  ) -> (Option<Vec<Node>>, Context) {
+  ) -> (Option<(Vec<Position>, Cost)>, Context) {
     let mut context = Context::new(self.start, self.end);
     let start_time = Instant::now();
 

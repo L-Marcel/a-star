@@ -31,21 +31,14 @@ fn main() {
     }
   };
 
-  if let Some(result) = &result
-    && let Some(last) = result.last()
-  {
-    println!(
-      "[info] Custo do menor caminho foi {}",
-      last.1
-    );
-    println!(
-      "[info] Menor caminho tem {} nós",
-      result.len()
-    )
+  if let Some((path, cost)) = &result {
+    println!("[info] Custo do menor caminho foi {}", cost);
+    println!("[info] Menor caminho tem {} nós", path.len());
   }
 
   if !no_render {
-    App::new(Rc::new(graph), result, history)
+    let path = result.map(|(path, _)| path);
+    App::new(Rc::new(graph), path, history)
       .initialize()
       .unwrap_or_else(|error| {
         panic!("Aplicação encerrada com erro: {}", error)

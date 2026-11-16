@@ -5,7 +5,7 @@ use eframe::egui::{Color32, ColorImage};
 use crate::{
   graph::{
     matrix::{Matrix, Position, Step},
-    nodes::{Node, NodeType},
+    nodes::NodeType,
   },
   render::theme::{
     BACKWARD_VISITED_COLOR, FORWARD_VISITED_COLOR,
@@ -15,7 +15,7 @@ use crate::{
 
 pub struct GridImage {
   matrix: Rc<Matrix<NodeType>>,
-  result: Option<Vec<Node>>,
+  result: Option<Vec<Position>>,
   history: Vec<Step>,
   forward_counts: Vec<u16>,
   backward_counts: Vec<u16>,
@@ -25,7 +25,7 @@ pub struct GridImage {
 impl GridImage {
   pub fn new(
     matrix: Rc<Matrix<NodeType>>,
-    result: Option<Vec<Node>>,
+    result: Option<Vec<Position>>,
     history: Vec<Step>,
   ) -> Self {
     let image = build_base_image(&matrix);
@@ -193,8 +193,7 @@ impl GridImage {
       return;
     }
 
-    for &node in path {
-      let position = node.0;
+    for &position in path {
       let color = self.visited_color(position);
 
       paint_overlay(
@@ -226,11 +225,10 @@ fn build_base_image(
 fn paint_path(
   image: &mut ColorImage,
   matrix: &Matrix<NodeType>,
-  path: &[Node],
+  path: &[Position],
   color: Color32,
 ) {
-  for &node in path {
-    let position = node.0;
+  for &position in path {
     paint_overlay(image, matrix, position, color);
   }
 }

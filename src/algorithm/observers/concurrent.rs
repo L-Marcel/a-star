@@ -46,12 +46,8 @@ impl ConcurrentState {
     }
   }
 
-  pub fn meet_position(&self) -> Option<Position> {
-    self
-      .best_meet
-      .lock()
-      .unwrap()
-      .map(|(_, position)| position)
+  pub fn best_meet(&self) -> Option<(Cost, Position)> {
+    *self.best_meet.lock().unwrap()
   }
 }
 

@@ -7,10 +7,7 @@ use crate::{
   algorithm::{
     distance::manhattan_distance_to, enqueued::Enqueued,
   },
-  graph::{
-    matrix::{Cost, Position},
-    nodes::Node,
-  },
+  graph::matrix::{Cost, Position},
 };
 
 pub struct Context {
@@ -38,23 +35,19 @@ impl Context {
   pub fn get_path_to(
     &self,
     target: Position,
-  ) -> Option<Vec<Node>> {
+  ) -> Option<(Vec<Position>, Cost)> {
+    let total_cost = *self.min_cost.get(&target)?;
     let mut current = target;
     let mut path = vec![];
 
     while current != self.start {
-      let cost = *self.min_cost.get(&current)?;
-      path.push((current, cost));
+      path.push(current);
       current = *self.predecessor.get(&current)?;
     }
 
-    if current == self.start {
-      path.push((self.start, 0));
-      path.reverse();
-      Some(path)
-    } else {
-      None
-    }
+    path.push(self.start);
+    path.reverse();
+    Some((path, total_cost))
   }
 
   pub fn set_predecessor(
