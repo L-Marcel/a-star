@@ -108,25 +108,25 @@ impl<'a> AStar<'a> {
       start_time.elapsed()
     );
 
-    let result =
-      if let Some((total_cost, meet_node)) = state.best_meet()
-      {
-        let (mut forward_path, _) =
-          context_forward.get_path_to(meet_node)?;
+    let result = if let Some((total_cost, meet_node)) =
+      state.best_meet()
+    {
+      let (mut forward_path, _) =
+        context_forward.get_path_to(meet_node)?;
 
-        if meet_node != self.end {
-          let (mut backward_path, _) =
-            context_backward.get_path_to(meet_node)?;
+      if meet_node != self.end {
+        let (mut backward_path, _) =
+          context_backward.get_path_to(meet_node)?;
 
-          backward_path.pop();
-          backward_path.reverse();
-          forward_path.extend(backward_path);
-        }
+        backward_path.pop();
+        backward_path.reverse();
+        forward_path.extend(backward_path);
+      }
 
-        Some((forward_path, total_cost))
-      } else {
-        direct_forward
-      };
+      Some((forward_path, total_cost))
+    } else {
+      direct_forward
+    };
 
     println!(
       "[time] Resposta encontrada em {:?}",

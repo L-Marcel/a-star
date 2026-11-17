@@ -18,9 +18,37 @@ fn main() {
     end,
     concurrent,
     no_render,
+    benchmark,
   } = load_context();
 
   let algorithm = AStar::new(&graph, start, end);
+  if benchmark {
+    println!("---------------[sequencial]--------------");
+    let seq_result = algorithm.start();
+    if let Some((seq_path, seq_cost)) = &seq_result {
+      println!(
+        "[info] Custo do menor caminho foi {}",
+        seq_cost
+      );
+      println!(
+        "[info] Menor caminho tem {} nós",
+        seq_path.len()
+      );
+    }
+    println!("---------------[concorrente]--------------");
+    let con_result = algorithm.start_parallel();
+    if let Some((con_path, con_cost)) = &con_result {
+      println!(
+        "[info] Custo do menor caminho foi {}",
+        con_cost
+      );
+      println!(
+        "[info] Menor caminho tem {} nós",
+        con_path.len()
+      );
+    }
+    return;
+  }
 
   let (result, history) = match (concurrent, no_render) {
     (false, true) => (algorithm.start(), vec![]),

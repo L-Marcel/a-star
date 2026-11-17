@@ -36,6 +36,12 @@ Você pode misturar as flags `-w`, `-n` e `-c` à vontade, por exemplo:
 cargo run -- -wncf graphs/a.txt
 ```
 
+Caso queira rodar tanto a versão concorrente quanto a sequencial para comparar seus resultados lado a lado com um único comando, basta utilizar a flag de `benchmark`:
+
+```sh
+cargo run -- -bf graphs/a.txt
+```
+
 Em `/graphs` você encontrará os demais arquivos guardando os grafos que deixamos prontos para serem utilizados.
 
 Para rodar o código em modo de produção (ou seja, o modo performático):

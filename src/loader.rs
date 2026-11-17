@@ -23,6 +23,14 @@ struct Cli {
 
   #[arg(short, long, default_value_t = false)]
   pub no_render: bool,
+
+  #[arg(
+    short,
+    long,
+    default_value_t = false,
+    help = "Compares sequential and concurrent versions"
+  )]
+  pub benchmark: bool,
 }
 
 pub struct Context {
@@ -31,6 +39,7 @@ pub struct Context {
   pub end: Position,
   pub concurrent: bool,
   pub no_render: bool,
+  pub benchmark: bool,
 }
 
 fn print_config(
@@ -53,7 +62,15 @@ pub fn load_context() -> Context {
     concurrent,
     with_water,
     no_render,
+    benchmark,
   } = Cli::parse();
+
+  print_config(
+    benchmark,
+    "[info] Comparação de performance ativada, rederização desativada",
+    "[info] Modo de comparar performance desativado",
+  );
+  let no_render = no_render || benchmark;
 
   print_config(
     concurrent,
@@ -147,5 +164,6 @@ pub fn load_context() -> Context {
     no_render,
     start,
     end,
+    benchmark,
   }
 }
