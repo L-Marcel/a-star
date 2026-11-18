@@ -22,29 +22,31 @@ fn main() {
   } = load_context();
 
   let algorithm = AStar::new(&graph, start, end);
+
   if benchmark {
     println!("---------------[sequencial]--------------");
-    let seq_result = algorithm.start();
-    if let Some((seq_path, seq_cost)) = &seq_result {
+    let result = algorithm.start();
+    if let Some((path, cost)) = &result {
       println!(
         "[info] Custo do menor caminho foi {}",
-        seq_cost
+        cost
       );
       println!(
         "[info] Menor caminho tem {} nós",
-        seq_path.len()
+        path.len()
       );
     }
+    drop(result);
     println!("---------------[concorrente]--------------");
-    let con_result = algorithm.start_parallel();
-    if let Some((con_path, con_cost)) = &con_result {
+    let result = algorithm.start_parallel();
+    if let Some((path, cost)) = &result {
       println!(
         "[info] Custo do menor caminho foi {}",
-        con_cost
+        cost
       );
       println!(
         "[info] Menor caminho tem {} nós",
-        con_path.len()
+        path.len()
       );
     }
     return;
