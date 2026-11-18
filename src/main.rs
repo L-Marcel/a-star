@@ -29,6 +29,10 @@ pub fn execute(
   if let Some((path, cost)) = &result {
     println!("[info] Custo do menor caminho foi {}", cost);
     println!("[info] Menor caminho tem {} nós", path.len());
+  } else {
+    println!(
+      "[info] Não é possível chegar ao destino partindo da origem informada"
+    );
   }
 
   (result, history)
