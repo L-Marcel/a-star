@@ -12,23 +12,43 @@ use crate::{
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-  #[arg(short, long, value_name = "FILE")]
+  #[arg(
+    short,
+    long,
+    value_name = "FILE",
+    help = "Arquivo contendo o conteúdo do grafo"
+  )]
   pub file: PathBuf,
 
-  #[arg(short, long, default_value_t = false)]
+  #[arg(
+    short,
+    long,
+    default_value_t = false,
+    help = "Utiliza a versão concorrente do algoritmo"
+  )]
   pub concurrent: bool,
 
-  #[arg(short, long, default_value_t = false)]
+  #[arg(
+    short,
+    long,
+    default_value_t = false,
+    help = "Desativa conversão de blocos de água em paredes"
+  )]
   pub with_water: bool,
 
-  #[arg(short, long, default_value_t = false)]
+  #[arg(
+    short,
+    long,
+    default_value_t = false,
+    help = "Desativa renderização"
+  )]
   pub no_render: bool,
 
   #[arg(
     short,
     long,
     default_value_t = false,
-    help = "Compares sequential and concurrent versions"
+    help = "Compara as versões sequenciais e concorrentes, desativa renderização"
   )]
   pub benchmark: bool,
 }
@@ -70,6 +90,7 @@ pub fn load_context() -> Context {
     "[info] Comparação de performance ativada, rederização desativada",
     "[info] Modo de comparar performance desativado",
   );
+
   let no_render = no_render || benchmark;
 
   print_config(
