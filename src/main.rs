@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::{
   algorithm::simple::AStar,
+  graph::matrix::{Cost, Position, Step},
   loader::{Context, load_context},
   render::app::App,
 };
@@ -11,47 +12,11 @@ pub mod graph;
 pub mod loader;
 pub mod render;
 
-fn main() {
-  let Context {
-    graph,
-    start,
-    end,
-    concurrent,
-    no_render,
-    benchmark,
-  } = load_context();
-
-  let algorithm = AStar::new(&graph, start, end);
-
-  if benchmark {
-    println!("---------------[sequencial]--------------");
-    let result = algorithm.start();
-    if let Some((path, cost)) = &result {
-      println!(
-        "[info] Custo do menor caminho foi {}",
-        cost
-      );
-      println!(
-        "[info] Menor caminho tem {} nós",
-        path.len()
-      );
-    }
-    drop(result);
-    println!("---------------[concorrente]--------------");
-    let result = algorithm.start_parallel();
-    if let Some((path, cost)) = &result {
-      println!(
-        "[info] Custo do menor caminho foi {}",
-        cost
-      );
-      println!(
-        "[info] Menor caminho tem {} nós",
-        path.len()
-      );
-    }
-    return;
-  }
-
+pub fn execute(
+  algorithm: &AStar,
+  concurrent: bool,
+  no_render: bool,
+) -> (Option<(Vec<Position>, Cost)>, Vec<Step>) {
   let (result, history) = match (concurrent, no_render) {
     (false, true) => (algorithm.start(), vec![]),
     (false, false) => algorithm.start_keeping_history(),
@@ -66,7 +31,32 @@ fn main() {
     println!("[info] Menor caminho tem {} nós", path.len());
   }
 
-  if !no_render {
+  (result, history)
+}
+
+fn main() {
+  let Context {
+    graph,
+    start,
+    end,
+    concurrent,
+    no_render,
+    benchmark,
+  } = load_context();
+
+  let algorithm = AStar::new(&graph, start, end);
+
+  let (result, history) = if benchmark {
+    println!("---------------[sequencial]--------------");
+    let result = execute(&algorithm, false, true);
+    drop(result);
+    println!("---------------[concorrente]--------------");
+    execute(&algorithm, true, true)
+  } else {
+    execute(&algorithm, concurrent, no_render)
+  };
+
+  if !no_render && !benchmark {
     let path = result.map(|(path, _)| path);
     App::new(Rc::new(graph), path, history)
       .initialize()
