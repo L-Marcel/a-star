@@ -390,6 +390,23 @@
       font-size: 0.93rem;
     }
 
+    .table-wrap table {
+      min-width: 600px;
+    }
+
+    .status-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .status-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
     th, td {
       padding: 11px 14px;
       text-align: left;
@@ -545,6 +562,23 @@
     .weight-input:focus {
       outline: none;
       border-color: var(--accent-2);
+    }
+
+    .speed-val {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      min-width: 82px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .sim-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
     }
 
     button {
@@ -880,6 +914,7 @@
     }
 
     .badge.ok { color: var(--accent-2); border-color: rgba(52, 211, 153, 0.4); }
+    .badge.warn { color: var(--accent-warn); border-color: rgba(251, 191, 36, 0.4); }
     .badge.bad { color: var(--accent-danger); border-color: rgba(248, 113, 113, 0.4); }
 
     @media (max-width: 1240px) {
@@ -950,6 +985,9 @@
         white-space: normal;
         overflow-wrap: anywhere;
       }
+      table code {
+        white-space: nowrap;
+      }
       th, td {
         padding: 8px 10px;
         font-size: 0.85rem;
@@ -998,17 +1036,15 @@
         <a href="#visao-geral">1. Visão geral e motivação</a>
         <a href="#equacao">2. Equação fundamental</a>
         <a href="#estruturas">3. Estruturas e passo a passo</a>
-        <a href="#simulador-grafo">4. Simulador: grafos ponderados</a>
-        <a href="#propriedades">5. Admissibilidade e consistência</a>
-        <a href="#heuristicas">6. Funções heurísticas</a>
-        <a href="#complexidade">7. Complexidade e variações</a>
-        <a href="#simulador-grade">8. Simulador: grafos em grade</a>
+        <a href="#propriedades">4. Admissibilidade e consistência</a>
+        <a href="#heuristicas">5. Funções heurísticas</a>
+        <a href="#complexidade">6. Complexidade e variações</a>
       </nav>
 
-      <div class="nav-group-label">Atalhos rápidos</div>
-      <nav>
-        <a href="#simulador-grafo">▶ Testar grafo ponderado</a>
-        <a href="#simulador-grade">▶ Testar grafos em grade</a>
+      <div class="nav-group-label">Simulações</div>
+      <nav id="tocSims">
+        <a href="#simulador-grafo">7. Simulador: grafos ponderados</a>
+        <a href="#simulador-grade">8. Simulador: grafos em grade</a>
       </nav>
     </div>
   </aside>
@@ -1039,11 +1075,9 @@
     <section id="visao-geral">
       <h2 class="sec-title"><span class="sec-num">01</span><span class="sec-title-text">Visão geral e motivação</span></h2>
       <p>
-        Publicado em <strong>1968</strong> por Peter Hart, Nils Nilsson e Bertram Raphael (para guiar o robô
-        <em>Shakey</em> no Stanford Research Institute), o algoritmo <strong>A*</strong> resolve o problema do
-        <strong>caminho mínimo de par único</strong>: dado um grafo ponderado <code>G = (V, E, w)</code> com pesos
-        não negativos, uma origem <code>A</code> e um destino <code>B</code>, encontrar o caminho de menor custo total
-        entre <code>A</code> e <code>B</code>.
+        O algoritmo <strong>A*</strong> resolve o problema do <strong>caminho mínimo de par único</strong>: dado um
+        grafo ponderado <code>G = (V, E, w)</code> com pesos não negativos, uma origem <code>A</code> e um destino
+        <code>B</code>, encontrar o caminho de menor custo total entre <code>A</code> e <code>B</code>.
       </p>
       <p>
         Para entender por que o A* é tão eficiente, vale compará-lo com seus dois "pais" conceituais:
@@ -1063,25 +1097,44 @@
             <tr>
               <td><strong>Busca em largura (BFS)</strong></td>
               <td>Número de arestas (nível)</td>
-              <td>Apenas se todas as arestas tiverem mesmo peso</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge warn">Condicional</span>
+                  <span class="status-note">Apenas se todas as arestas tiverem mesmo peso</span>
+                </div>
+              </td>
               <td>Expande em anéis uniformes sem considerar custos reais nem destino.</td>
             </tr>
             <tr>
               <td><strong>Dijkstra</strong></td>
               <td><code>f(n) = g(n)</code></td>
-              <td><span class="badge ok">Sim</span> (pesos &ge; 0)</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge ok">Sim</span>
+                  <span class="status-note">Pesos &ge; 0</span>
+                </div>
+              </td>
               <td>Expande igualmente em todas as direções ("cego" ao destino <code>B</code>).</td>
             </tr>
             <tr>
               <td><strong>Busca gulosa (best-first)</strong></td>
               <td><code>f(n) = h(n)</code></td>
-              <td><span class="badge bad">Não</span></td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge bad">Não</span>
+                </div>
+              </td>
               <td>Corre direto para <code>B</code>, mas ignora o custo já gasto e cai em armadilhas.</td>
             </tr>
             <tr>
               <td><strong>Algoritmo A*</strong></td>
               <td><code>f(n) = g(n) + h(n)</code></td>
-              <td><span class="badge ok">Sim</span> (com <code>h</code> admissível)</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge ok">Sim</span>
+                  <span class="status-note">Com <code>h</code> admissível</span>
+                </div>
+              </td>
               <td>Foca nos nós promissores em direção a <code>B</code> sem esquecer o custo real <code>g(n)</code>.</td>
             </tr>
           </tbody>
@@ -1237,90 +1290,9 @@
     <span class="kw">retornar</span> NENHUM_CAMINHO</pre>
     </section>
 
-    <!-- SEÇÃO 4: SIMULADOR DE GRAFOS PONDERADOS -->
-    <section id="simulador-grafo">
-      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Simulador: grafos ponderados</span></h2>
-      <p>
-        Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
-        a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
-        <strong>busca gulosa</strong> e <strong>A* ponderado</strong> para comparar o comportamento em cada exemplo!
-      </p>
-
-      <div class="lab-panel">
-        <div class="controls-bar">
-          <div class="control-group">
-            <label for="graphPreset">Grafo:</label>
-            <select id="graphPreset"></select>
-          </div>
-          <div class="control-group">
-            <label for="graphAlgo">Algoritmo:</label>
-            <select id="graphAlgo">
-              <option value="astar">A* (f = g + h)</option>
-              <option value="dijkstra">Dijkstra (f = g, h = 0)</option>
-              <option value="greedy">Busca gulosa (f = h)</option>
-              <option value="weighted">A* ponderado (f = g + 2h)</option>
-            </select>
-          </div>
-          <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
-          <button id="gRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
-          <button id="gResetBtn">Reiniciar <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
-          <div class="control-group">
-            <label for="gSpeed">Vel:</label>
-            <input id="gSpeed" type="range" min="150" max="1400" step="50" value="650" />
-          </div>
-        </div>
-
-        <p id="graphLesson" style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 14px;"></p>
-
-        <div class="sim-grid">
-          <div class="canvas-box">
-            <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" aria-label="Grafo ponderado interativo"></svg>
-            <div class="legend">
-              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> Origem (A)</span>
-              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> Destino (G)</span>
-              <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open set</span>
-              <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Expandindo</span>
-              <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed set</span>
-              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho final</span>
-            </div>
-          </div>
-
-          <div class="inspector">
-            <div class="inspector-box">
-              <h4>Métricas da execução</h4>
-              <div class="stats-row">
-                <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gExpandedCount">0</span></div>
-                <div class="stat-pill"><span class="label">Custo encontrado</span><span class="val" id="gFoundCost">—</span></div>
-              </div>
-            </div>
-
-            <div class="inspector-box">
-              <h4>Open set (ordenado por f)</h4>
-              <div class="queue-list" id="gOpenList"></div>
-            </div>
-
-            <div class="inspector-box">
-              <h4>Closed set (já expandidos)</h4>
-              <div class="queue-list" id="gClosedList"></div>
-            </div>
-
-            <div class="inspector-box">
-              <h4>Tabela de heurísticas: h(n) vs h*(n) real</h4>
-              <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem; overflow-x: auto;"></div>
-            </div>
-
-            <div class="inspector-box">
-              <h4>Log passo a passo</h4>
-              <div class="log-box" id="gLog"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SEÇÃO 5 -->
+    <!-- SEÇÃO 4 -->
     <section id="propriedades">
-      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Admissibilidade e consistência</span></h2>
+      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Admissibilidade e consistência</span></h2>
       <p>
         Nem toda função <code>h(n)</code> garante que o A* encontre o menor caminho. A qualidade da resposta depende
         diretamente de duas propriedades matemáticas formais.
@@ -1388,9 +1360,9 @@
       </ul>
     </section>
 
-    <!-- SEÇÃO 6 -->
+    <!-- SEÇÃO 5 -->
     <section id="heuristicas">
-      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Funções heurísticas</span></h2>
+      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Funções heurísticas</span></h2>
 
       <div class="table-wrap">
         <table>
@@ -1406,25 +1378,45 @@
             <tr>
               <td><strong>Manhattan (L₁)</strong></td>
               <td><code>c_min &middot; (dx + dy)</code></td>
-              <td>4 direções (N, S, L, O)</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge">4 direções</span>
+                  <span class="status-note">N, S, L, O</span>
+                </div>
+              </td>
               <td>Exata quando não há obstáculos nem arestas com pesos diferentes.</td>
             </tr>
             <tr>
               <td><strong>Euclidiana (L₂)</strong></td>
               <td><code>c_min &middot; &radic;(dx&sup2; + dy&sup2;)</code></td>
-              <td>Qualquer ângulo</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge">Qualquer ângulo</span>
+                  <span class="status-note">4 ou 8 direções (diag. &ge; &radic;2)</span>
+                </div>
+              </td>
               <td>Admissível em 4 e 8 direções, mas subestima mais em grades 4-dir (expande mais nós).</td>
             </tr>
             <tr>
               <td><strong>Chebyshev (L&infin;)</strong></td>
               <td><code>c_min &middot; max(dx, dy)</code></td>
-              <td>8 direções (diagonal = 1)</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge">8 direções</span>
+                  <span class="status-note">Diagonal = 1</span>
+                </div>
+              </td>
               <td>Considera o passo diagonal com mesmo custo do passo ortogonal.</td>
             </tr>
             <tr>
               <td><strong>Octile</strong></td>
               <td><code>c_min &middot; (max(dx,dy) + (&radic;2 - 1)&middot;min(dx,dy))</code></td>
-              <td>8 direções (diagonal = &radic;2)</td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge">8 direções</span>
+                  <span class="status-note">Diagonal = &radic;2</span>
+                </div>
+              </td>
               <td>Modelo realista de grades onde andar na diagonal custa &radic;2 &approx; 1.414.</td>
             </tr>
           </tbody>
@@ -1440,9 +1432,9 @@
       </div>
     </section>
 
-    <!-- SEÇÃO 7 -->
+    <!-- SEÇÃO 6 -->
     <section id="complexidade">
-      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade e variações</span></h2>
+      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Complexidade e variações</span></h2>
 
       <div class="grid-2">
         <div class="card">
@@ -1476,6 +1468,89 @@
       </ul>
     </section>
 
+    <!-- SEÇÃO 7: SIMULADOR DE GRAFOS PONDERADOS -->
+    <section id="simulador-grafo">
+      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Simulador: grafos ponderados</span></h2>
+      <p>
+        Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
+        a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
+        <strong>busca gulosa</strong> e <strong>A* ponderado</strong> para comparar o comportamento em cada exemplo!
+      </p>
+
+      <div class="lab-panel">
+        <div class="controls-bar">
+          <div class="control-group">
+            <label for="graphPreset">Grafo:</label>
+            <select id="graphPreset"></select>
+          </div>
+          <div class="control-group">
+            <label for="graphAlgo">Algoritmo:</label>
+            <select id="graphAlgo">
+              <option value="astar">A*</option>
+              <option value="dijkstra">Dijkstra</option>
+              <option value="greedy">Busca gulosa</option>
+              <option value="weighted">A* ponderado</option>
+            </select>
+          </div>
+          <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
+          <button id="gRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
+          <button id="gResetBtn">Reiniciar <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
+          <div class="control-group">
+            <label for="gSpeed">Velocidade:</label>
+            <input id="gSpeed" type="range" min="0.5" max="8" step="0.5" value="2" />
+            <span id="gSpeedVal" class="speed-val">2 passos/s</span>
+          </div>
+        </div>
+
+        <div id="graphMeta" class="sim-meta"></div>
+        <p id="graphLesson" style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 14px;"></p>
+
+        <div class="sim-grid">
+          <div class="canvas-box">
+            <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" aria-label="Grafo ponderado interativo"></svg>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> Origem (A)</span>
+              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> Destino (G)</span>
+              <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open set</span>
+              <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Expandindo</span>
+              <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed set</span>
+              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho final</span>
+            </div>
+          </div>
+
+          <div class="inspector">
+            <div class="inspector-box">
+              <h4>Métricas da execução</h4>
+              <div class="stats-row">
+                <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gExpandedCount">0</span></div>
+                <div class="stat-pill"><span class="label">Custo encontrado</span><span class="val" id="gFoundCost">—</span></div>
+              </div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Open set (ordenado por f)</h4>
+              <div class="queue-list" id="gOpenList"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Closed set (já expandidos)</h4>
+              <div class="queue-list" id="gClosedList"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Tabela de heurísticas: h(n) vs h*(n) real</h4>
+              <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem; overflow-x: auto;"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Log passo a passo</h4>
+              <div class="log-box" id="gLog"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- SEÇÃO 8: SIMULADOR DE GRADES -->
     <section id="simulador-grade">
       <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Simulador: grafos em grade</span></h2>
@@ -1494,10 +1569,21 @@
           <div class="control-group">
             <label for="gridAlgo">Busca / heurística:</label>
             <select id="gridAlgo">
-              <option value="manhattan">A* — Manhattan (4-dir)</option>
+              <option value="manhattan">A* — Manhattan</option>
               <option value="euclidean">A* — Euclidiana</option>
-              <option value="dijkstra">Dijkstra (h = 0)</option>
-              <option value="greedy">Busca gulosa (g = 0)</option>
+              <option value="chebyshev">A* — Chebyshev</option>
+              <option value="octile">A* — Octile</option>
+              <option value="dijkstra">Dijkstra</option>
+              <option value="greedy">Busca gulosa</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="gridDirs">Direções:</label>
+            <select id="gridDirs">
+              <option value="4">4 direções · ortogonal</option>
+              <option value="8_cheb">8 direções · diagonal = 1</option>
+              <option value="8_oct">8 direções · diagonal = √2</option>
             </select>
           </div>
         </div>
@@ -1519,11 +1605,13 @@
           <button id="gridResetBtn">Restaurar mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
 
           <div class="control-group">
-            <label for="gridSpeed">Vel:</label>
-            <input id="gridSpeed" type="range" min="15" max="350" step="5" value="65" />
+            <label for="gridSpeed">Velocidade:</label>
+            <input id="gridSpeed" type="range" min="2" max="60" step="1" value="15" />
+            <span id="gridSpeedVal" class="speed-val">15 passos/s</span>
           </div>
         </div>
 
+        <div id="gridMeta" class="sim-meta"></div>
         <p id="gridDesc" style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 12px;"></p>
 
         <div class="sim-grid">
@@ -1662,6 +1750,8 @@
   const runBtn = document.getElementById("gRunBtn");
   const resetBtn = document.getElementById("gResetBtn");
   const speedSlider = document.getElementById("gSpeed");
+  const speedValEl = document.getElementById("gSpeedVal");
+  const graphMetaEl = document.getElementById("graphMeta");
   const svg = document.getElementById("graphSvg");
   const lessonEl = document.getElementById("graphLesson");
   const openListEl = document.getElementById("gOpenList");
@@ -1958,8 +2048,28 @@
     logEl.innerHTML = s.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
   }
 
+  function graphIntervalMs() {
+    return Math.round(1000 / Number(speedSlider.value));
+  }
+
+  function updateGraphSpeedLabel() {
+    const v = Number(speedSlider.value);
+    speedValEl.textContent = `${v} ${v === 1 ? "passo/s" : "passos/s"}`;
+  }
+
+  function renderGraphMeta() {
+    const algo = algoSel.value;
+    const info = {
+      astar: { formula: "f = g + h", status: "Ótimo se h admissível", cls: "ok" },
+      dijkstra: { formula: "f = g (h = 0)", status: "Ótimo (sem heurística)", cls: "ok" },
+      greedy: { formula: "f = h (g = 0)", status: "Não garante ótimo", cls: "bad" },
+      weighted: { formula: "f = g + 2h", status: "Subótimo (≤ 2·C*)", cls: "warn" }
+    }[algo];
+    graphMetaEl.innerHTML = `<span class="badge">${info.formula}</span><span class="badge ${info.cls}">${info.status}</span>`;
+  }
+
   presetSel.addEventListener("change", initGraphSim);
-  algoSel.addEventListener("change", initGraphSim);
+  algoSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
   resetBtn.addEventListener("click", initGraphSim);
   stepBtn.addEventListener("click", () => { stopGraphTimer(); stepGraph(); });
   runBtn.addEventListener("click", () => {
@@ -1968,17 +2078,20 @@
     } else {
       if (gState.finished) initGraphSim();
       runBtn.innerHTML = PAUSE_LABEL_HTML;
-      gTimer = setInterval(stepGraph, Number(speedSlider.value));
+      gTimer = setInterval(stepGraph, graphIntervalMs());
     }
   });
   speedSlider.addEventListener("input", () => {
+    updateGraphSpeedLabel();
     if (gTimer) {
       stopGraphTimer();
       runBtn.innerHTML = PAUSE_LABEL_HTML;
-      gTimer = setInterval(stepGraph, Number(speedSlider.value));
+      gTimer = setInterval(stepGraph, graphIntervalMs());
     }
   });
 
+  updateGraphSpeedLabel();
+  renderGraphMeta();
   initGraphSim();
 })();
 
@@ -2134,12 +2247,15 @@
 
   const presetSel = document.getElementById("gridPreset");
   const algoSel = document.getElementById("gridAlgo");
+  const dirsSel = document.getElementById("gridDirs");
   const brushWeightInput = document.getElementById("brushWeight");
   const stepBtn = document.getElementById("gridStepBtn");
   const runBtn = document.getElementById("gridRunBtn");
   const clearSearchBtn = document.getElementById("gridClearSearchBtn");
   const resetBtn = document.getElementById("gridResetBtn");
   const speedSlider = document.getElementById("gridSpeed");
+  const speedValEl = document.getElementById("gridSpeedVal");
+  const gridMetaEl = document.getElementById("gridMeta");
   const boardEl = document.getElementById("gridBoard");
   const descEl = document.getElementById("gridDesc");
   const expandedEl = document.getElementById("gridExpanded");
@@ -2252,27 +2368,83 @@
     return c === gridModel.end[0] && r === gridModel.end[1];
   }
 
+  function round1(val) {
+    return Math.round(val * 10) / 10;
+  }
+
   function heuristic(c, r) {
     const [ec, er] = gridModel.end;
     const dx = Math.abs(c - ec);
     const dy = Math.abs(r - er);
     const mode = algoSel.value;
     if (mode === "dijkstra") return 0;
-    if (mode === "euclidean") return Math.round(Math.hypot(dx, dy) * 10) / 10;
-    return dx + dy; // manhattan & greedy
+    if (mode === "euclidean") return round1(Math.hypot(dx, dy));
+    if (mode === "chebyshev") return Math.max(dx, dy);
+    if (mode === "octile") return round1(Math.max(dx, dy) + (Math.SQRT2 - 1) * Math.min(dx, dy));
+    if (mode === "greedy") {
+      return dirsSel.value === "4" ? dx + dy : round1(Math.hypot(dx, dy));
+    }
+    return dx + dy; // manhattan
   }
 
   function calcF(g, h) {
     const mode = algoSel.value;
-    if (mode === "dijkstra") return g;
-    if (mode === "greedy") return h;
-    return g + h;
+    if (mode === "dijkstra") return round1(g);
+    if (mode === "greedy") return round1(h);
+    return round1(g + h);
   }
 
-  function stepCostTo(nc, nr) {
+  function getActiveDirs() {
+    if (dirsSel.value === "4") {
+      return [[0, -1, 1], [0, 1, 1], [-1, 0, 1], [1, 0, 1]];
+    }
+    const diagMult = dirsSel.value === "8_oct" ? Math.SQRT2 : 1;
+    return [
+      [0, -1, 1], [0, 1, 1], [-1, 0, 1], [1, 0, 1],
+      [-1, -1, diagMult], [1, -1, diagMult], [-1, 1, diagMult], [1, 1, diagMult]
+    ];
+  }
+
+  function stepCostTo(nc, nr, mult = 1) {
     const cell = gridModel.cells[nr][nc];
     if (cell.wall) return null;
-    return cell.weight;
+    return round1(cell.weight * mult);
+  }
+
+  function renderGridMeta() {
+    const algo = algoSel.value;
+    const dirMode = dirsSel.value;
+    const priorityMap = {
+      manhattan: "f = g + h",
+      euclidean: "f = g + h",
+      chebyshev: "f = g + h",
+      octile: "f = g + h",
+      dijkstra: "f = g",
+      greedy: "f = h"
+    };
+    const dirLabelMap = {
+      "4": "4 direções (N, S, L, O)",
+      "8_cheb": "8 direções · diag. = 1",
+      "8_oct": "8 direções · diag. = √2"
+    };
+    let statusText = "Heurística admissível";
+    let statusCls = "ok";
+    if (algo === "dijkstra") {
+      statusText = "Ótimo (h = 0)";
+    } else if (algo === "greedy") {
+      statusText = "Não garante ótimo";
+      statusCls = "bad";
+    } else if (algo === "manhattan" && dirMode !== "4") {
+      statusText = "Superestima em 8 direções";
+      statusCls = "warn";
+    } else if ((algo === "euclidean" || algo === "octile") && dirMode === "8_cheb") {
+      statusText = "Superestima com diag. = 1";
+      statusCls = "warn";
+    }
+    gridMetaEl.innerHTML =
+      `<span class="badge">${priorityMap[algo]}</span>` +
+      `<span class="badge">${dirLabelMap[dirMode]}</span>` +
+      `<span class="badge ${statusCls}">${statusText}</span>`;
   }
 
   function resetSearchState() {
@@ -2352,21 +2524,24 @@
       return;
     }
 
-    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const dirs = getActiveDirs();
     let discoveredHere = 0;
 
-    for (const [dc, dr] of dirs) {
+    for (const [dc, dr, mult] of dirs) {
       const nc = cur.c + dc;
       const nr = cur.r + dr;
       if (nc < 0 || nr < 0 || nc >= gridModel.n || nr >= gridModel.n) continue;
 
+      // Evita atravessar diagonalmente entre duas paredes adjacentes
+      if (dc !== 0 && dr !== 0 && gridModel.cells[cur.r][nc].wall && gridModel.cells[nr][cur.c].wall) continue;
+
       const nk = keyOf(nc, nr);
       if (search.closedSet.has(nk)) continue;
 
-      const stepCost = stepCostTo(nc, nr);
+      const stepCost = stepCostTo(nc, nr, mult);
       if (stepCost === null) continue;
 
-      const tentG = cur.g + stepCost;
+      const tentG = round1(cur.g + stepCost);
       const prevG = search.gScore.get(nk) ?? Infinity;
 
       if (tentG < prevG) {
@@ -2535,8 +2710,18 @@
     }).observe(boardEl.parentElement);
   }
 
+  function gridIntervalMs() {
+    return Math.round(1000 / Number(speedSlider.value));
+  }
+
+  function updateGridSpeedLabel() {
+    const v = Number(speedSlider.value);
+    speedValEl.textContent = `${v} passos/s`;
+  }
+
   presetSel.addEventListener("change", () => loadPresetById(presetSel.value));
-  algoSel.addEventListener("change", resetSearchState);
+  algoSel.addEventListener("change", () => { renderGridMeta(); resetSearchState(); });
+  dirsSel.addEventListener("change", () => { renderGridMeta(); resetSearchState(); });
   clearSearchBtn.addEventListener("click", resetSearchState);
   resetBtn.addEventListener("click", () => loadPresetById(presetSel.value));
 
@@ -2551,18 +2736,21 @@
     } else {
       if (search.finished) resetSearchState();
       runBtn.innerHTML = PAUSE_LABEL_HTML;
-      timer = setInterval(stepGrid, Number(speedSlider.value));
+      timer = setInterval(stepGrid, gridIntervalMs());
     }
   });
 
   speedSlider.addEventListener("input", () => {
+    updateGridSpeedLabel();
     if (timer) {
       stopTimer();
       runBtn.innerHTML = PAUSE_LABEL_HTML;
-      timer = setInterval(stepGrid, Number(speedSlider.value));
+      timer = setInterval(stepGrid, gridIntervalMs());
     }
   });
 
+  updateGridSpeedLabel();
+  renderGridMeta();
   loadPresetById(GRID_PRESETS[0].id);
 })();
 
@@ -2592,7 +2780,7 @@
     });
   }
 
-  const tocLinks = document.querySelectorAll("#toc a[href^='#']");
+  const tocLinks = document.querySelectorAll("#sidebar nav a[href^='#']");
   const sections = [...tocLinks]
     .map((a) => document.querySelector(a.getAttribute("href")))
     .filter(Boolean);
