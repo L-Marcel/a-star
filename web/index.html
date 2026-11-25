@@ -728,7 +728,6 @@
       <a href="#heuristicas">6. Funções Heurísticas</a>
       <a href="#complexidade">7. Complexidade e Variações</a>
       <a href="#simulador-grade">8. Simulador: Grafos em Grade</a>
-      <a href="#projeto-rust">9. Conexão com o Projeto Rust</a>
     </nav>
 
     <div class="nav-group-label">Atalhos Rápidos</div>
@@ -1298,38 +1297,6 @@
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- SEÇÃO 9 -->
-    <section id="projeto-rust">
-      <h2 class="sec-title"><span class="sec-num">09</span> Conexão com o Projeto Rust do Repositório</h2>
-      <p>
-        Os mapas de exemplo deste guia seguem exatamente a especificação implementada no código-fonte em <code>src/</code>:
-      </p>
-      <ul>
-        <li><code>src/loader.rs</code>: lê a primeira linha como dimensão quadrada <code>N &times; N</code> e mapeia <code>A</code> (origem), <code>B</code> (destino), <code>#</code> (parede), <code>' '</code> (caminho livre) e <code>_</code> (água ou parede conforme a flag <code>-w</code>).</li>
-        <li><code>src/graph/nodes.rs</code>: define que movimentos envolvendo <code>WATER</code> têm custo <code>2</code>, enquanto movimentos normais têm custo <code>1</code>.</li>
-        <li><code>src/graph/matrix.rs</code>: implementa vizinhança em <strong>4 direções</strong> (cima, baixo, esquerda, direita).</li>
-        <li><code>src/algorithm/distance.rs</code>: implementa a heurística <code>manhattan_distance_to</code>.</li>
-        <li><code>src/algorithm/context.rs</code> e <code>simple.rs</code>: mantêm <code>BinaryHeap</code> mínimo ordenado por <code>f = g + h</code>, mapa <code>min_cost</code> para relaxamento/lazy deletion e <code>predecessor</code> para reconstruir o caminho.</li>
-      </ul>
-
-      <p>Você pode executar os novos grafos de exemplo criados na pasta <code>graphs/</code> diretamente pelo terminal:</p>
-<pre><span class="cm"># Armadilha em U (mostra o A* contornando a concavidade)</span>
-cargo run -- -f graphs/exemplo_armadilha_u.txt
-
-<span class="cm"># Decisão com água: compare COM -w (usa vau raso, custo 14) vs SEM -w (contorna, custo 16)</span>
-cargo run -- -wf graphs/exemplo_agua_decisao.txt
-cargo run -- -f graphs/exemplo_agua_decisao.txt
-
-<span class="cm"># Labirinto clássico com becos sem saída</span>
-cargo run -- -f graphs/exemplo_labirinto.txt
-
-<span class="cm"># Destino isolado (Open Set esvazia e retorna sem caminho)</span>
-cargo run -- -f graphs/exemplo_sem_caminho.txt
-
-<span class="cm"># Campo aberto para benchmark entre versão sequencial e concorrente</span>
-cargo run -- -bf graphs/exemplo_campo_aberto.txt</pre>
     </section>
   </main>
 </div>
