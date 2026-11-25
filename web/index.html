@@ -44,6 +44,7 @@
       color: var(--text);
       line-height: 1.68;
       font-size: 16px;
+      overflow-x: clip;
     }
 
     /* Layout */
@@ -64,11 +65,34 @@
       backdrop-filter: blur(8px);
     }
 
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 6px;
+      min-width: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .brand-badge {
@@ -125,9 +149,10 @@
     }
 
     main {
-      padding: 36px clamp(20px, 4vw, 56px) 80px;
+      padding: clamp(20px, 3vw, 36px) clamp(16px, 3.5vw, 52px) 80px;
       max-width: 1180px;
       width: 100%;
+      min-width: 0;
       margin: 0 auto;
     }
 
@@ -136,16 +161,16 @@
       background: linear-gradient(135deg, rgba(96, 165, 250, 0.14), rgba(167, 139, 250, 0.1));
       border: 1px solid var(--border-light);
       border-radius: 18px;
-      padding: 32px;
+      padding: clamp(20px, 3vw, 32px);
       margin-bottom: 36px;
       box-shadow: var(--shadow);
     }
 
     .hero-tag {
       display: inline-block;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       color: var(--accent-2);
       background: rgba(52, 211, 153, 0.12);
@@ -153,32 +178,46 @@
       padding: 4px 10px;
       border-radius: 999px;
       margin-bottom: 12px;
+      max-width: 100%;
     }
 
     .hero h1 {
       margin: 0 0 12px;
-      font-size: clamp(1.8rem, 3.2vw, 2.6rem);
-      line-height: 1.18;
+      font-size: clamp(1.55rem, 3vw, 2.5rem);
+      line-height: 1.2;
+      text-wrap: balance;
     }
 
     .hero p {
       margin: 0 0 18px;
       color: var(--text-muted);
       max-width: 78ch;
-      font-size: 1.04rem;
+      font-size: clamp(0.96rem, 1.4vw, 1.04rem);
     }
 
     .hero-formula {
       display: inline-flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 6px 14px;
+      max-width: 100%;
       background: var(--bg-code);
       border: 1px solid var(--border);
-      padding: 12px 18px;
+      padding: 12px 16px;
       border-radius: 12px;
       font-family: var(--mono);
-      font-size: 1.12rem;
+      font-size: clamp(0.95rem, 1.8vw, 1.12rem);
+    }
+
+    .hero-eq {
+      white-space: nowrap;
+    }
+
+    .hero-formula-note {
+      color: var(--text-muted);
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      line-height: 1.45;
     }
 
     .f-sym { color: var(--accent-warn); font-weight: 700; }
@@ -192,29 +231,44 @@
     }
 
     h2.sec-title {
-      font-size: 1.65rem;
-      margin: 0 0 14px;
+      font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+      line-height: 1.3;
+      margin: 0 0 16px;
       padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
       display: flex;
-      align-items: center;
-      gap: 10px;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .sec-title-text {
+      min-width: 0;
+      text-wrap: balance;
     }
 
     .sec-num {
       font-family: var(--mono);
       font-size: 0.85rem;
+      line-height: 1.2;
       color: var(--accent);
       background: rgba(96, 165, 250, 0.14);
       border: 1px solid rgba(96, 165, 250, 0.3);
-      padding: 3px 9px;
+      padding: 4px 9px;
       border-radius: 6px;
+      flex-shrink: 0;
+      margin-top: 3px;
     }
 
     h3 {
-      font-size: 1.2rem;
+      font-size: clamp(1.06rem, 1.6vw, 1.2rem);
+      line-height: 1.35;
       margin: 24px 0 10px;
       color: #f1f5ff;
+      text-wrap: balance;
+    }
+
+    .nowrap {
+      white-space: nowrap;
     }
 
     p { margin: 0 0 14px; }
@@ -229,14 +283,14 @@
     /* Cards & Callouts */
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
       gap: 16px;
       margin: 18px 0;
     }
 
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
       gap: 14px;
       margin: 18px 0;
     }
@@ -247,14 +301,15 @@
       border-radius: var(--radius);
       padding: 18px 20px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      min-width: 0;
     }
 
     .card h4 {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
       font-size: 1.03rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      line-height: 1.38;
+      display: block;
+      text-wrap: balance;
     }
 
     .callout {
@@ -289,9 +344,11 @@
     /* Tables */
     .table-wrap {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       margin: 16px 0;
       border-radius: var(--radius);
       border: 1px solid var(--border);
+      max-width: 100%;
     }
 
     table {
@@ -316,6 +373,11 @@
       letter-spacing: 0.04em;
     }
 
+    th code {
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
     tr:last-child td { border-bottom: none; }
 
     code {
@@ -323,19 +385,23 @@
       font-size: 0.88em;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid var(--border);
-      padding: 2px 6px;
+      padding: 1px 6px;
       border-radius: 5px;
       color: #cde1ff;
+      white-space: nowrap;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
     }
 
     pre {
       background: var(--bg-code);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px 20px;
+      padding: clamp(12px, 2vw, 18px) clamp(14px, 2vw, 20px);
       overflow-x: auto;
+      max-width: 100%;
       font-family: var(--mono);
-      font-size: 0.88rem;
+      font-size: clamp(0.78rem, 1.3vw, 0.88rem);
       line-height: 1.55;
       margin: 16px 0;
       color: #d9e4ff;
@@ -352,11 +418,13 @@
       background: var(--bg-code);
       border: 1px solid var(--border-light);
       border-radius: var(--radius);
-      padding: 14px 18px;
+      padding: 14px 16px;
       font-family: var(--mono);
-      font-size: 0.98rem;
+      font-size: clamp(0.84rem, 1.5vw, 0.98rem);
       margin: 12px 0;
       text-align: center;
+      overflow-x: auto;
+      max-width: 100%;
     }
 
     /* Interactive Simulators */
@@ -364,9 +432,10 @@
       background: var(--bg-elevated);
       border: 1px solid var(--border-light);
       border-radius: 16px;
-      padding: 20px;
+      padding: clamp(14px, 2.2vw, 20px);
       box-shadow: var(--shadow);
       margin-top: 16px;
+      min-width: 0;
     }
 
     .controls-bar {
@@ -381,6 +450,7 @@
 
     .control-group {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
       background: var(--bg-card);
@@ -388,11 +458,14 @@
       padding: 6px 10px;
       border-radius: 9px;
       font-size: 0.86rem;
+      max-width: 100%;
+      min-width: 0;
     }
 
     .control-group label {
       color: var(--text-muted);
       font-weight: 600;
+      white-space: nowrap;
     }
 
     select, button, input[type="range"] {
@@ -407,6 +480,9 @@
       padding: 5px 8px;
       font-size: 0.86rem;
       cursor: pointer;
+      max-width: 100%;
+      min-width: 0;
+      text-overflow: ellipsis;
     }
 
     button {
@@ -471,6 +547,7 @@
       border-radius: 12px;
       padding: 12px;
       position: relative;
+      min-width: 0;
     }
 
     .graph-svg {
@@ -509,6 +586,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      min-width: 0;
     }
 
     .inspector-box {
@@ -516,6 +594,7 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px 14px;
+      min-width: 0;
     }
 
     .inspector-box h4 {
@@ -528,7 +607,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 8px;
     }
 
@@ -597,14 +676,15 @@
 
     /* Grid Simulator */
     .grid-board-wrap {
-      display: flex;
-      justify-content: center;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 8px 0;
+      text-align: center;
+      width: 100%;
     }
 
     .grid-board {
-      display: grid;
+      display: inline-grid;
       gap: 2px;
       background: #0a0f1f;
       padding: 6px;
@@ -612,6 +692,7 @@
       border: 1px solid var(--border);
       user-select: none;
       touch-action: none;
+      vertical-align: top;
     }
 
     .cell {
@@ -691,50 +772,132 @@
     .badge.ok { color: var(--accent-2); border-color: rgba(52, 211, 153, 0.4); }
     .badge.bad { color: var(--accent-danger); border-color: rgba(248, 113, 113, 0.4); }
 
-    @media (max-width: 980px) {
+    @media (max-width: 1240px) {
+      .layout {
+        grid-template-columns: 240px minmax(0, 1fr);
+      }
+      .sim-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1024px) {
       .layout {
         grid-template-columns: 1fr;
       }
       aside.sidebar {
-        position: static;
+        position: sticky;
+        top: 0;
+        z-index: 40;
         height: auto;
+        max-height: 100vh;
         border-right: none;
         border-bottom: 1px solid var(--border);
+        padding: 12px 16px;
       }
-      .sim-grid {
-        grid-template-columns: 1fr;
+      .brand {
+        margin-bottom: 0;
+      }
+      .brand-sub {
+        display: none;
+      }
+      .menu-toggle {
+        display: inline-flex;
+      }
+      .sidebar-nav-content {
+        display: none;
+        padding-top: 10px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border);
+      }
+      aside.sidebar.open .sidebar-nav-content {
+        display: block;
+      }
+      .sidebar nav {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 4px 10px;
+      }
+      .nav-group-label {
+        margin: 12px 0 6px 4px;
+      }
+      .nav-group-label:first-child {
+        margin-top: 0;
+      }
+      section {
+        scroll-margin-top: 76px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        font-size: 15px;
+      }
+      code {
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+      th, td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+      .controls-bar {
+        gap: 8px;
+      }
+      .control-group {
+        width: 100%;
+      }
+      .control-group select {
+        flex: 1 1 160px;
+      }
+      .card {
+        padding: 15px 16px;
+      }
+      .callout {
+        padding: 12px 14px;
+      }
+      .sec-num {
+        font-size: 0.78rem;
+        padding: 3px 7px;
       }
     }
   </style>
 </head>
 <body>
 <div class="layout">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-badge">A*</div>
-      <div>
-        <h2>Guia Completo A*</h2>
-        <div class="brand-sub">Busca Informada em Grafos</div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-badge">A*</div>
+        <div>
+          <h2>Guia Completo A*</h2>
+          <div class="brand-sub">Busca Informada em Grafos</div>
+        </div>
       </div>
+      <button id="menuToggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebarNav">
+        Sumário ☰
+      </button>
     </div>
 
-    <div class="nav-group-label">Fundamentos</div>
-    <nav id="toc">
-      <a href="#visao-geral">1. Visão Geral e Motivação</a>
-      <a href="#equacao">2. A Equação f(n) = g(n) + h(n)</a>
-      <a href="#estruturas">3. Estruturas e Passo a Passo</a>
-      <a href="#simulador-grafo">4. Simulador: Grafos Ponderados</a>
-      <a href="#propriedades">5. Admissibilidade e Consistência</a>
-      <a href="#heuristicas">6. Funções Heurísticas</a>
-      <a href="#complexidade">7. Complexidade e Variações</a>
-      <a href="#simulador-grade">8. Simulador: Grafos em Grade</a>
-    </nav>
+    <div class="sidebar-nav-content" id="sidebarNav">
+      <div class="nav-group-label">Fundamentos</div>
+      <nav id="toc">
+        <a href="#visao-geral">1. Visão Geral e Motivação</a>
+        <a href="#equacao">2. A Equação f(n) = g(n) + h(n)</a>
+        <a href="#estruturas">3. Estruturas e Passo a Passo</a>
+        <a href="#simulador-grafo">4. Simulador: Grafos Ponderados</a>
+        <a href="#propriedades">5. Admissibilidade e Consistência</a>
+        <a href="#heuristicas">6. Funções Heurísticas</a>
+        <a href="#complexidade">7. Complexidade e Variações</a>
+        <a href="#simulador-grade">8. Simulador: Grafos em Grade</a>
+      </nav>
 
-    <div class="nav-group-label">Atalhos Rápidos</div>
-    <nav>
-      <a href="#simulador-grafo">▶ Testar Grafo Ponderado</a>
-      <a href="#simulador-grade">▶ Testar Labirintos &amp; Água</a>
-    </nav>
+      <div class="nav-group-label">Atalhos Rápidos</div>
+      <nav>
+        <a href="#simulador-grafo">▶ Testar Grafo Ponderado</a>
+        <a href="#simulador-grade">▶ Testar Labirintos &amp; Água</a>
+      </nav>
+    </div>
   </aside>
 
   <main>
@@ -747,8 +910,8 @@
         custo uniforme (<em>Dijkstra</em>) com a velocidade direcionada de uma função <em>heurística</em>.
       </p>
       <div class="hero-formula">
-        <span class="f-sym">f(n)</span> = <span class="g-sym">g(n)</span> + <span class="h-sym">h(n)</span>
-        <span style="color: var(--text-muted); font-size: 0.88rem; margin-left: 8px;">
+        <span class="hero-eq"><span class="f-sym">f(n)</span> = <span class="g-sym">g(n)</span> + <span class="h-sym">h(n)</span></span>
+        <span class="hero-formula-note">
           (Custo Total Estimado = Custo Real Percorrido + Estimativa até o Destino)
         </span>
       </div>
@@ -756,7 +919,7 @@
 
     <!-- SEÇÃO 1 -->
     <section id="visao-geral">
-      <h2 class="sec-title"><span class="sec-num">01</span> Visão Geral e Motivação</h2>
+      <h2 class="sec-title"><span class="sec-num">01</span><span class="sec-title-text">Visão Geral e Motivação</span></h2>
       <p>
         Publicado em <strong>1968</strong> por Peter Hart, Nils Nilsson e Bertram Raphael (para guiar o robô
         <em>Shakey</em> no Stanford Research Institute), o algoritmo <strong>A*</strong> resolve o problema do
@@ -817,7 +980,7 @@
 
     <!-- SEÇÃO 2 -->
     <section id="equacao">
-      <h2 class="sec-title"><span class="sec-num">02</span> A Equação Fundamental: f(n) = g(n) + h(n)</h2>
+      <h2 class="sec-title"><span class="sec-num">02</span><span class="sec-title-text">A Equação Fundamental: <span class="nowrap">f(n) = g(n) + h(n)</span></span></h2>
 
       <div class="grid-3">
         <div class="card">
@@ -865,7 +1028,7 @@
 
     <!-- SEÇÃO 3 -->
     <section id="estruturas">
-      <h2 class="sec-title"><span class="sec-num">03</span> Estruturas de Dados e Funcionamento Passo a Passo</h2>
+      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Estruturas de Dados e Funcionamento Passo a Passo</span></h2>
 
       <div class="grid-2">
         <div class="card">
@@ -955,7 +1118,7 @@
 
     <!-- SEÇÃO 4: SIMULADOR DE GRAFOS PONDERADOS -->
     <section id="simulador-grafo">
-      <h2 class="sec-title"><span class="sec-num">04</span> Simulador Interativo: Grafos Ponderados</h2>
+      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Simulador Interativo: Grafos Ponderados</span></h2>
       <p>
         Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
         a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
@@ -1022,7 +1185,7 @@
 
             <div class="inspector-box">
               <h4>Tabela de Heurísticas: h(n) vs h*(n) real</h4>
-              <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem;"></div>
+              <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem; overflow-x: auto;"></div>
             </div>
 
             <div class="inspector-box">
@@ -1036,7 +1199,7 @@
 
     <!-- SEÇÃO 5 -->
     <section id="propriedades">
-      <h2 class="sec-title"><span class="sec-num">05</span> Admissibilidade, Consistência e Garantias Matemáticas</h2>
+      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Admissibilidade, Consistência e Garantias Matemáticas</span></h2>
       <p>
         Nem toda função <code>h(n)</code> garante que o A* encontre o menor caminho. A qualidade da resposta depende
         diretamente de duas propriedades matemáticas formais.
@@ -1106,7 +1269,7 @@
 
     <!-- SEÇÃO 6 -->
     <section id="heuristicas">
-      <h2 class="sec-title"><span class="sec-num">06</span> Principais Funções Heurísticas (Grades e Espaços 2D)</h2>
+      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Principais Funções Heurísticas (Grades e Espaços 2D)</span></h2>
 
       <div class="table-wrap">
         <table>
@@ -1158,7 +1321,7 @@
 
     <!-- SEÇÃO 7 -->
     <section id="complexidade">
-      <h2 class="sec-title"><span class="sec-num">07</span> Complexidade, Limitações e Variações</h2>
+      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade, Limitações e Variações</span></h2>
 
       <div class="grid-2">
         <div class="card">
@@ -1194,7 +1357,7 @@
 
     <!-- SEÇÃO 8: SIMULADOR DE GRADES -->
     <section id="simulador-grade">
-      <h2 class="sec-title"><span class="sec-num">08</span> Simulador Interativo: Grafos em Grade (Compatível com <code>graphs/*.txt</code>)</h2>
+      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Simulador Interativo: Grafos em Grade (Compatível com <code>graphs/*.txt</code>)</span></h2>
       <p>
         Aqui você pode testar grafos de exemplo prontos — incluindo os <strong>novos exemplos criados para estudo</strong>
         e os mapas originais do projeto — além de desenhar seus próprios obstáculos, blocos de água e importar/exportar
@@ -2133,7 +2296,10 @@
 
   function renderGrid() {
     const n = gridModel.n;
-    const cellSize = n >= 18 ? 28 : n >= 13 ? 34 : 40;
+    const wrapWidth = boardEl.parentElement ? boardEl.parentElement.clientWidth : 0;
+    const idealCell = n >= 18 ? 28 : n >= 13 ? 34 : 40;
+    const fitCell = wrapWidth > 0 ? Math.floor((wrapWidth - 16 - (n - 1) * 2) / n) : idealCell;
+    const cellSize = Math.max(16, Math.min(idealCell, fitCell));
     boardEl.style.gridTemplateColumns = `repeat(${n}, ${cellSize}px)`;
     boardEl.innerHTML = "";
 
@@ -2173,12 +2339,12 @@
         }
 
         div.title = `(${c}, ${r})`;
-        div.addEventListener("mousedown", (e) => {
+        div.addEventListener("pointerdown", (e) => {
           e.preventDefault();
           isDrawing = true;
           applyBrush(c, r);
         });
-        div.addEventListener("mouseenter", () => {
+        div.addEventListener("pointerenter", () => {
           if (isDrawing && currentBrush !== "start" && currentBrush !== "end") {
             applyBrush(c, r);
           }
@@ -2204,7 +2370,19 @@
     logEl.innerHTML = search.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
   }
 
-  window.addEventListener("mouseup", () => { isDrawing = false; });
+  window.addEventListener("pointerup", () => { isDrawing = false; });
+  window.addEventListener("pointercancel", () => { isDrawing = false; });
+
+  if (typeof ResizeObserver !== "undefined" && boardEl.parentElement) {
+    let lastWidth = 0;
+    new ResizeObserver((entries) => {
+      const w = Math.round(entries[0].contentRect.width);
+      if (w > 0 && w !== lastWidth && gridModel && search) {
+        lastWidth = w;
+        renderGrid();
+      }
+    }).observe(boardEl.parentElement);
+  }
 
   presetSel.addEventListener("change", () => loadPresetById(presetSel.value));
   algoSel.addEventListener("change", resetSearchState);
@@ -2258,6 +2436,55 @@
   });
 
   loadPresetById(GRID_PRESETS[0].id);
+})();
+
+/* ============================================================================
+   3. MENU RESPONSIVO E DESTAQUE DA SEÇÃO ATUAL
+   ============================================================================ */
+(() => {
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("menuToggle");
+  const navLinks = sidebar ? sidebar.querySelectorAll("nav a") : [];
+
+  if (sidebar && toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const open = sidebar.classList.toggle("open");
+      toggleBtn.setAttribute("aria-expanded", String(open));
+      toggleBtn.textContent = open ? "Fechar ✕" : "Sumário ☰";
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        if (sidebar.classList.contains("open")) {
+          sidebar.classList.remove("open");
+          toggleBtn.setAttribute("aria-expanded", "false");
+          toggleBtn.textContent = "Sumário ☰";
+        }
+      });
+    });
+  }
+
+  const tocLinks = document.querySelectorAll("#toc a[href^='#']");
+  const sections = [...tocLinks]
+    .map((a) => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+
+  if (typeof IntersectionObserver !== "undefined" && sections.length) {
+    const linkById = new Map([...tocLinks].map((a) => [a.getAttribute("href").slice(1), a]));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            tocLinks.forEach((a) => a.classList.remove("active"));
+            const activeLink = linkById.get(entry.target.id);
+            if (activeLink) activeLink.classList.add("active");
+          }
+        }
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+    );
+    sections.forEach((sec) => observer.observe(sec));
+  }
 })();
 </script>
 </body>
