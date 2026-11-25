@@ -84,11 +84,12 @@
       display: none;
       align-items: center;
       gap: 6px;
+      height: 34px;
       background: var(--bg-card);
       color: var(--text);
       border: 1px solid var(--border-light);
       border-radius: 8px;
-      padding: 7px 12px;
+      padding: 0 12px;
       font-size: 0.85rem;
       font-weight: 600;
       white-space: nowrap;
@@ -166,18 +167,27 @@
       box-shadow: var(--shadow);
     }
 
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
     .hero-tag {
-      display: inline-block;
-      font-size: 0.76rem;
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.74rem;
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
+      line-height: 1.3;
       color: var(--accent-2);
       background: rgba(52, 211, 153, 0.12);
       border: 1px solid rgba(52, 211, 153, 0.35);
-      padding: 4px 10px;
+      padding: 5px 11px;
       border-radius: 999px;
-      margin-bottom: 12px;
       max-width: 100%;
     }
 
@@ -486,15 +496,33 @@
     }
 
     button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      line-height: 1;
+      white-space: nowrap;
       background: #24325c;
       color: var(--text);
       border: 1px solid var(--border-light);
       border-radius: 8px;
-      padding: 7px 13px;
+      padding: 0 13px;
       font-size: 0.86rem;
       font-weight: 600;
       cursor: pointer;
-      transition: 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    button .btn-icon {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    button.btn-run {
+      min-width: 112px;
     }
 
     button:hover:not(:disabled) {
@@ -523,14 +551,23 @@
       border-color: var(--accent-2);
     }
 
+    button.success:hover:not(:disabled) {
+      background: #5ee6b5;
+    }
+
     button.warn {
       background: var(--accent-warn);
       color: #241803;
       border-color: var(--accent-warn);
     }
 
+    button.warn:hover:not(:disabled) {
+      background: #fcd34d;
+    }
+
     button.active-tool {
-      outline: 2px solid var(--accent);
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
       background: rgba(96, 165, 250, 0.25);
     }
 
@@ -760,13 +797,16 @@
     }
 
     .badge {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       font-size: 0.74rem;
       font-family: var(--mono);
-      padding: 2px 7px;
-      border-radius: 999px;
+      line-height: 1.3;
+      padding: 3px 9px;
+      border-radius: 8px;
       border: 1px solid var(--border-light);
       background: rgba(255, 255, 255, 0.05);
+      max-width: 100%;
     }
 
     .badge.ok { color: var(--accent-2); border-color: rgba(52, 211, 153, 0.4); }
@@ -902,7 +942,11 @@
 
   <main>
     <header class="hero">
-      <span class="hero-tag">Disciplina de Grafos • Explicação Completa + Laboratório Interativo</span>
+      <div class="hero-tags">
+        <span class="hero-tag">Disciplina de Grafos</span>
+        <span class="hero-tag">Explicação Completa</span>
+        <span class="hero-tag">Laboratório Interativo</span>
+      </div>
       <h1>Algoritmo A* (A-Star): Do Conceito à Prática</h1>
       <p>
         O <strong>A*</strong> é um dos algoritmos mais importantes da Ciência da Computação para encontrar
@@ -1140,9 +1184,9 @@
               <option value="weighted">A* Ponderado (f = g + 2h)</option>
             </select>
           </div>
-          <button id="gStepBtn" class="primary">Passo ▶</button>
-          <button id="gRunBtn" class="success">Executar ⏩</button>
-          <button id="gResetBtn">Reiniciar ↺</button>
+          <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
+          <button id="gRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
+          <button id="gResetBtn">Reiniciar <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
           <div class="control-group">
             <label for="gSpeed">Vel:</label>
             <input id="gSpeed" type="range" min="150" max="1400" step="50" value="650" />
@@ -1393,7 +1437,7 @@
         </div>
 
         <div class="controls-bar">
-          <div class="control-group" style="gap:4px;">
+          <div class="control-group" style="gap:6px;">
             <label>Pincel:</label>
             <button class="brush-btn active-tool" data-brush="wall"># Parede</button>
             <button class="brush-btn" data-brush="water">_ Água</button>
@@ -1402,10 +1446,10 @@
             <button class="brush-btn" data-brush="end">B Destino</button>
           </div>
 
-          <button id="gridStepBtn" class="primary">Passo ▶</button>
-          <button id="gridRunBtn" class="success">Executar ⏩</button>
+          <button id="gridStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
+          <button id="gridRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
           <button id="gridClearSearchBtn">Limpar Busca</button>
-          <button id="gridResetBtn">Restaurar Mapa ↺</button>
+          <button id="gridResetBtn">Restaurar Mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
 
           <div class="control-group">
             <label for="gridSpeed">Vel:</label>
@@ -1648,11 +1692,14 @@
     renderGraph();
   }
 
+  const RUN_LABEL_HTML = 'Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg>';
+  const PAUSE_LABEL_HTML = 'Pausar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2.2" y="2" width="2.8" height="8" rx="0.7"/><rect x="7" y="2" width="2.8" height="8" rx="0.7"/></svg>';
+
   function stopGraphTimer() {
     if (gTimer) {
       clearInterval(gTimer);
       gTimer = null;
-      runBtn.textContent = "Executar ⏩";
+      runBtn.innerHTML = RUN_LABEL_HTML;
     }
   }
 
@@ -1862,14 +1909,14 @@
       stopGraphTimer();
     } else {
       if (gState.finished) initGraphSim();
-      runBtn.textContent = "Pausar ⏸";
+      runBtn.innerHTML = PAUSE_LABEL_HTML;
       gTimer = setInterval(stepGraph, Number(speedSlider.value));
     }
   });
   speedSlider.addEventListener("input", () => {
     if (gTimer) {
       stopGraphTimer();
-      runBtn.textContent = "Pausar ⏸";
+      runBtn.innerHTML = PAUSE_LABEL_HTML;
       gTimer = setInterval(stepGraph, Number(speedSlider.value));
     }
   });
@@ -2071,11 +2118,14 @@
     });
   });
 
+  const RUN_LABEL_HTML = 'Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg>';
+  const PAUSE_LABEL_HTML = 'Pausar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2.2" y="2" width="2.8" height="8" rx="0.7"/><rect x="7" y="2" width="2.8" height="8" rx="0.7"/></svg>';
+
   function stopTimer() {
     if (timer) {
       clearInterval(timer);
       timer = null;
-      runBtn.textContent = "Executar ⏩";
+      runBtn.innerHTML = RUN_LABEL_HTML;
     }
   }
 
@@ -2401,7 +2451,7 @@
       stopTimer();
     } else {
       if (search.finished) resetSearchState();
-      runBtn.textContent = "Pausar ⏸";
+      runBtn.innerHTML = PAUSE_LABEL_HTML;
       timer = setInterval(stepGrid, Number(speedSlider.value));
     }
   });
@@ -2409,7 +2459,7 @@
   speedSlider.addEventListener("input", () => {
     if (timer) {
       stopTimer();
-      runBtn.textContent = "Pausar ⏸";
+      runBtn.innerHTML = PAUSE_LABEL_HTML;
       timer = setInterval(stepGrid, Number(speedSlider.value));
     }
   });
