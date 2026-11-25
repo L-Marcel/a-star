@@ -312,59 +312,23 @@
     .section-divider {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin: 8px 0 18px;
+      gap: 10px;
+      margin: 4px 0 14px;
+      padding-left: 11px;
+      border-left: 3px solid var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      color: var(--text-muted);
       user-select: none;
     }
 
     .section-divider.section-divider-sims {
-      margin-top: 38px;
-    }
-
-    .section-divider-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      background: rgba(18, 25, 49, 0.85);
-      border: 1px solid var(--border);
-      padding: 5px 12px;
-      border-radius: 999px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .section-divider-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: var(--accent);
-      box-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
-    }
-
-    .section-divider-sims .section-divider-label {
+      margin-top: 44px;
+      border-left-color: var(--accent-2);
       color: #a7f3d0;
-      border-color: rgba(52, 211, 153, 0.3);
-      background: rgba(52, 211, 153, 0.08);
-    }
-
-    .section-divider-sims .section-divider-dot {
-      background: var(--accent-2);
-      box-shadow: 0 0 8px rgba(52, 211, 153, 0.65);
-    }
-
-    .section-divider-line {
-      flex: 1 1 auto;
-      height: 1px;
-      background: linear-gradient(90deg, var(--border-light) 0%, rgba(40, 52, 93, 0.12) 100%);
-    }
-
-    .section-divider-sims .section-divider-line {
-      background: linear-gradient(90deg, rgba(52, 211, 153, 0.4) 0%, rgba(52, 211, 153, 0.06) 100%);
     }
 
     /* Sections */
@@ -1456,10 +1420,7 @@
       </div>
     </header>
 
-    <div class="section-divider" role="separator" aria-label="Fundamentos">
-      <span class="section-divider-label"><span class="section-divider-dot" aria-hidden="true"></span>Fundamentos</span>
-      <span class="section-divider-line" aria-hidden="true"></span>
-    </div>
+    <div class="section-divider" role="separator" aria-label="Fundamentos">Fundamentos</div>
 
     <!-- SEÇÃO 1 -->
     <section id="visao-geral">
@@ -1858,10 +1819,7 @@
       </ul>
     </section>
 
-    <div class="section-divider section-divider-sims" role="separator" aria-label="Simulações">
-      <span class="section-divider-label"><span class="section-divider-dot" aria-hidden="true"></span>Simulações</span>
-      <span class="section-divider-line" aria-hidden="true"></span>
-    </div>
+    <div class="section-divider section-divider-sims" role="separator" aria-label="Simulações">Simulações</div>
 
     <!-- SEÇÃO 7: SIMULADOR DE GRAFOS PONDERADOS -->
     <section id="simulador-grafo">
