@@ -831,6 +831,30 @@
       white-space: nowrap;
     }
 
+    .mini-diagram {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px 12px;
+      margin: 16px 0;
+    }
+
+    .mini-diagram svg {
+      width: 100%;
+      max-width: 540px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .mini-diagram-caption {
+      margin: 10px 0 0;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
     .formula-banner {
       width: 100%;
       padding: clamp(16px, 2.5vw, 22px) 24px;
@@ -1448,16 +1472,18 @@
       <nav id="toc">
         <a href="#visao-geral">1. Visão geral e motivação</a>
         <a href="#equacao">2. Equação fundamental</a>
-        <a href="#estruturas">3. Estruturas e passo a passo</a>
-        <a href="#propriedades">4. Admissibilidade e consistência</a>
-        <a href="#heuristicas">5. Funções heurísticas</a>
-        <a href="#complexidade">6. Complexidade e variações</a>
+        <a href="#funcionamento">3. Como o algoritmo funciona</a>
+        <a href="#admissibilidade">4. Admissibilidade</a>
+        <a href="#consistencia">5. Consistência</a>
+        <a href="#heuristicas">6. Funções heurísticas</a>
+        <a href="#complexidade">7. Complexidade e variações</a>
+        <a href="#pseudocodigo">8. Pseudocódigo</a>
       </nav>
 
       <div class="nav-group-label">Simulações</div>
       <nav id="tocSims">
-        <a href="#simulador-grafo">7. Grafos ponderados</a>
-        <a href="#simulador-grade">8. Grafos em grade</a>
+        <a href="#simulador-grafo">9. Grafos ponderados</a>
+        <a href="#simulador-grade">10. Grafos em grade</a>
       </nav>
 
       <button id="toggleAllSections" class="sidebar-all-btn" type="button">Expandir todas as seções</button>
@@ -1499,12 +1525,13 @@
     <section id="visao-geral">
       <h2 class="sec-title"><span class="sec-num">01</span><span class="sec-title-text">Visão geral e motivação</span></h2>
       <p>
-        O algoritmo <strong>A*</strong> resolve o problema do <strong>caminho mínimo de par único</strong>: dado um
-        grafo ponderado <code>G = (V, E, w)</code> com pesos não negativos, uma origem <code>A</code> e um destino
-        <code>B</code>, encontrar o caminho de menor custo total entre <code>A</code> e <code>B</code>.
+        O algoritmo <strong>A*</strong> resolve o problema do <strong>caminho mínimo entre dois pontos</strong>:
+        dado um grafo com custos não negativos nas arestas, uma origem <code>A</code> e um destino <code>B</code>,
+        encontrar a rota de menor custo total de <code>A</code> até <code>B</code>.
       </p>
       <p>
-        Para entender por que o A* é tão eficiente, vale compará-lo com seus dois "pais" conceituais:
+        Para entender por que o A* é tão eficiente, vale compará-lo com seus dois "pais" conceituais — sem fórmulas
+        ainda, olhando apenas para o critério que cada algoritmo usa ao escolher o próximo nó:
       </p>
 
       <div class="table-wrap">
@@ -1512,7 +1539,7 @@
           <thead>
             <tr>
               <th>Algoritmo</th>
-              <th>Função de prioridade</th>
+              <th>Critério de escolha</th>
               <th>Garante caminho ótimo?</th>
               <th>Comportamento da busca</th>
             </tr>
@@ -1531,7 +1558,7 @@
             </tr>
             <tr>
               <td><strong>Dijkstra</strong></td>
-              <td><code>f(n) = g(n)</code></td>
+              <td>Apenas o custo já percorrido</td>
               <td>
                 <div class="status-cell">
                   <span class="badge ok">Sim</span>
@@ -1542,7 +1569,7 @@
             </tr>
             <tr>
               <td><strong>Busca gulosa (best-first)</strong></td>
-              <td><code>f(n) = h(n)</code></td>
+              <td>Apenas a estimativa até o destino</td>
               <td>
                 <div class="status-cell">
                   <span class="badge bad">Não</span>
@@ -1552,14 +1579,14 @@
             </tr>
             <tr>
               <td><strong>Algoritmo A*</strong></td>
-              <td><code>f(n) = g(n) + h(n)</code></td>
+              <td>Custo já percorrido + estimativa até o destino</td>
               <td>
                 <div class="status-cell">
                   <span class="badge ok">Sim</span>
-                  <span class="status-note">Com <code>h</code> admissível</span>
+                  <span class="status-note">Se a estimativa nunca exagerar o custo restante</span>
                 </div>
               </td>
-              <td>Foca nos nós promissores em direção a <code>B</code> sem esquecer o custo real <code>g(n)</code>.</td>
+              <td>Foca nos nós promissores em direção a <code>B</code> sem esquecer o custo real já gasto.</td>
             </tr>
           </tbody>
         </table>
@@ -1585,11 +1612,11 @@
         <div class="card">
           <h4><span class="g-sym">g(n)</span> — custo real</h4>
           <p>
-            É a soma exata dos pesos das arestas no melhor caminho conhecido da origem <code>A</code> até o nó <code>n</code>.
+            Soma exata dos pesos das arestas no melhor caminho conhecido da origem <code>A</code> até o nó <code>n</code>.
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Na origem, <code>g(A) = 0</code>. Sempre que descobrimos um atalho até <code>n</code> passando por um
-            vizinho, atualizamos <code>g(n)</code> para o menor valor.
+            Na origem, <code>g(A) = 0</code>. Sempre que encontramos um atalho até <code>n</code>, atualizamos
+            <code>g(n)</code> para o menor valor.
           </p>
         </div>
 
@@ -1599,8 +1626,8 @@
             É uma <strong>estimativa</strong> do menor custo restante do nó <code>n</code> até o destino <code>B</code>.
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Não precisa conhecer obstáculos no caminho — em grades, usa-se distância geométrica (ex.: Manhattan).
-            No destino, obrigatoriamente <code>h(B) = 0</code>.
+            Não precisa conhecer obstáculos — costuma usar uma distância simples até o destino. No próprio destino,
+            obrigatoriamente <code>h(B) = 0</code>.
           </p>
         </div>
 
@@ -1610,191 +1637,262 @@
             Estima o custo completo de ir de <code>A</code> até <code>B</code> <strong>passando por <code>n</code></strong>.
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            É o valor usado pela fila de prioridade para decidir qual nó será expandido a seguir: o nó com
-            <strong>menor <code>f(n)</code></strong> sai primeiro.
+            Define a prioridade da busca: a cada passo, o algoritmo escolhe explorar o nó candidato com
+            <strong>menor <code>f(n)</code></strong>.
           </p>
         </div>
       </div>
 
+      <div class="callout success">
+        <strong class="title">Exemplo rápido</strong>
+        Se já percorremos <code>g(X) = 4</code> para chegar ao nó <code>X</code> e estimamos que faltam
+        <code>h(X) = 6</code> até o destino <code>B</code>, então <code>f(X) = 10</code>. Se outro nó <code>Y</code>
+        tiver <code>f(Y) = 8</code>, o A* explora <code>Y</code> primeiro.
+      </div>
+
       <p>
-        Repare em dois casos extremos importantes:
+        Repare nos dois casos extremos que conectam a equação à seção anterior:
       </p>
       <ul>
-        <li>Se definirmos <code>h(n) = 0</code> para todo nó, então <code>f(n) = g(n)</code>: o A* reduz-se exatamente ao <strong>algoritmo de Dijkstra</strong>.</li>
-        <li>Se multiplicarmos <code>h(n)</code> por um peso grande <code>w &gg; 1</code> (ou zerarmos <code>g(n)</code>), o algoritmo passa a se comportar como a <strong>busca gulosa</strong>, ficando mais rápido porém perdendo a garantia de caminho mínimo.</li>
+        <li>Se <code>h(n) = 0</code> para todo nó, então <code>f(n) = g(n)</code>: o A* vira exatamente o <strong>algoritmo de Dijkstra</strong>.</li>
+        <li>Se ignorarmos <code>g(n)</code> e usarmos apenas <code>f(n) = h(n)</code>, obtemos a <strong>busca gulosa</strong> — rápida, mas sem garantia de menor caminho.</li>
       </ul>
     </section>
 
     <!-- SEÇÃO 3 -->
-    <section id="estruturas">
-      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Estruturas e passo a passo</span></h2>
+    <section id="funcionamento">
+      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Como o algoritmo funciona</span></h2>
+      <p>
+        Para executar a equação <code>f(n) = g(n) + h(n)</code> em um grafo, o A* precisa manter apenas
+        <strong>três controles simples</strong> durante a busca:
+      </p>
 
-      <div class="grid-2">
+      <div class="grid-3">
         <div class="card">
-          <h4>1. Open set (fronteira / fila de prioridade)</h4>
+          <h4>1. Fronteira (open set)</h4>
           <p>
-            Armazena os nós já descobertos cujos vizinhos ainda não foram totalmente explorados. Normalmente é
-            implementado com um <strong>min-heap (heap binário)</strong> ordenado por menor <code>f(n)</code>.
+            Lista dos nós já descobertos que ainda aguardam exploração. Sempre retiramos dela o nó com
+            <strong>menor <code>f(n)</code></strong>.
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            <strong>Desempate:</strong> quando dois nós têm o mesmo <code>f(n)</code>, costuma-se preferir o de
-            <strong>menor <code>h(n)</code></strong> (equivalente a maior <code>g(n)</code>), pois ele está mais próximo do destino
-            e evita explorar platôs enormes de empate.
+            <strong>Desempate:</strong> em empate de <code>f</code>, prefere-se o menor <code>h(n)</code> (mais perto do destino).
           </p>
         </div>
 
         <div class="card">
-          <h4>2. gScore e closed set</h4>
+          <h4>2. Explorados (closed set)</h4>
           <p>
-            O mapa <code>gScore[n]</code> guarda o menor custo real <code>g(n)</code> encontrado até o momento
-            (inicia como <code>&infin;</code> para todos, exceto <code>gScore[A] = 0</code>).
+            Conjunto dos nós cujos vizinhos já foram todos avaliados, evitando retrabalho desnecessário.
           </p>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            O <strong>closed set</strong> registra nós já expandidos. Em implementações práticas com heap binário,
-            em vez de remover entradas antigas quando um nó é relaxado, insere-se a nova entrada e descartam-se
-            entradas obsoletas na remoção (<em>lazy deletion</em>: se <code>g_popped &gt; gScore[n]</code>, ignore).
+        </div>
+
+        <div class="card">
+          <h4>3. Melhor custo e rota</h4>
+          <p>
+            Para cada nó, guardamos o menor custo real <code>g</code> encontrado até agora e o seu
+            <strong>predecessor</strong> (de qual nó viemos) para reconstruir o caminho ao final.
           </p>
         </div>
       </div>
 
-      <h3>Fluxo de execução e relaxamento</h3>
+      <h3>Passo a passo da busca</h3>
       <ol>
-        <li><strong>Inicialização:</strong> Insira a origem <code>A</code> no open set com <code>g(A) = 0</code> e <code>f(A) = h(A)</code>.</li>
-        <li><strong>Seleção:</strong> Enquanto o open set não estiver vazio, retire o nó <code>atual</code> com o menor <code>f(atual)</code>.</li>
-        <li><strong>Teste de objetivo:</strong> Se <code>atual == B</code>, pare e reconstrua o caminho seguindo os ponteiros <code>cameFrom</code> de <code>B</code> até <code>A</code>.</li>
-        <li><strong>Expansão e relaxamento:</strong> Para cada vizinho acessível <code>v</code> de <code>atual</code>:
-          <ul>
-            <li>Calcule o custo candidato: <code>tentative_g = gScore[atual] + custo(atual, v)</code>.</li>
-            <li>Se <code>tentative_g &lt; gScore[v]</code>, encontramos um caminho melhor até <code>v</code>! Registre <code>cameFrom[v] = atual</code>, atualize <code>gScore[v] = tentative_g</code>, calcule <code>f(v) = tentative_g + h(v)</code> e insira/atualize <code>v</code> no open set.</li>
-          </ul>
-        </li>
-        <li><strong>Sem solução:</strong> Se o open set esvaziar sem expandir <code>B</code>, não existe caminho entre <code>A</code> e <code>B</code>.</li>
+        <li><strong>Início:</strong> coloque a origem <code>A</code> na fronteira com <code>g(A) = 0</code> e <code>f(A) = h(A)</code>.</li>
+        <li><strong>Escolha:</strong> retire da fronteira o nó <code>atual</code> com o menor valor de <code>f</code>.</li>
+        <li><strong>Teste de parada:</strong> se <code>atual == B</code>, pare e reconstrua o caminho seguindo os predecessores de volta até <code>A</code>.</li>
+        <li><strong>Relaxamento dos vizinhos:</strong> para cada vizinho acessível de <code>atual</code>, calcule o custo passando por <code>atual</code>. Se for menor que o melhor <code>g</code> conhecido daquele vizinho, atualize seu <code>g</code>, recalcule <code>f</code>, salve <code>atual</code> como predecessor e coloque-o na fronteira.</li>
+        <li><strong>Repetição:</strong> marque <code>atual</code> como explorado e volte ao passo 2. Se a fronteira esvaziar sem alcançar <code>B</code>, não existe caminho.</li>
       </ol>
 
       <div class="callout warn">
         <strong class="title">Armadilha clássica: quando parar o A*?</strong>
         Nunca pare quando o destino <code>B</code> for <strong>descoberto pela primeira vez</strong> como vizinho!
-        Pode haver outro nó no open set com um caminho mais curto até <code>B</code>. O algoritmo só termina com garantia
-        de otimalidade quando <code>B</code> é <strong>retirado (expandido) do topo do open set</strong>, momento em que
-        <code>f(B) = g(B) + 0 = g(B)</code> é menor ou igual ao <code>f(n)</code> de qualquer outro candidato restante.
+        Pode existir outro nó na fronteira que leve a <code>B</code> com custo menor. O algoritmo só garante
+        otimalidade quando <code>B</code> é <strong>retirado do topo da fronteira</strong>, pois nesse momento
+        <code>f(B) = g(B)</code> é menor ou igual ao <code>f(n)</code> de qualquer outro candidato restante.
       </div>
-
-      <h3>Pseudocódigo completo</h3>
-<pre><span class="kw">função</span> <span class="fn">A_Estrela</span>(grafo, origem, destino, h):
-    open_set ← MinHeap()
-    g_score  ← mapa com valor padrão +∞
-    came_from ← mapa vazio
-
-    g_score[origem] ← <span class="num">0</span>
-    open_set.<span class="fn">inserir</span>(nó = origem, f = <span class="fn">h</span>(origem, destino), g = <span class="num">0</span>)
-
-    <span class="kw">enquanto</span> open_set não estiver vazio:
-        (atual, f_atual, g_atual) ← open_set.<span class="fn">remover_menor_f</span>()
-
-        <span class="cm">// Lazy deletion: ignora entradas antigas se já achamos caminho melhor</span>
-        <span class="kw">se</span> g_atual &gt; g_score[atual]:
-            <span class="kw">continuar</span>
-
-        <span class="cm">// Só garante caminho mínimo ao EXPANDIR o destino</span>
-        <span class="kw">se</span> atual == destino:
-            <span class="kw">retornar</span> <span class="fn">reconstruir_caminho</span>(came_from, origem, destino), g_score[destino]
-
-        <span class="kw">para cada</span> vizinho <span class="kw">em</span> grafo.<span class="fn">vizinhos</span>(atual):
-            <span class="kw">se</span> vizinho for intransponível (parede):
-                <span class="kw">continuar</span>
-
-            tentative_g ← g_atual + grafo.<span class="fn">custo</span>(atual, vizinho)
-
-            <span class="kw">se</span> tentative_g &lt; g_score[vizinho]:
-                came_from[vizinho] ← atual
-                g_score[vizinho]   ← tentative_g
-                f_vizinho          ← tentative_g + <span class="fn">h</span>(vizinho, destino)
-                open_set.<span class="fn">inserir</span>(nó = vizinho, f = f_vizinho, g = tentative_g)
-
-    <span class="kw">retornar</span> NENHUM_CAMINHO</pre>
     </section>
 
     <!-- SEÇÃO 4 -->
-    <section id="propriedades">
-      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Admissibilidade e consistência</span></h2>
+    <section id="admissibilidade">
+      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Admissibilidade</span></h2>
       <p>
-        Nem toda função <code>h(n)</code> garante que o A* encontre o menor caminho. A qualidade da resposta depende
-        diretamente de duas propriedades matemáticas formais.
+        A pergunta central do A* é: <strong>qualquer função <code>h(n)</code> garante encontrar o caminho mínimo?</strong>
+        Não. A heurística pode subestimar o custo restante, mas <strong>nunca pode superestimar</strong>.
       </p>
 
-      <div class="grid-2">
-        <div class="card">
-          <h4>Admissibilidade (otimismo)</h4>
-          <div class="formula-row">
-            <div class="formula-box">0 &le; h(n) &le; h*(n)</div>
-            <div class="formula-box">&forall; n &isin; V</div>
-          </div>
-          <p>
-            Onde <code>h*(n)</code> é o <strong>custo mínimo real</strong> de <code>n</code> até o destino <code>B</code>.
-            Uma heurística admissível <strong>nunca superestima</strong> o custo restante (ela é otimista).
-          </p>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            <strong>Teorema:</strong> Se <code>h</code> é admissível (e o algoritmo reabre/atualiza nós se encontrar
-            um <code>g</code> menor), o A* é <strong>completo</strong> e <strong>ótimo</strong>: sempre encontra o
-            caminho de menor custo se existir algum.
-          </p>
-        </div>
-
-        <div class="card">
-          <h4>Consistência (monotonicidade)</h4>
-          <div class="formula-row">
-            <div class="formula-box">h(n) &le; custo(n, n') + h(n')</div>
-            <div class="formula-box">h(B) = 0</div>
-          </div>
-          <p>
-            É uma versão da <strong>desigualdade triangular</strong>: a estimativa a partir de <code>n</code> não pode
-            ser maior que dar um passo até o vizinho <code>n'</code> e estimar a partir dele.
-          </p>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">
-            <strong>Consequência prática:</strong> Toda heurística consistente é admissível. Além disso, os valores de
-            <code>f(n)</code> ao longo de qualquer caminho nunca diminuem, garantindo que o <strong>primeiro</strong>
-            momento em que um nó é expandido já possui seu <code>g(n)</code> definitivo — sem precisar reabrir o closed set!
-          </p>
-        </div>
+      <div class="formula-row">
+        <div class="formula-box">0 &le; h(n) &le; h*(n)</div>
+        <div class="formula-box">&forall; n &isin; V</div>
       </div>
 
-      <h3>Por que a admissibilidade garante a otimalidade?</h3>
       <p>
-        Suponha que exista um caminho ótimo com custo total <code>C*</code>, mas o A* tenha acabado de retirar o destino
-        <code>B</code> da fila com um caminho subótimo <code>g(B) &gt; C*</code>. Como o caminho ótimo ainda não foi
-        totalmente expandido, deve existir algum nó <code>n</code> desse caminho ótimo esperando no open set com seu
-        custo ótimo <code>g(n) = g*(n)</code>. Como <code>h</code> é admissível:
+        Aqui, <code>h*(n)</code> representa o <strong>menor custo real</strong> de <code>n</code> até o destino
+        <code>B</code>. Quando <code>h(n) &le; h*(n)</code> para todo nó, dizemos que <code>h</code> é
+        <strong>admissível</strong> (otimista) — e o A* garante encontrar o caminho ótimo se existir algum.
       </p>
+
+      <h3>O que acontece se <code>h(n)</code> superestimar?</h3>
+      <div class="mini-diagram">
+        <svg viewBox="0 0 540 206" role="img" aria-label="Contraexemplo de heurística não admissível">
+          <!-- Optimal path A -> C -> B -->
+          <line x1="65" y1="103" x2="270" y2="154" stroke="#34d399" stroke-width="3" />
+          <line x1="270" y1="154" x2="475" y2="103" stroke="#34d399" stroke-width="3" />
+          <!-- Suboptimal path A -> D -> B -->
+          <line x1="65" y1="103" x2="270" y2="52" stroke="#fbbf24" stroke-width="3" stroke-dasharray="6 4" />
+          <line x1="270" y1="52" x2="475" y2="103" stroke="#fbbf24" stroke-width="3" stroke-dasharray="6 4" />
+
+          <!-- Edge cost badges -->
+          <rect x="154" y="67" width="26" height="20" rx="5" fill="#0d1326" stroke="#fbbf24" stroke-width="1.2" />
+          <text x="167" y="81" text-anchor="middle" fill="#fde68a" font-family="var(--mono)" font-size="11.5" font-weight="700">1</text>
+
+          <rect x="360" y="67" width="26" height="20" rx="5" fill="#0d1326" stroke="#fbbf24" stroke-width="1.2" />
+          <text x="373" y="81" text-anchor="middle" fill="#fde68a" font-family="var(--mono)" font-size="11.5" font-weight="700">8</text>
+
+          <rect x="154" y="118" width="26" height="20" rx="5" fill="#0d1326" stroke="#34d399" stroke-width="1.2" />
+          <text x="167" y="132" text-anchor="middle" fill="#a7f3d0" font-family="var(--mono)" font-size="11.5" font-weight="700">2</text>
+
+          <rect x="360" y="118" width="26" height="20" rx="5" fill="#0d1326" stroke="#34d399" stroke-width="1.2" />
+          <text x="373" y="132" text-anchor="middle" fill="#a7f3d0" font-family="var(--mono)" font-size="11.5" font-weight="700">3</text>
+
+          <!-- Nodes -->
+          <circle cx="65" cy="103" r="21" fill="#10b981" stroke="#a7f3d0" stroke-width="2.5" />
+          <text x="65" y="108" text-anchor="middle" fill="#03261c" font-family="var(--sans)" font-size="15" font-weight="800">A</text>
+
+          <circle cx="270" cy="52" r="21" fill="#1e2949" stroke="#fbbf24" stroke-width="2.5" />
+          <text x="270" y="57" text-anchor="middle" fill="#f1f5ff" font-family="var(--sans)" font-size="15" font-weight="800">D</text>
+          <rect x="200" y="4" width="140" height="20" rx="5" fill="#0d1326" stroke="#30406f" stroke-width="1" />
+          <text x="270" y="18" text-anchor="middle" fill="#fde68a" font-family="var(--mono)" font-size="10.5">h(D)=2  →  f(D)=3</text>
+
+          <circle cx="270" cy="154" r="21" fill="#451a1a" stroke="#f87171" stroke-width="2.5" />
+          <text x="270" y="159" text-anchor="middle" fill="#fecaca" font-family="var(--sans)" font-size="15" font-weight="800">C</text>
+          <rect x="172" y="181" width="196" height="20" rx="5" fill="#0d1326" stroke="#f87171" stroke-width="1" />
+          <text x="270" y="195" text-anchor="middle" fill="#fca5a5" font-family="var(--mono)" font-size="10.5">h(C)=10 (&gt;3!) → f(C)=12</text>
+
+          <circle cx="475" cy="103" r="21" fill="#ef4444" stroke="#fecaca" stroke-width="2.5" />
+          <text x="475" y="108" text-anchor="middle" fill="#ffffff" font-family="var(--sans)" font-size="15" font-weight="800">B</text>
+        </svg>
+        <p class="mini-diagram-caption">
+          O caminho ótimo <strong>A → C → B</strong> custa <code>5</code>, mas como <code>h(C) = 10</code> superestima
+          o real <code>h*(C) = 3</code>, o A* vê <code>f(C) = 12</code> e encerra na rota pior <strong>A → D → B</strong>
+          (custo <code>9</code>).
+        </p>
+      </div>
+
+      <h3>Por que a admissibilidade garante o ótimo?</h3>
+      <ol>
+        <li>Suponha que exista um caminho ótimo de custo <code>C*</code>, mas o A* estivesse prestes a retirar <code>B</code> com um caminho pior <code>g(B) &gt; C*</code>.</li>
+        <li>Como o caminho ótimo ainda não foi concluído, há algum nó <code>n</code> dele aguardando na fronteira com seu custo real ótimo <code>g*(n)</code>.</li>
+        <li>Sendo <code>h</code> admissível, o valor estimado de <code>n</code> é obrigatoriamente menor que o de <code>B</code>:</li>
+      </ol>
       <div class="formula-box formula-parts formula-chain">
         <span class="nowrap">f(n) = g*(n) + h(n)</span>
         <span class="nowrap">&le; g*(n) + h*(n) = C*</span>
         <span class="nowrap">&lt; g(B) = f(B)</span>
       </div>
       <p>
-        Ou seja, <code>f(n) &lt; f(B)</code>! Isso é uma <strong>contradição</strong>, pois a fila de prioridade
-        sempre retira o menor <code>f</code> primeiro — logo <code>n</code> teria sido expandido antes de <code>B</code>.
-        Portanto, <code>g(B)</code> só pode ser igual a <code>C*</code>!
+        Como a fronteira sempre retira o menor <code>f</code> primeiro, <code>n</code> sairia antes de <code>B</code> —
+        contradição! Logo, ao expandir <code>B</code>, seu custo só pode ser <code>C*</code>.
       </p>
 
-      <h3>Dominância (informatividade) e A* ponderado</h3>
-      <ul>
-        <li>
-          <strong>Dominância:</strong> Dadas duas heurísticas admissíveis <code>h₁</code> e <code>h₂</code>, se
-          <code>h₁(n) &le; h₂(n) &le; h*(n)</code> para todo <code>n</code>, dizemos que <code>h₂</code>
-          <strong>domina</strong> <code>h₁</code>. Na prática, <code>h₂</code> expandirá menos (ou no máximo o mesmo número de) nós.
-          Exemplo: em grades com 4 direções, Manhattan domina Euclidiana, que por sua vez domina <code>h = 0</code> (Dijkstra).
-        </li>
-        <li>
-          <strong>A* ponderado (<code>f(n) = g(n) + w &middot; h(n)</code>, com <code>w &gt; 1</code>):</strong>
-          Deixa a heurística mais agressiva. Não garante o menor caminho absoluto, mas garante que o custo encontrado
-          será no máximo <code>w &middot; C*</code> (<strong>&epsilon;-admissível</strong>), acelerando bastante mapas grandes.
-        </li>
-      </ul>
+      <div class="callout">
+        <strong class="title">Dominância: qual heurística admissível é melhor?</strong>
+        Entre duas heurísticas admissíveis <code>h₁ &le; h₂ &le; h*</code>, dizemos que <code>h₂</code>
+        <strong>domina</strong> <code>h₁</code>: por ser mais próxima do custo real sem ultrapassá-lo,
+        <code>h₂</code> expande menos nós. No extremo inferior, <code>h = 0</code> (Dijkstra) é admissível, porém a mais fraca.
+      </div>
     </section>
 
     <!-- SEÇÃO 5 -->
+    <section id="consistencia">
+      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Consistência</span></h2>
+      <p>
+        Mesmo sendo admissível, uma heurística pode causar oscilações nas estimativas e obrigar o algoritmo a
+        revisitar nós já explorados. Para evitar isso, exigimos uma propriedade um pouco mais forte: a
+        <strong>consistência</strong> (ou <em>monotonicidade</em>).
+      </p>
+
+      <div class="formula-row">
+        <div class="formula-box">h(n) &le; custo(n, n') + h(n')</div>
+        <div class="formula-box">h(B) = 0</div>
+      </div>
+
+      <div class="mini-diagram">
+        <svg viewBox="0 0 520 175" role="img" aria-label="Desigualdade triangular para consistência de heurística">
+          <defs>
+            <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+            </marker>
+            <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399" />
+            </marker>
+            <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#fbbf24" />
+            </marker>
+          </defs>
+
+          <!-- Edges -->
+          <line x1="94" y1="120" x2="238" y2="52" stroke="#60a5fa" stroke-width="2.8" marker-end="url(#arrowBlue)" />
+          <line x1="282" y1="52" x2="426" y2="120" stroke="#34d399" stroke-width="2.6" stroke-dasharray="6 4" marker-end="url(#arrowGreen)" />
+          <line x1="97" y1="130" x2="422" y2="130" stroke="#fbbf24" stroke-width="2.6" stroke-dasharray="6 4" marker-end="url(#arrowAmber)" />
+
+          <!-- Labels -->
+          <rect x="92" y="55" width="100" height="20" rx="5" fill="#0d1326" stroke="#60a5fa" stroke-width="1" />
+          <text x="142" y="69" text-anchor="middle" fill="#bfdbfe" font-family="var(--mono)" font-size="11">custo(n, n')</text>
+
+          <rect x="348" y="55" width="54" height="20" rx="5" fill="#0d1326" stroke="#34d399" stroke-width="1" />
+          <text x="375" y="69" text-anchor="middle" fill="#a7f3d0" font-family="var(--mono)" font-size="11">h(n')</text>
+
+          <rect x="233" y="142" width="54" height="20" rx="5" fill="#0d1326" stroke="#fbbf24" stroke-width="1" />
+          <text x="260" y="156" text-anchor="middle" fill="#fde68a" font-family="var(--mono)" font-size="11">h(n)</text>
+
+          <!-- Nodes -->
+          <circle cx="75" cy="130" r="21" fill="#1d4ed8" stroke="#93c5fd" stroke-width="2.5" />
+          <text x="75" y="135" text-anchor="middle" fill="#ffffff" font-family="var(--sans)" font-size="15" font-weight="800">n</text>
+
+          <circle cx="260" cy="42" r="21" fill="#5b21b6" stroke="#c4b5fd" stroke-width="2.5" />
+          <text x="260" y="47" text-anchor="middle" fill="#ffffff" font-family="var(--sans)" font-size="15" font-weight="800">n'</text>
+
+          <circle cx="445" cy="130" r="21" fill="#ef4444" stroke="#fecaca" stroke-width="2.5" />
+          <text x="445" y="135" text-anchor="middle" fill="#ffffff" font-family="var(--sans)" font-size="15" font-weight="800">B</text>
+        </svg>
+        <p class="mini-diagram-caption">
+          <strong>Desigualdade triangular:</strong> a estimativa direta <code>h(n)</code> não pode ser maior do que
+          dar um passo real até o vizinho <code>n'</code> e somar a estimativa a partir dele.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>Relação com admissibilidade</h4>
+          <p>
+            Toda heurística <strong>consistente é automaticamente admissível</strong> (a recíproca nem sempre vale).
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Na prática, quase todas as heurísticas geométricas usadas em mapas e grades satisfazem as duas propriedades.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4>Ganho prático na execução</h4>
+          <p>
+            Com consistência, os valores de <code>f(n)</code> <strong>nunca diminuem</strong> ao longo de um caminho.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Por isso, na primeira vez que um nó sai da fronteira seu <code>g(n)</code> já é definitivo — não é preciso
+            reabrir nós do <em>closed set</em>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 6 -->
     <section id="heuristicas">
-      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Funções heurísticas</span></h2>
+      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Funções heurísticas</span></h2>
+      <p>
+        Em grades e mapas 2D, não precisamos criar estimativas manualmente: usamos <strong>distâncias geométricas</strong>
+        entre as coordenadas do nó atual e do destino, que são naturalmente admissíveis e consistentes.
+      </p>
 
       <div class="table-wrap">
         <table>
@@ -1864,47 +1962,124 @@
       </div>
     </section>
 
-    <!-- SEÇÃO 6 -->
+    <!-- SEÇÃO 7 -->
     <section id="complexidade">
-      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Complexidade e variações</span></h2>
+      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade e variações</span></h2>
 
       <div class="grid-2">
         <div class="card">
-          <h4>Complexidade de tempo</h4>
+          <h4>Tempo: pior caso vs prática</h4>
           <p>
-            Em um grafo explícito com <code>|V|</code> vértices e <code>|E|</code> arestas usando heap binário, o pior caso
-            é equivalente ao de Dijkstra: <code>O((|V| + |E|) log |V|)</code> (ou exponencial <code>O(b^d)</code> em
-            árvores de busca implícitas se a heurística tiver erro absoluto grande).
+            No pior caso (quando <code>h</code> não ajuda), o A* visita quase todo o grafo como o Dijkstra:
+            <code>O((|V| + |E|) log |V|)</code>.
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            Com uma heurística próxima de <code>h*</code>, o número de nós expandidos cai drasticamente em comparação ao Dijkstra.
+            Na prática, com uma boa heurística, apenas uma pequena fração dos nós chega a ser expandida.
           </p>
         </div>
 
         <div class="card">
-          <h4>Complexidade de espaço (principal gargalo)</h4>
+          <h4>Espaço: o verdadeiro gargalo</h4>
           <p>
-            <code>O(|V|)</code> na memória, pois o A* mantém todos os nós gerados no open set, em <code>gScore</code> e
-            em <code>cameFrom</code>. Em grafos gigantes (como mapas rodoviários continentais ou quebra-cabeças com milhões
-            de estados), a RAM costuma acabar antes do tempo de CPU.
+            <code>O(|V|)</code> na memória, pois o A* guarda todos os nós gerados na fronteira e nos registros de rota.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Em grafos enormes (como mapas continentais ou quebra-cabeças), o A* costuma esgotar a
+            <strong>memória RAM antes do tempo de CPU</strong>.
           </p>
         </div>
       </div>
 
-      <h3>Principais variações do A*</h3>
-      <ul>
-        <li><strong>IDA* (Iterative Deepening A*):</strong> troca a fila de prioridade por busca em profundidade limitada por um limiar de <code>f(n)</code>, reduzindo a memória para <code>O(d)</code>.</li>
-        <li><strong>A* bidirecional:</strong> dispara duas buscas simultâneas — uma de <code>A &rarr; B</code> e outra de <code>B &rarr; A</code> — reduzindo a área explorada.</li>
-        <li><strong>Jump Point Search (JPS):</strong> otimização para grades uniformes que "pula" células simétricas em linha reta sem colocá-las no heap.</li>
-        <li><strong>A* concorrente / paralelo:</strong> distribui a expansão de nós ou o cálculo de vizinhos entre múltiplas threads para acelerar grafos grandes.</li>
-      </ul>
+      <h3>Variações para cenários reais</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cenário / problema</th>
+              <th>Variação</th>
+              <th>Como resolve</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Precisa de mais velocidade (aceita margem de erro)</td>
+              <td><strong>A* ponderado</strong></td>
+              <td>Usa <code>f = g + w &middot; h</code> (<code>w &gt; 1</code>): explora menos nós garantindo custo <code>&le; w &middot; C*</code>.</td>
+            </tr>
+            <tr>
+              <td>Faltou memória RAM</td>
+              <td><strong>IDA*</strong></td>
+              <td>Substitui a fronteira por busca em profundidade limitada por <code>f</code>, reduzindo espaço para <code>O(d)</code>.</td>
+            </tr>
+            <tr>
+              <td>Área de busca muito ampla</td>
+              <td><strong>A* bidirecional</strong></td>
+              <td>Dispara duas buscas simultâneas (<code>A &rarr; B</code> e <code>B &rarr; A</code>) até se encontrarem no meio.</td>
+            </tr>
+            <tr>
+              <td>Grade grande com áreas abertas</td>
+              <td><strong>Jump Point Search (JPS)</strong></td>
+              <td>Pula células simétricas em linha reta sem colocá-las na fronteira.</td>
+            </tr>
+            <tr>
+              <td>Grafo gigante em hardware multicore</td>
+              <td><strong>A* paralelo</strong></td>
+              <td>Distribui a expansão de nós ou o cálculo de vizinhos entre várias threads.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 8 -->
+    <section id="pseudocodigo">
+      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Pseudocódigo</span></h2>
+      <p>
+        Juntando tudo o que vimos nas seções anteriores, o algoritmo A* completo se resume em três blocos diretos:
+      </p>
+
+<pre><span class="kw">função</span> <span class="fn">A_Estrela</span>(grafo, origem, destino, h):
+    <span class="cm">// 1. Preparação</span>
+    fronteira ← fila de prioridade ordenada por menor f
+    custo_g   ← mapa com valor padrão +∞
+    veio_de   ← mapa vazio
+
+    custo_g[origem] ← <span class="num">0</span>
+    fronteira.<span class="fn">inserir</span>(origem, f = <span class="fn">h</span>(origem, destino))
+
+    <span class="cm">// 2. Seleção e teste de parada</span>
+    <span class="kw">enquanto</span> fronteira não estiver vazia:
+        atual ← fronteira.<span class="fn">retirar_menor_f</span>()
+
+        <span class="kw">se</span> atual == destino:
+            <span class="kw">retornar</span> <span class="fn">reconstruir_caminho</span>(veio_de, origem, destino), custo_g[destino]
+
+        <span class="cm">// 3. Relaxamento dos vizinhos</span>
+        <span class="kw">para cada</span> vizinho <span class="kw">em</span> grafo.<span class="fn">vizinhos_acessiveis</span>(atual):
+            novo_g ← custo_g[atual] + grafo.<span class="fn">custo</span>(atual, vizinho)
+
+            <span class="kw">se</span> novo_g &lt; custo_g[vizinho]:
+                veio_de[vizinho] ← atual
+                custo_g[vizinho] ← novo_g
+                novo_f           ← novo_g + <span class="fn">h</span>(vizinho, destino)
+                fronteira.<span class="fn">inserir_ou_atualizar</span>(vizinho, f = novo_f)
+
+    <span class="kw">retornar</span> SEM_CAMINHO</pre>
+
+      <div class="callout">
+        <strong class="title">Detalhes práticos de implementação</strong>
+        <ul>
+          <li><strong>Min-Heap (heap binário):</strong> estrutura padrão para implementar a <code>fronteira</code> e retirar o menor <code>f</code> em <code>O(log |V|)</code>.</li>
+          <li><strong>Lazy deletion:</strong> como heaps binários simples não atualizam prioridades no meio da árvore, costuma-se inserir a nova cópia com <code>novo_g</code> menor e ignorar entradas antigas ao retirá-las da fila (<code>se g_retirado &gt; custo_g[atual]: continuar</code>).</li>
+        </ul>
+      </div>
     </section>
 
     <div class="section-divider section-divider-sims" role="separator" aria-label="Simulações">Simulações</div>
 
-    <!-- SEÇÃO 7: SIMULADOR DE GRAFOS PONDERADOS -->
+    <!-- SEÇÃO 9: SIMULADOR DE GRAFOS PONDERADOS -->
     <section id="simulador-grafo">
-      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Grafos ponderados</span></h2>
+      <h2 class="sec-title"><span class="sec-num">09</span><span class="sec-title-text">Grafos ponderados</span></h2>
       <p>
         Em grafos genéricos (como mapas rodoviários entre cidades), a heurística <code>h(n)</code> representa uma
         estimativa externa do custo até o destino <code>G</code> — por exemplo, a distância em linha reta ou valores
@@ -2001,9 +2176,9 @@
       </div>
     </section>
 
-    <!-- SEÇÃO 8: SIMULADOR DE GRADES -->
+    <!-- SEÇÃO 10: SIMULADOR DE GRADES -->
     <section id="simulador-grade">
-      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Grafos em grade</span></h2>
+      <h2 class="sec-title"><span class="sec-num">10</span><span class="sec-title-text">Grafos em grade</span></h2>
       <p>
         Teste mapas prontos ou desenhe paredes e células com custos personalizados para observar o comportamento
         do A*, Dijkstra e busca gulosa célula por célula.
