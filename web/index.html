@@ -2576,9 +2576,7 @@
               <div class="stats-row">
                 <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gridExpanded">0</span></div>
                 <div class="stat-pill"><span class="label">Custo encontrado</span><span class="val" id="gridCost">—</span></div>
-                <div class="stat-pill"><span class="label">Passos no caminho</span><span class="val" id="gridSteps">—</span></div>
               </div>
-              <div id="gridStatus" style="margin-top: 8px; font-size: 0.82rem; color: var(--text-muted);"></div>
             </div>
 
             <div class="inspector-box span-2">
@@ -4019,8 +4017,6 @@
   const descEl = document.getElementById("gridDesc");
   const expandedEl = document.getElementById("gridExpanded");
   const costEl = document.getElementById("gridCost");
-  const stepsEl = document.getElementById("gridSteps");
-  const statusEl = document.getElementById("gridStatus");
   const openListEl = document.getElementById("gridOpenList");
   const closedListEl = document.getElementById("gridClosedList");
   const hTableEl = document.getElementById("gridHeuristicTable");
@@ -4617,17 +4613,6 @@
 
     expandedEl.textContent = snap.expandedCount;
     costEl.textContent = snap.foundCost !== null ? snap.foundCost : (snap.finished ? "Sem caminho" : "—");
-    stepsEl.textContent = snap.foundCost !== null ? snap.pathSteps : "—";
-
-    if (snap.finished && snap.foundCost !== null) {
-      statusEl.innerHTML = `<span class="badge ok">Caminho encontrado!</span> Custo total = <strong>${snap.foundCost}</strong>.`;
-    } else if (snap.finished) {
-      statusEl.innerHTML = `<span class="badge bad">Sem caminho</span> Destino inacessível.`;
-    } else if (gridStepIdx === 0) {
-      statusEl.textContent = "Arraste o controle de progresso para acompanhar a busca passo a passo.";
-    } else {
-      statusEl.textContent = `Passo ${gridStepIdx} de ${gridHistory.length - 1}.`;
-    }
 
     // Open set ordenado por f
     const openItems = [];
