@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algoritmo A* (A-Star) — Explicação Completa &amp; Laboratório Interativo</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-elevated: #121931;
+      --bg-card: #161f3b;
+      --bg-code: #0d1326;
+      --border: #28345d;
+      --border-light: #36477d;
+      --text: #e6ecff;
+      --text-muted: #a6b4db;
+      --accent: #60a5fa;
+      --accent-2: #34d399;
+      --accent-warn: #fbbf24;
+      --accent-danger: #f87171;
+      --accent-purple: #a78bfa;
+      --water: #0284c7;
+      --water-bg: #0c4a6e;
+      --wall: #1e293b;
+      --path-color: #facc15;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      --radius: 12px;
+      --mono: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: radial-gradient(circle at top right, #162145 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.68;
+      font-size: 16px;
+    }
+
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside.sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: rgba(12, 18, 36, 0.94);
+      border-right: 1px solid var(--border);
+      padding: 24px 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #081024;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+
+    .brand h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .nav-group-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 18px 0 8px 8px;
+      font-weight: 700;
+    }
+
+    .sidebar nav a {
+      display: block;
+      padding: 7px 10px;
+      margin: 2px 0;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      transition: 0.15s ease;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar nav a:hover,
+    .sidebar nav a.active {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--text);
+      border-left-color: var(--accent);
+    }
+
+    main {
+      padding: 36px clamp(20px, 4vw, 56px) 80px;
+      max-width: 1180px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.14), rgba(167, 139, 250, 0.1));
+      border: 1px solid var(--border-light);
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+      line-height: 1.18;
+    }
+
+    .hero p {
+      margin: 0 0 18px;
+      color: var(--text-muted);
+      max-width: 78ch;
+      font-size: 1.04rem;
+    }
+
+    .hero-formula {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-family: var(--mono);
+      font-size: 1.12rem;
+    }
+
+    .f-sym { color: var(--accent-warn); font-weight: 700; }
+    .g-sym { color: var(--accent); font-weight: 700; }
+    .h-sym { color: var(--accent-2); font-weight: 700; }
+
+    /* Sections */
+    section {
+      margin-bottom: 52px;
+      scroll-margin-top: 24px;
+    }
+
+    h2.sec-title {
+      font-size: 1.65rem;
+      margin: 0 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sec-num {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--accent);
+      background: rgba(96, 165, 250, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin: 24px 0 10px;
+      color: #f1f5ff;
+    }
+
+    p { margin: 0 0 14px; }
+
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 22px;
+    }
+
+    li { margin-bottom: 6px; }
+
+    /* Cards & Callouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin: 18px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+      font-size: 1.03rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: rgba(96, 165, 250, 0.08);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 18px 0;
+    }
+
+    .callout.warn {
+      border-left-color: var(--accent-warn);
+      background: rgba(251, 191, 36, 0.08);
+    }
+
+    .callout.success {
+      border-left-color: var(--accent-2);
+      background: rgba(52, 211, 153, 0.08);
+    }
+
+    .callout.danger {
+      border-left-color: var(--accent-danger);
+      background: rgba(248, 113, 113, 0.08);
+    }
+
+    .callout strong.title {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.96rem;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-elevated);
+      font-size: 0.93rem;
+    }
+
+    th, td {
+      padding: 11px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: #1a2444;
+      color: #dbe6ff;
+      font-weight: 700;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: #cde1ff;
+    }
+
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin: 16px 0;
+      color: #d9e4ff;
+    }
+
+    .kw { color: #c084fc; font-weight: 600; }
+    .fn { color: #60a5fa; }
+    .cm { color: #7183ad; font-style: italic; }
+    .num { color: #fbbf24; }
+    .str { color: #34d399; }
+
+    /* Formula block */
+    .formula-box {
+      background: var(--bg-code);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 0.98rem;
+      margin: 12px 0;
+      text-align: center;
+    }
+
+    /* Interactive Simulators */
+    .lab-panel {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-top: 16px;
+    }
+
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 9px;
+      font-size: 0.86rem;
+    }
+
+    .control-group label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    select, button, input[type="range"] {
+      font-family: var(--sans);
+    }
+
+    select {
+      background: var(--bg-code);
+      color: var(--text);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 0.86rem;
+      cursor: pointer;
+    }
+
+    button {
+      background: #24325c;
+      color: var(--text);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: #2f4175;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #071226;
+      border-color: var(--accent);
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: #7bb6ff;
+    }
+
+    button.success {
+      background: var(--accent-2);
+      color: #062118;
+      border-color: var(--accent-2);
+    }
+
+    button.warn {
+      background: var(--accent-warn);
+      color: #241803;
+      border-color: var(--accent-warn);
+    }
+
+    button.active-tool {
+      outline: 2px solid var(--accent);
+      background: rgba(96, 165, 250, 0.25);
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .canvas-box {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      position: relative;
+    }
+
+    .graph-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .inspector {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .inspector-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .inspector-box h4 {
+      margin: 0 0 8px;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .stat-pill {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .stat-pill .label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .stat-pill .val {
+      font-family: var(--mono);
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .queue-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 30px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .q-chip {
+      background: rgba(96, 165, 250, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.4);
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: #dbeafe;
+    }
+
+    .q-chip.closed {
+      background: rgba(167, 139, 250, 0.14);
+      border-color: rgba(167, 139, 250, 0.4);
+      color: #ede9fe;
+    }
+
+    .log-box {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      max-height: 195px;
+      overflow-y: auto;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      line-height: 1.48;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .log-entry:last-child { border-bottom: none; margin-bottom: 0; }
+
+    /* Grid Simulator */
+    .grid-board-wrap {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+
+    .grid-board {
+      display: grid;
+      gap: 2px;
+      background: #0a0f1f;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      user-select: none;
+      touch-action: none;
+    }
+
+    .cell {
+      width: 38px;
+      height: 38px;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      line-height: 1.05;
+      cursor: pointer;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: transform 0.08s ease, background-color 0.15s ease;
+    }
+
+    .cell:hover {
+      transform: scale(1.06);
+      z-index: 2;
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .cell.wall { background: #1e293b; color: #475569; }
+    .cell.empty { background: #0f172a; color: #94a3b8; }
+    .cell.water { background: #075985; color: #bae6fd; }
+    .cell.open { background: rgba(56, 189, 248, 0.28); border-color: #38bdf8; color: #e0f2fe; }
+    .cell.closed { background: rgba(139, 92, 246, 0.28); border-color: #8b5cf6; color: #ede9fe; }
+    .cell.current { background: #f97316; border-color: #fed7aa; color: #1c0a00; font-weight: 800; }
+    .cell.path { background: #eab308; border-color: #fef08a; color: #1f1600; font-weight: 800; }
+    .cell.water.open { background: #0369a1; border-color: #38bdf8; }
+    .cell.water.closed { background: #4c1d95; border-color: #a78bfa; }
+    .cell.water.path { background: #ca8a04; border-color: #fef08a; color: #fff; }
+    .cell.start { background: #10b981 !important; border-color: #a7f3d0 !important; color: #022c22 !important; font-weight: 800; }
+    .cell.end { background: #ef4444 !important; border-color: #fecaca !important; color: #ffffff !important; font-weight: 800; }
+
+    .cell-main {
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .cell-f {
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .cell-gh {
+      font-size: 0.54rem;
+      opacity: 0.9;
+    }
+
+    textarea.txt-io {
+      width: 100%;
+      min-height: 125px;
+      background: var(--bg-code);
+      color: #d9e4ff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      resize: vertical;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.74rem;
+      font-family: var(--mono);
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .badge.ok { color: var(--accent-2); border-color: rgba(52, 211, 153, 0.4); }
+    .badge.bad { color: var(--accent-danger); border-color: rgba(248, 113, 113, 0.4); }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      aside.sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .sim-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-badge">A*</div>
+      <div>
+        <h2>Guia Completo A*</h2>
+        <div class="brand-sub">Busca Informada em Grafos</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Fundamentos</div>
+    <nav id="toc">
+      <a href="#visao-geral">1. Visão Geral e Motivação</a>
+      <a href="#equacao">2. A Equação f(n) = g(n) + h(n)</a>
+      <a href="#estruturas">3. Estruturas e Passo a Passo</a>
+      <a href="#simulador-grafo">4. Simulador: Grafos Ponderados</a>
+      <a href="#propriedades">5. Admissibilidade e Consistência</a>
+      <a href="#heuristicas">6. Funções Heurísticas</a>
+      <a href="#complexidade">7. Complexidade e Variações</a>
+      <a href="#simulador-grade">8. Simulador: Grafos em Grade</a>
+      <a href="#projeto-rust">9. Conexão com o Projeto Rust</a>
+    </nav>
+
+    <div class="nav-group-label">Atalhos Rápidos</div>
+    <nav>
+      <a href="#simulador-grafo">▶ Testar Grafo Ponderado</a>
+      <a href="#simulador-grade">▶ Testar Labirintos &amp; Água</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <span class="hero-tag">Disciplina de Grafos • Explicação Completa + Laboratório Interativo</span>
+      <h1>Algoritmo A* (A-Star): Do Conceito à Prática</h1>
+      <p>
+        O <strong>A*</strong> é um dos algoritmos mais importantes da Ciência da Computação para encontrar
+        o <strong>caminho mínimo</strong> em grafos e mapas. Ele une a garantia de otimalidade da busca de
+        custo uniforme (<em>Dijkstra</em>) com a velocidade direcionada de uma função <em>heurística</em>.
+      </p>
+      <div class="hero-formula">
+        <span class="f-sym">f(n)</span> = <span class="g-sym">g(n)</span> + <span class="h-sym">h(n)</span>
+        <span style="color: var(--text-muted); font-size: 0.88rem; margin-left: 8px;">
+          (Custo Total Estimado = Custo Real Percorrido + Estimativa até o Destino)
+        </span>
+      </div>
+    </header>
+
+    <!-- SEÇÃO 1 -->
+    <section id="visao-geral">
+      <h2 class="sec-title"><span class="sec-num">01</span> Visão Geral e Motivação</h2>
+      <p>
+        Publicado em <strong>1968</strong> por Peter Hart, Nils Nilsson e Bertram Raphael (para guiar o robô
+        <em>Shakey</em> no Stanford Research Institute), o algoritmo <strong>A*</strong> resolve o problema do
+        <strong>caminho mínimo de par único</strong>: dado um grafo ponderado <code>G = (V, E, w)</code> com pesos
+        não negativos, uma origem <code>A</code> e um destino <code>B</code>, encontrar o caminho de menor custo total
+        entre <code>A</code> e <code>B</code>.
+      </p>
+      <p>
+        Para entender por que o A* é tão eficiente, vale compará-lo com seus dois "pais" conceituais:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Função de Prioridade</th>
+              <th>Garante Caminho Ótimo?</th>
+              <th>Comportamento da Busca</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Busca em Largura (BFS)</strong></td>
+              <td>Número de arestas (nível)</td>
+              <td>Apenas se todas as arestas tiverem mesmo peso</td>
+              <td>Expande em anéis uniformes sem considerar custos reais nem destino.</td>
+            </tr>
+            <tr>
+              <td><strong>Dijkstra</strong></td>
+              <td><code>f(n) = g(n)</code></td>
+              <td><span class="badge ok">Sim</span> (pesos &ge; 0)</td>
+              <td>Expande igualmente em todas as direções ("cego" ao destino <code>B</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Busca Gulosa (Best-First)</strong></td>
+              <td><code>f(n) = h(n)</code></td>
+              <td><span class="badge bad">Não</span></td>
+              <td>Corre direto para <code>B</code>, mas ignora o custo já gasto e cai em armadilhas.</td>
+            </tr>
+            <tr>
+              <td><strong>Algoritmo A*</strong></td>
+              <td><code>f(n) = g(n) + h(n)</code></td>
+              <td><span class="badge ok">Sim</span> (com <code>h</code> admissível)</td>
+              <td>Foca nos nós promissores em direção a <code>B</code> sem esquecer o custo real <code>g(n)</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <strong class="title">Intuição central</strong>
+        O Dijkstra olha apenas para o <em>passado</em> ("quanto já gastei até aqui?"). A Busca Gulosa olha apenas
+        para o <em>futuro</em> ("quanto parece faltar até o destino?"). O <strong>A*</strong> equilibra passado e futuro
+        a cada passo.
+      </div>
+    </section>
+
+    <!-- SEÇÃO 2 -->
+    <section id="equacao">
+      <h2 class="sec-title"><span class="sec-num">02</span> A Equação Fundamental: f(n) = g(n) + h(n)</h2>
+
+      <div class="grid-3">
+        <div class="card">
+          <h4><span class="g-sym">g(n)</span> — Custo Real</h4>
+          <p>
+            É a soma exata dos pesos das arestas no melhor caminho conhecido da origem <code>A</code> até o nó <code>n</code>.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Na origem, <code>g(A) = 0</code>. Sempre que descobrimos um atalho até <code>n</code> passando por um
+            vizinho, atualizamos <code>g(n)</code> para o menor valor.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4><span class="h-sym">h(n)</span> — Heurística</h4>
+          <p>
+            É uma <strong>estimativa</strong> do menor custo restante do nó <code>n</code> até o destino <code>B</code>.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Não precisa conhecer obstáculos no caminho — em grades, usa-se distância geométrica (ex.: Manhattan).
+            No destino, obrigatoriamente <code>h(B) = 0</code>.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4><span class="f-sym">f(n)</span> — Custo Total Estimado</h4>
+          <p>
+            Estima o custo completo de ir de <code>A</code> até <code>B</code> <strong>passando por <code>n</code></strong>.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            É o valor usado pela fila de prioridade para decidir qual nó será expandido a seguir: o nó com
+            <strong>menor <code>f(n)</code></strong> sai primeiro.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        Repare em dois casos extremos importantes:
+      </p>
+      <ul>
+        <li>Se definirmos <code>h(n) = 0</code> para todo nó, então <code>f(n) = g(n)</code>: o A* reduz-se exatamente ao <strong>Algoritmo de Dijkstra</strong>.</li>
+        <li>Se multiplicarmos <code>h(n)</code> por um peso grande <code>w &gg; 1</code> (ou zerarmos <code>g(n)</code>), o algoritmo passa a se comportar como a <strong>Busca Gulosa</strong>, ficando mais rápido porém perdendo a garantia de caminho mínimo.</li>
+      </ul>
+    </section>
+
+    <!-- SEÇÃO 3 -->
+    <section id="estruturas">
+      <h2 class="sec-title"><span class="sec-num">03</span> Estruturas de Dados e Funcionamento Passo a Passo</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>1. Open Set (Fronteira / Fila de Prioridade)</h4>
+          <p>
+            Armazena os nós já descobertos cujos vizinhos ainda não foram totalmente explorados. Normalmente é
+            implementado com um <strong>Min-Heap (Heap Binário)</strong> ordenado por menor <code>f(n)</code>.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            <strong>Desempate:</strong> quando dois nós têm o mesmo <code>f(n)</code>, costuma-se preferir o de
+            <strong>menor <code>h(n)</code></strong> (equivalente a maior <code>g(n)</code>), pois ele está mais próximo do destino
+            e evita explorar platôs enormes de empate.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4>2. gScore (<code>min_cost</code>) e Closed Set</h4>
+          <p>
+            O mapa <code>gScore[n]</code> guarda o menor custo real <code>g(n)</code> encontrado até o momento
+            (inicia como <code>&infin;</code> para todos, exceto <code>gScore[A] = 0</code>).
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            O <strong>Closed Set</strong> registra nós já expandidos. Em implementações práticas com
+            <code>BinaryHeap</code> (como no código Rust deste repositório), em vez de remover entradas antigas
+            do heap quando um nó é relaxado, insere-se a nova entrada e descartam-se entradas obsoletas na remoção
+            (<em>lazy deletion</em>: se <code>g_popped &gt; gScore[n]</code>, ignore).
+          </p>
+        </div>
+      </div>
+
+      <h3>Fluxo de Execução e Relaxamento</h3>
+      <ol>
+        <li><strong>Inicialização:</strong> Insira a origem <code>A</code> no Open Set com <code>g(A) = 0</code> e <code>f(A) = h(A)</code>.</li>
+        <li><strong>Seleção:</strong> Enquanto o Open Set não estiver vazio, retire o nó <code>atual</code> com o menor <code>f(atual)</code>.</li>
+        <li><strong>Teste de Objetivo:</strong> Se <code>atual == B</code>, pare e reconstrua o caminho seguindo os ponteiros <code>cameFrom</code> de <code>B</code> até <code>A</code>.</li>
+        <li><strong>Expansão e Relaxamento:</strong> Para cada vizinho acessível <code>v</code> de <code>atual</code>:
+          <ul>
+            <li>Calcule o custo candidato: <code>tentative_g = gScore[atual] + custo(atual, v)</code>.</li>
+            <li>Se <code>tentative_g &lt; gScore[v]</code>, encontramos um caminho melhor até <code>v</code>! Registre <code>cameFrom[v] = atual</code>, atualize <code>gScore[v] = tentative_g</code>, calcule <code>f(v) = tentative_g + h(v)</code> e insira/atualize <code>v</code> no Open Set.</li>
+          </ul>
+        </li>
+        <li><strong>Sem Solução:</strong> Se o Open Set esvaziar sem expandir <code>B</code>, não existe caminho entre <code>A</code> e <code>B</code>.</li>
+      </ol>
+
+      <div class="callout warn">
+        <strong class="title">Armadilha clássica: quando parar o A*?</strong>
+        Nunca pare quando o destino <code>B</code> for <strong>descoberto pela primeira vez</strong> como vizinho!
+        Pode haver outro nó no Open Set com um caminho mais curto até <code>B</code>. O algoritmo só termina com garantia
+        de otimalidade quando <code>B</code> é <strong>retirado (expandido) do topo do Open Set</strong>, momento em que
+        <code>f(B) = g(B) + 0 = g(B)</code> é menor ou igual ao <code>f(n)</code> de qualquer outro candidato restante.
+      </div>
+
+      <h3>Pseudocódigo Completo</h3>
+<pre><span class="kw">função</span> <span class="fn">A_Estrela</span>(grafo, origem, destino, h):
+    open_set ← MinHeap()
+    g_score  ← mapa com valor padrão +∞
+    came_from ← mapa vazio
+
+    g_score[origem] ← <span class="num">0</span>
+    open_set.<span class="fn">inserir</span>(nó = origem, f = <span class="fn">h</span>(origem, destino), g = <span class="num">0</span>)
+
+    <span class="kw">enquanto</span> open_set não estiver vazio:
+        (atual, f_atual, g_atual) ← open_set.<span class="fn">remover_menor_f</span>()
+
+        <span class="cm">// Lazy deletion: ignora entradas antigas se já achamos caminho melhor</span>
+        <span class="kw">se</span> g_atual &gt; g_score[atual]:
+            <span class="kw">continuar</span>
+
+        <span class="cm">// Só garante caminho mínimo ao EXPANDIR o destino</span>
+        <span class="kw">se</span> atual == destino:
+            <span class="kw">retornar</span> <span class="fn">reconstruir_caminho</span>(came_from, origem, destino), g_score[destino]
+
+        <span class="kw">para cada</span> vizinho <span class="kw">em</span> grafo.<span class="fn">vizinhos</span>(atual):
+            <span class="kw">se</span> vizinho for intransponível (parede):
+                <span class="kw">continuar</span>
+
+            tentative_g ← g_atual + grafo.<span class="fn">custo</span>(atual, vizinho)
+
+            <span class="kw">se</span> tentative_g &lt; g_score[vizinho]:
+                came_from[vizinho] ← atual
+                g_score[vizinho]   ← tentative_g
+                f_vizinho          ← tentative_g + <span class="fn">h</span>(vizinho, destino)
+                open_set.<span class="fn">inserir</span>(nó = vizinho, f = f_vizinho, g = tentative_g)
+
+    <span class="kw">retornar</span> NENHUM_CAMINHO</pre>
+    </section>
+
+    <!-- SEÇÃO 4: SIMULADOR DE GRAFOS PONDERADOS -->
+    <section id="simulador-grafo">
+      <h2 class="sec-title"><span class="sec-num">04</span> Simulador Interativo: Grafos Ponderados</h2>
+      <p>
+        Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
+        a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
+        <strong>Busca Gulosa</strong> e <strong>A* Ponderado</strong> para comparar o comportamento em cada exemplo!
+      </p>
+
+      <div class="lab-panel">
+        <div class="controls-bar">
+          <div class="control-group">
+            <label for="graphPreset">Grafo:</label>
+            <select id="graphPreset"></select>
+          </div>
+          <div class="control-group">
+            <label for="graphAlgo">Algoritmo:</label>
+            <select id="graphAlgo">
+              <option value="astar">A* (f = g + h)</option>
+              <option value="dijkstra">Dijkstra (f = g, h = 0)</option>
+              <option value="greedy">Busca Gulosa (f = h)</option>
+              <option value="weighted">A* Ponderado (f = g + 2h)</option>
+            </select>
+          </div>
+          <button id="gStepBtn" class="primary">Passo ▶</button>
+          <button id="gRunBtn" class="success">Executar ⏩</button>
+          <button id="gResetBtn">Reiniciar ↺</button>
+          <div class="control-group">
+            <label for="gSpeed">Vel:</label>
+            <input id="gSpeed" type="range" min="150" max="1400" step="50" value="650" />
+          </div>
+        </div>
+
+        <p id="graphLesson" style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 14px;"></p>
+
+        <div class="sim-grid">
+          <div class="canvas-box">
+            <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" aria-label="Grafo ponderado interativo"></svg>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> Origem (A)</span>
+              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> Destino (G)</span>
+              <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open Set</span>
+              <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Expandindo</span>
+              <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed Set</span>
+              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho Final</span>
+            </div>
+          </div>
+
+          <div class="inspector">
+            <div class="inspector-box">
+              <h4>Métricas da Execução</h4>
+              <div class="stats-row">
+                <div class="stat-pill"><span class="label">Nós Expandidos</span><span class="val" id="gExpandedCount">0</span></div>
+                <div class="stat-pill"><span class="label">Custo Encontrado</span><span class="val" id="gFoundCost">—</span></div>
+              </div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Open Set (ordenado por f)</h4>
+              <div class="queue-list" id="gOpenList"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Closed Set (já expandidos)</h4>
+              <div class="queue-list" id="gClosedList"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Tabela de Heurísticas: h(n) vs h*(n) real</h4>
+              <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem;"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Log Passo a Passo</h4>
+              <div class="log-box" id="gLog"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 5 -->
+    <section id="propriedades">
+      <h2 class="sec-title"><span class="sec-num">05</span> Admissibilidade, Consistência e Garantias Matemáticas</h2>
+      <p>
+        Nem toda função <code>h(n)</code> garante que o A* encontre o menor caminho. A qualidade da resposta depende
+        diretamente de duas propriedades matemáticas formais.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>Admissibilidade (Otimismo)</h4>
+          <div class="formula-box">0 &le; h(n) &le; h*(n) &nbsp;&nbsp; &forall; n &isin; V</div>
+          <p>
+            Onde <code>h*(n)</code> é o <strong>custo mínimo real</strong> de <code>n</code> até o destino <code>B</code>.
+            Uma heurística admissível <strong>nunca superestima</strong> o custo restante (ela é otimista).
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            <strong>Teorema:</strong> Se <code>h</code> é admissível (e o algoritmo reabre/atualiza nós se encontrar
+            um <code>g</code> menor), o A* é <strong>completo</strong> e <strong>ótimo</strong>: sempre encontra o
+            caminho de menor custo se existir algum.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4>Consistência (Monotonicidade)</h4>
+          <div class="formula-box">h(n) &le; custo(n, n') + h(n') &nbsp;&nbsp; e &nbsp;&nbsp; h(B) = 0</div>
+          <p>
+            É uma versão da <strong>desigualdade triangular</strong>: a estimativa a partir de <code>n</code> não pode
+            ser maior que dar um passo até o vizinho <code>n'</code> e estimar a partir dele.
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            <strong>Consequência prática:</strong> Toda heurística consistente é admissível. Além disso, os valores de
+            <code>f(n)</code> ao longo de qualquer caminho nunca diminuem, garantindo que o <strong>primeiro</strong>
+            momento em que um nó é expandido já possui seu <code>g(n)</code> definitivo — sem precisar reabrir o Closed Set!
+          </p>
+        </div>
+      </div>
+
+      <h3>Por que a Admissibilidade Garante a Otimalidade?</h3>
+      <p>
+        Suponha que exista um caminho ótimo com custo total <code>C*</code>, mas o A* tenha acabado de retirar o destino
+        <code>B</code> da fila com um caminho subótimo <code>g(B) &gt; C*</code>. Como o caminho ótimo ainda não foi
+        totalmente expandido, deve existir algum nó <code>n</code> desse caminho ótimo esperando no Open Set com seu
+        custo ótimo <code>g(n) = g*(n)</code>. Como <code>h</code> é admissível:
+      </p>
+      <div class="formula-box">
+        f(n) = g*(n) + h(n) &le; g*(n) + h*(n) = C* &lt; g(B) = f(B)
+      </div>
+      <p>
+        Ou seja, <code>f(n) &lt; f(B)</code>! Isso é uma <strong>contradição</strong>, pois a fila de prioridade
+        sempre retira o menor <code>f</code> primeiro — logo <code>n</code> teria sido expandido antes de <code>B</code>.
+        Portanto, <code>g(B)</code> só pode ser igual a <code>C*</code>!
+      </p>
+
+      <h3>Dominância (Informatividade) e A* Ponderado</h3>
+      <ul>
+        <li>
+          <strong>Dominância:</strong> Dadas duas heurísticas admissíveis <code>h₁</code> e <code>h₂</code>, se
+          <code>h₁(n) &le; h₂(n) &le; h*(n)</code> para todo <code>n</code>, dizemos que <code>h₂</code>
+          <strong>domina</strong> <code>h₁</code>. Na prática, <code>h₂</code> expandirá menos (ou no máximo o mesmo número de) nós.
+          Exemplo: em grades com 4 direções, Manhattan domina Euclidiana, que por sua vez domina <code>h = 0</code> (Dijkstra).
+        </li>
+        <li>
+          <strong>A* Ponderado (<code>f(n) = g(n) + w &middot; h(n)</code>, com <code>w &gt; 1</code>):</strong>
+          Deixa a heurística mais agressiva. Não garante o menor caminho absoluto, mas garante que o custo encontrado
+          será no máximo <code>w &middot; C*</code> (<strong>&epsilon;-admissível</strong>), acelerando bastante mapas grandes.
+        </li>
+      </ul>
+    </section>
+
+    <!-- SEÇÃO 6 -->
+    <section id="heuristicas">
+      <h2 class="sec-title"><span class="sec-num">06</span> Principais Funções Heurísticas (Grades e Espaços 2D)</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Heurística</th>
+              <th>Fórmula (<code>dx = |x₁ - x₂|, dy = |y₁ - y₂|</code>)</th>
+              <th>Movimento Indicado</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Manhattan (L₁)</strong></td>
+              <td><code>c_min &middot; (dx + dy)</code></td>
+              <td>4 direções (N, S, L, O)</td>
+              <td>Exata quando não há obstáculos nem terreno mais caro. Usada neste repositório.</td>
+            </tr>
+            <tr>
+              <td><strong>Euclidiana (L₂)</strong></td>
+              <td><code>c_min &middot; &radic;(dx&sup2; + dy&sup2;)</code></td>
+              <td>Qualquer ângulo</td>
+              <td>Admissível em 4 e 8 direções, mas subestima mais em grades 4-dir (expande mais nós).</td>
+            </tr>
+            <tr>
+              <td><strong>Chebyshev (L&infin;)</strong></td>
+              <td><code>c_min &middot; max(dx, dy)</code></td>
+              <td>8 direções (diagonal = 1)</td>
+              <td>Considera o passo diagonal com mesmo custo do passo ortogonal.</td>
+            </tr>
+            <tr>
+              <td><strong>Octile</strong></td>
+              <td><code>c_min &middot; (max(dx,dy) + (&radic;2 - 1)&middot;min(dx,dy))</code></td>
+              <td>8 direções (diagonal = &radic;2)</td>
+              <td>Modelo realista de grades onde andar na diagonal custa &radic;2 &approx; 1.414.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout success">
+        <strong class="title">Cuidado com pesos de terreno (ex.: Água custando 2)!</strong>
+        Para que a distância geométrica seja admissível, multiplique-a pelo <strong>menor custo possível de passo</strong>
+        <code>c_min</code>. No projeto deste repositório, terreno comum custa <code>1</code> e água custa <code>2</code>,
+        então <code>c_min = 1</code>: a Distância de Manhattan pura continua admissível! Mas se existisse algum terreno
+        "rodovia rápida" custando <code>0.5</code>, a Manhattan sem fator <code>0.5</code> deixaria de ser admissível.
+      </div>
+    </section>
+
+    <!-- SEÇÃO 7 -->
+    <section id="complexidade">
+      <h2 class="sec-title"><span class="sec-num">07</span> Complexidade, Limitações e Variações</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h4>Complexidade de Tempo</h4>
+          <p>
+            Em um grafo explícito com <code>|V|</code> vértices e <code>|E|</code> arestas usando Heap Binário, o pior caso
+            é equivalente ao de Dijkstra: <code>O((|V| + |E|) log |V|)</code> (ou exponencial <code>O(b^d)</code> em
+            árvores de busca implícitas se a heurística tiver erro absoluto grande).
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Com uma heurística próxima de <code>h*</code>, o número de nós expandidos cai drasticamente em comparação ao Dijkstra.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4>Complexidade de Espaço (Principal Gargalo)</h4>
+          <p>
+            <code>O(|V|)</code> na memória, pois o A* mantém todos os nós gerados no Open Set, em <code>gScore</code> e
+            em <code>cameFrom</code>. Em grafos gigantes (como mapas rodoviários continentais ou quebra-cabeças com milhões
+            de estados), a RAM costuma acabar antes do tempo de CPU.
+          </p>
+        </div>
+      </div>
+
+      <h3>Principais Variações do A*</h3>
+      <ul>
+        <li><strong>IDA* (Iterative Deepening A*):</strong> troca a fila de prioridade por busca em profundidade limitada por um limiar de <code>f(n)</code>, reduzindo a memória para <code>O(d)</code>.</li>
+        <li><strong>A* Bidirecional:</strong> dispara duas buscas simultâneas — uma de <code>A &rarr; B</code> e outra de <code>B &rarr; A</code> — reduzindo a área explorada.</li>
+        <li><strong>Jump Point Search (JPS):</strong> otimização para grades uniformes que "pula" células simétricas em linha reta sem colocá-las no heap.</li>
+        <li><strong>A* Concorrente / Paralelo:</strong> distribui a expansão ou o cálculo de vizinhos entre múltiplas threads (tema comparado no código deste repositório!).</li>
+      </ul>
+    </section>
+
+    <!-- SEÇÃO 8: SIMULADOR DE GRADES -->
+    <section id="simulador-grade">
+      <h2 class="sec-title"><span class="sec-num">08</span> Simulador Interativo: Grafos em Grade (Compatível com <code>graphs/*.txt</code>)</h2>
+      <p>
+        Aqui você pode testar grafos de exemplo prontos — incluindo os <strong>novos exemplos criados para estudo</strong>
+        e os mapas originais do projeto — além de desenhar seus próprios obstáculos, blocos de água e importar/exportar
+        no formato exato aceito pelo programa em Rust.
+      </p>
+
+      <div class="lab-panel">
+        <div class="controls-bar">
+          <div class="control-group">
+            <label for="gridPreset">Mapa Exemplo:</label>
+            <select id="gridPreset"></select>
+          </div>
+
+          <div class="control-group">
+            <label for="gridAlgo">Busca / Heurística:</label>
+            <select id="gridAlgo">
+              <option value="manhattan">A* — Manhattan (4-dir)</option>
+              <option value="euclidean">A* — Euclidiana</option>
+              <option value="dijkstra">Dijkstra (h = 0)</option>
+              <option value="greedy">Busca Gulosa (g = 0)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <input type="checkbox" id="waterMode" checked />
+            <label for="waterMode" style="cursor:pointer;">Modo Água <code>-w</code> (custo 2)</label>
+          </div>
+
+          <div class="control-group">
+            <input type="checkbox" id="showScores" checked />
+            <label for="showScores" style="cursor:pointer;">Mostrar g / h / f</label>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <div class="control-group" style="gap:4px;">
+            <label>Pincel:</label>
+            <button class="brush-btn active-tool" data-brush="wall"># Parede</button>
+            <button class="brush-btn" data-brush="water">_ Água</button>
+            <button class="brush-btn" data-brush="empty">Espaço</button>
+            <button class="brush-btn" data-brush="start">A Origem</button>
+            <button class="brush-btn" data-brush="end">B Destino</button>
+          </div>
+
+          <button id="gridStepBtn" class="primary">Passo ▶</button>
+          <button id="gridRunBtn" class="success">Executar ⏩</button>
+          <button id="gridClearSearchBtn">Limpar Busca</button>
+          <button id="gridResetBtn">Restaurar Mapa ↺</button>
+
+          <div class="control-group">
+            <label for="gridSpeed">Vel:</label>
+            <input id="gridSpeed" type="range" min="15" max="350" step="5" value="65" />
+          </div>
+        </div>
+
+        <p id="gridDesc" style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 12px;"></p>
+
+        <div class="sim-grid">
+          <div class="canvas-box">
+            <div class="grid-board-wrap">
+              <div id="gridBoard" class="grid-board"></div>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> A (Origem)</span>
+              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> B (Destino)</span>
+              <span class="legend-item"><span class="swatch" style="background:#1e293b;"></span> # Parede</span>
+              <span class="legend-item"><span class="swatch" style="background:#075985;"></span> _ Água (custo 2)</span>
+              <span class="legend-item"><span class="swatch" style="background:rgba(56,189,248,0.45);"></span> Open Set</span>
+              <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Atual</span>
+              <span class="legend-item"><span class="swatch" style="background:rgba(139,92,246,0.45);"></span> Closed Set</span>
+              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho Ótimo</span>
+            </div>
+          </div>
+
+          <div class="inspector">
+            <div class="inspector-box">
+              <h4>Resultado &amp; Desempenho</h4>
+              <div class="stats-row">
+                <div class="stat-pill"><span class="label">Nós Expandidos</span><span class="val" id="gridExpanded">0</span></div>
+                <div class="stat-pill"><span class="label">Descobertos (Open)</span><span class="val" id="gridDiscovered">0</span></div>
+                <div class="stat-pill"><span class="label">Custo Total</span><span class="val" id="gridCost">—</span></div>
+                <div class="stat-pill"><span class="label">Passos no Caminho</span><span class="val" id="gridSteps">—</span></div>
+              </div>
+              <div id="gridStatus" style="margin-top: 10px; font-size: 0.86rem; color: var(--text-muted);"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Formato <code>.txt</code> do Projeto (Importar / Exportar)</h4>
+              <textarea id="gridTxtArea" class="txt-io" spellcheck="false"></textarea>
+              <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <button id="gridImportBtn">Carregar Texto ↑</button>
+                <button id="gridCopyBtn">Copiar .txt</button>
+              </div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Últimas Ações</h4>
+              <div class="log-box" id="gridLog" style="max-height: 150px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 9 -->
+    <section id="projeto-rust">
+      <h2 class="sec-title"><span class="sec-num">09</span> Conexão com o Projeto Rust do Repositório</h2>
+      <p>
+        Os mapas de exemplo deste guia seguem exatamente a especificação implementada no código-fonte em <code>src/</code>:
+      </p>
+      <ul>
+        <li><code>src/loader.rs</code>: lê a primeira linha como dimensão quadrada <code>N &times; N</code> e mapeia <code>A</code> (origem), <code>B</code> (destino), <code>#</code> (parede), <code>' '</code> (caminho livre) e <code>_</code> (água ou parede conforme a flag <code>-w</code>).</li>
+        <li><code>src/graph/nodes.rs</code>: define que movimentos envolvendo <code>WATER</code> têm custo <code>2</code>, enquanto movimentos normais têm custo <code>1</code>.</li>
+        <li><code>src/graph/matrix.rs</code>: implementa vizinhança em <strong>4 direções</strong> (cima, baixo, esquerda, direita).</li>
+        <li><code>src/algorithm/distance.rs</code>: implementa a heurística <code>manhattan_distance_to</code>.</li>
+        <li><code>src/algorithm/context.rs</code> e <code>simple.rs</code>: mantêm <code>BinaryHeap</code> mínimo ordenado por <code>f = g + h</code>, mapa <code>min_cost</code> para relaxamento/lazy deletion e <code>predecessor</code> para reconstruir o caminho.</li>
+      </ul>
+
+      <p>Você pode executar os novos grafos de exemplo criados na pasta <code>graphs/</code> diretamente pelo terminal:</p>
+<pre><span class="cm"># Armadilha em U (mostra o A* contornando a concavidade)</span>
+cargo run -- -f graphs/exemplo_armadilha_u.txt
+
+<span class="cm"># Decisão com água: compare COM -w (usa vau raso, custo 14) vs SEM -w (contorna, custo 16)</span>
+cargo run -- -wf graphs/exemplo_agua_decisao.txt
+cargo run -- -f graphs/exemplo_agua_decisao.txt
+
+<span class="cm"># Labirinto clássico com becos sem saída</span>
+cargo run -- -f graphs/exemplo_labirinto.txt
+
+<span class="cm"># Destino isolado (Open Set esvazia e retorna sem caminho)</span>
+cargo run -- -f graphs/exemplo_sem_caminho.txt
+
+<span class="cm"># Campo aberto para benchmark entre versão sequencial e concorrente</span>
+cargo run -- -bf graphs/exemplo_campo_aberto.txt</pre>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ============================================================================
+   1. SIMULADOR DE GRAFOS PONDERADOS (SVG)
+   ============================================================================ */
+(() => {
+  const GRAPH_PRESETS = [
+    {
+      id: "routing",
+      name: "1. Roteamento Clássico (A* vs Dijkstra)",
+      lesson: "Exemplo clássico com heurística consistente (h ≤ h*). O A* expande apenas A → B → D → G (custo 14), enquanto o Dijkstra expande vários nós desnecessários.",
+      start: "A",
+      goal: "G",
+      nodes: [
+        { id: "A", x: 85,  y: 195, h: 12, hStar: 14 },
+        { id: "B", x: 245, y: 90,  h: 8,  hStar: 10 },
+        { id: "C", x: 245, y: 300, h: 11, hStar: 13 },
+        { id: "D", x: 435, y: 90,  h: 5,  hStar: 6 },
+        { id: "E", x: 435, y: 225, h: 4,  hStar: 5 },
+        { id: "F", x: 575, y: 310, h: 2,  hStar: 3 },
+        { id: "G", x: 660, y: 175, h: 0,  hStar: 0 }
+      ],
+      edges: [
+        ["A", "B", 4], ["A", "C", 2],
+        ["B", "D", 4], ["B", "E", 12],
+        ["C", "E", 8], ["C", "F", 11],
+        ["D", "E", 2], ["D", "G", 6],
+        ["E", "F", 4], ["E", "G", 5],
+        ["F", "G", 3]
+      ]
+    },
+    {
+      id: "greedy_trap",
+      name: "2. Armadilha da Busca Gulosa",
+      lesson: "O nó B parece muito perto do destino (h=2), mas a aresta A→B custa 10! A Busca Gulosa cai na isca (custo 18). O A* soma g+h e encontra A→C→D→E→G (custo 9).",
+      start: "A",
+      goal: "G",
+      nodes: [
+        { id: "A", x: 85,  y: 190, h: 7, hStar: 9 },
+        { id: "B", x: 375, y: 78,  h: 2, hStar: 8 },
+        { id: "C", x: 215, y: 295, h: 6, hStar: 7 },
+        { id: "D", x: 375, y: 295, h: 5, hStar: 5 },
+        { id: "E", x: 525, y: 295, h: 3, hStar: 3 },
+        { id: "G", x: 655, y: 180, h: 0, hStar: 0 }
+      ],
+      edges: [
+        ["A", "B", 10], ["B", "G", 8],
+        ["A", "C", 2], ["C", "D", 2],
+        ["D", "E", 2], ["E", "G", 3]
+      ]
+    },
+    {
+      id: "relaxation",
+      name: "3. Relaxamento de Arestas no Open Set",
+      lesson: "O nó D é descoberto primeiro via B com g=11 (f=14). Depois, ao expandir C, o A* descobre um atalho até D com g=6 (f=9) e atualiza seu predecessor para C!",
+      start: "A",
+      goal: "G",
+      nodes: [
+        { id: "A", x: 85,  y: 190, h: 8, hStar: 10 },
+        { id: "B", x: 255, y: 90,  h: 6, hStar: 11 },
+        { id: "C", x: 255, y: 290, h: 4, hStar: 5 },
+        { id: "D", x: 465, y: 235, h: 3, hStar: 4 },
+        { id: "E", x: 465, y: 85,  h: 5, hStar: 6 },
+        { id: "G", x: 655, y: 175, h: 0, hStar: 0 }
+      ],
+      edges: [
+        ["A", "B", 2], ["A", "C", 5],
+        ["B", "D", 9], ["B", "E", 5],
+        ["C", "D", 1], ["D", "G", 4],
+        ["E", "G", 6]
+      ]
+    },
+    {
+      id: "inadmissible",
+      name: "4. Perigo da Heurística Não Admissível",
+      lesson: "ATENÇÃO: Aqui h(C) = 10 superestima o custo real h*(C) = 3! Isso faz o A* expandir B→G (custo 9) e parar antes de explorar C, perdendo o caminho ótimo A→C→G (custo 5). Compare com Dijkstra!",
+      start: "A",
+      goal: "G",
+      nodes: [
+        { id: "A", x: 95,  y: 190, h: 4,  hStar: 5 },
+        { id: "B", x: 370, y: 85,  h: 2,  hStar: 8 },
+        { id: "C", x: 370, y: 295, h: 10, hStar: 3 },
+        { id: "G", x: 645, y: 190, h: 0,  hStar: 0 }
+      ],
+      edges: [
+        ["A", "B", 1], ["B", "G", 8],
+        ["A", "C", 2], ["C", "G", 3]
+      ]
+    }
+  ];
+
+  const presetSel = document.getElementById("graphPreset");
+  const algoSel = document.getElementById("graphAlgo");
+  const stepBtn = document.getElementById("gStepBtn");
+  const runBtn = document.getElementById("gRunBtn");
+  const resetBtn = document.getElementById("gResetBtn");
+  const speedSlider = document.getElementById("gSpeed");
+  const svg = document.getElementById("graphSvg");
+  const lessonEl = document.getElementById("graphLesson");
+  const openListEl = document.getElementById("gOpenList");
+  const closedListEl = document.getElementById("gClosedList");
+  const hTableEl = document.getElementById("gHeuristicTable");
+  const logEl = document.getElementById("gLog");
+  const expandedEl = document.getElementById("gExpandedCount");
+  const foundCostEl = document.getElementById("gFoundCost");
+
+  GRAPH_PRESETS.forEach((p, idx) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (idx === 0) opt.selected = true;
+    presetSel.appendChild(opt);
+  });
+
+  let gState = null;
+  let gTimer = null;
+
+  function getPreset() {
+    return GRAPH_PRESETS.find(p => p.id === presetSel.value) || GRAPH_PRESETS[0];
+  }
+
+  function computeF(g, h) {
+    const algo = algoSel.value;
+    if (algo === "dijkstra") return g;
+    if (algo === "greedy") return h;
+    if (algo === "weighted") return g + 2 * h;
+    return g + h;
+  }
+
+  function effectiveH(h) {
+    return algoSel.value === "dijkstra" ? 0 : h;
+  }
+
+  function buildAdjacency(preset) {
+    const adj = {};
+    preset.nodes.forEach(n => { adj[n.id] = []; });
+    preset.edges.forEach(([u, v, w]) => {
+      adj[u].push({ to: v, w });
+      adj[v].push({ to: u, w });
+    });
+    return adj;
+  }
+
+  function initGraphSim() {
+    stopGraphTimer();
+    const preset = getPreset();
+    const adj = buildAdjacency(preset);
+    const nodeMap = {};
+    preset.nodes.forEach(n => { nodeMap[n.id] = n; });
+
+    const gScore = {};
+    const fScore = {};
+    const parent = {};
+    preset.nodes.forEach(n => {
+      gScore[n.id] = Infinity;
+      fScore[n.id] = Infinity;
+      parent[n.id] = null;
+    });
+
+    gScore[preset.start] = 0;
+    const h0 = effectiveH(nodeMap[preset.start].h);
+    fScore[preset.start] = computeF(0, h0);
+
+    gState = {
+      preset,
+      adj,
+      nodeMap,
+      gScore,
+      fScore,
+      parent,
+      open: [{ id: preset.start, g: 0, h: h0, f: fScore[preset.start] }],
+      closed: new Set(),
+      current: null,
+      relaxedEdges: new Set(),
+      finalPath: [],
+      finished: false,
+      expandedCount: 0,
+      logs: [`Inicializado: origem ${preset.start} inserida no Open Set com g=0, h=${h0}, f=${fScore[preset.start]}.`]
+    };
+
+    lessonEl.textContent = preset.lesson;
+    renderHeuristicTable(preset);
+    renderGraph();
+  }
+
+  function stopGraphTimer() {
+    if (gTimer) {
+      clearInterval(gTimer);
+      gTimer = null;
+      runBtn.textContent = "Executar ⏩";
+    }
+  }
+
+  function edgeKey(u, v) {
+    return u < v ? `${u}-${v}` : `${v}-${u}`;
+  }
+
+  function stepGraph() {
+    if (!gState || gState.finished) {
+      stopGraphTimer();
+      return;
+    }
+
+    const s = gState;
+    s.relaxedEdges.clear();
+
+    // Sort open queue: smallest f, then smallest h (tie-breaker)
+    s.open.sort((a, b) => (a.f - b.f) || (a.h - b.h) || a.id.localeCompare(b.id));
+
+    let chosen = null;
+    while (s.open.length > 0) {
+      const cand = s.open.shift();
+      // Skip stale lazy entries or already closed
+      if (cand.g > s.gScore[cand.id] || s.closed.has(cand.id)) continue;
+      chosen = cand;
+      break;
+    }
+
+    if (!chosen) {
+      s.finished = true;
+      s.current = null;
+      s.logs.unshift("Open Set vazio: nenhum caminho encontrado até o destino.");
+      stopGraphTimer();
+      renderGraph();
+      return;
+    }
+
+    s.current = chosen.id;
+    s.closed.add(chosen.id);
+    s.expandedCount++;
+
+    if (chosen.id === s.preset.goal) {
+      // Reconstruct path
+      const path = [];
+      let cur = s.preset.goal;
+      while (cur) {
+        path.push(cur);
+        cur = s.parent[cur];
+      }
+      path.reverse();
+      s.finalPath = path;
+      s.finished = true;
+      s.logs.unshift(`✅ Destino ${s.preset.goal} EXPANDIDO! Caminho: ${path.join(" → ")} (custo total = ${s.gScore[s.preset.goal]}).`);
+      stopGraphTimer();
+      renderGraph();
+      return;
+    }
+
+    const msgParts = [`Expandindo ${chosen.id} (g=${chosen.g}, h=${chosen.h}, f=${chosen.f}):`];
+
+    for (const { to, w } of s.adj[chosen.id]) {
+      if (s.closed.has(to)) {
+        // Still check if non-admissible / non-consistent would improve, for educational clarity we skip closed unless strictly better?
+        // In standard Graph-Search with consistent heuristic, closed nodes aren't reopened.
+        msgParts.push(`${to} já no Closed Set`);
+        continue;
+      }
+      const tentativeG = chosen.g + w;
+      const hVal = effectiveH(s.nodeMap[to].h);
+      const newF = computeF(tentativeG, hVal);
+
+      if (tentativeG < s.gScore[to]) {
+        const wasDiscovered = s.gScore[to] < Infinity;
+        s.gScore[to] = tentativeG;
+        s.fScore[to] = newF;
+        s.parent[to] = chosen.id;
+        s.open.push({ id: to, g: tentativeG, h: hVal, f: newF });
+        s.relaxedEdges.add(edgeKey(chosen.id, to));
+        msgParts.push(
+          wasDiscovered
+            ? `↻ relaxou ${to} (g: → ${tentativeG}, f=${newF})`
+            : `+ descobriu ${to} (g=${tentativeG}, h=${hVal}, f=${newF})`
+        );
+      } else {
+        msgParts.push(`manteve ${to} (tentativa g=${tentativeG} ≥ ${s.gScore[to]})`);
+      }
+    }
+
+    s.logs.unshift(msgParts.join(" | "));
+    renderGraph();
+  }
+
+  function renderHeuristicTable(preset) {
+    const rows = preset.nodes.map(n => {
+      const hVal = effectiveH(n.h);
+      const ok = hVal <= n.hStar;
+      return `<tr>
+        <td><strong>${n.id}</strong></td>
+        <td>${hVal}</td>
+        <td>${n.hStar}</td>
+        <td>${ok ? '<span class="badge ok">Admissível</span>' : '<span class="badge bad">Superestimada!</span>'}</td>
+      </tr>`;
+    }).join("");
+    hTableEl.innerHTML = `<table style="font-size:0.76rem;">
+      <thead><tr><th>Nó</th><th>h(n)</th><th>h*(n)</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  function renderGraph() {
+    const s = gState;
+    const { preset, nodeMap, gScore, fScore, open, closed, current, finalPath, relaxedEdges } = s;
+
+    const pathEdges = new Set();
+    for (let i = 0; i + 1 < finalPath.length; i++) {
+      pathEdges.add(edgeKey(finalPath[i], finalPath[i + 1]));
+    }
+    const openIds = new Set(open.filter(x => x.g === gScore[x.id] && !closed.has(x.id)).map(x => x.id));
+
+    let markup = "";
+
+    // Edges
+    for (const [u, v, w] of preset.edges) {
+      const nu = nodeMap[u];
+      const nv = nodeMap[v];
+      const key = edgeKey(u, v);
+      const isPath = pathEdges.has(key);
+      const isRelaxed = relaxedEdges.has(key);
+      const stroke = isPath ? "#eab308" : isRelaxed ? "#38bdf8" : "#3a4b7c";
+      const sw = isPath ? 5 : isRelaxed ? 3.5 : 2.2;
+
+      const mx = (nu.x + nv.x) / 2;
+      const my = (nu.y + nv.y) / 2;
+
+      markup += `
+        <line x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" />
+        <rect x="${mx - 14}" y="${my - 11}" width="28" height="22" rx="6" fill="#0d1326" stroke="${stroke}" stroke-width="1.2" />
+        <text x="${mx}" y="${my + 4}" text-anchor="middle" fill="#e6ecff" font-family="var(--mono)" font-size="12" font-weight="700">${w}</text>
+      `;
+    }
+
+    // Nodes
+    for (const n of preset.nodes) {
+      let fill = "#1e2949";
+      let stroke = "#5166a3";
+      let textFill = "#f1f5ff";
+
+      if (finalPath.includes(n.id)) {
+        fill = "#eab308"; stroke = "#fef08a"; textFill = "#1f1600";
+      } else if (n.id === current) {
+        fill = "#f97316"; stroke = "#fed7aa"; textFill = "#1f0900";
+      } else if (n.id === preset.start) {
+        fill = "#10b981"; stroke = "#a7f3d0"; textFill = "#03261c";
+      } else if (n.id === preset.goal) {
+        fill = "#ef4444"; stroke = "#fecaca"; textFill = "#ffffff";
+      } else if (closed.has(n.id)) {
+        fill = "#5b21b6"; stroke = "#a78bfa";
+      } else if (openIds.has(n.id)) {
+        fill = "#0369a1"; stroke = "#38bdf8";
+      }
+
+      const gTxt = gScore[n.id] === Infinity ? "∞" : gScore[n.id];
+      const hVal = effectiveH(n.h);
+      const fTxt = fScore[n.id] === Infinity ? "∞" : fScore[n.id];
+
+      const badgeY = n.y > 250 ? n.y + 42 : n.y - 34;
+
+      markup += `
+        <g>
+          <circle cx="${n.x}" cy="${n.y}" r="24" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+          <text x="${n.x}" y="${n.y + 5}" text-anchor="middle" fill="${textFill}" font-family="var(--sans)" font-size="16" font-weight="800">${n.id}</text>
+          <rect x="${n.x - 52}" y="${badgeY - 12}" width="104" height="20" rx="5" fill="#0d1326" stroke="#30406f" stroke-width="1" />
+          <text x="${n.x}" y="${badgeY + 2}" text-anchor="middle" fill="#cbd5e1" font-family="var(--mono)" font-size="10.5">
+            g:${gTxt} h:${hVal} f:${fTxt}
+          </text>
+        </g>
+      `;
+    }
+
+    svg.innerHTML = markup;
+
+    // Inspector
+    expandedEl.textContent = s.expandedCount;
+    foundCostEl.textContent = s.finalPath.length ? s.gScore[preset.goal] : (s.finished ? "Sem caminho" : "—");
+
+    const activeOpen = open
+      .filter(x => x.g === gScore[x.id] && !closed.has(x.id))
+      .sort((a, b) => (a.f - b.f) || (a.h - b.h));
+
+    openListEl.innerHTML = activeOpen.length
+      ? activeOpen.map(x => `<span class="q-chip">${x.id} (f=${x.f}, g=${x.g}, h=${x.h})</span>`).join("")
+      : `<span style="color:var(--text-muted); font-size:0.8rem;">vazio</span>`;
+
+    closedListEl.innerHTML = closed.size
+      ? [...closed].map(id => `<span class="q-chip closed">${id} (g=${gScore[id]})</span>`).join("")
+      : `<span style="color:var(--text-muted); font-size:0.8rem;">vazio</span>`;
+
+    logEl.innerHTML = s.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
+  }
+
+  presetSel.addEventListener("change", initGraphSim);
+  algoSel.addEventListener("change", initGraphSim);
+  resetBtn.addEventListener("click", initGraphSim);
+  stepBtn.addEventListener("click", () => { stopGraphTimer(); stepGraph(); });
+  runBtn.addEventListener("click", () => {
+    if (gTimer) {
+      stopGraphTimer();
+    } else {
+      if (gState.finished) initGraphSim();
+      runBtn.textContent = "Pausar ⏸";
+      gTimer = setInterval(stepGraph, Number(speedSlider.value));
+    }
+  });
+  speedSlider.addEventListener("input", () => {
+    if (gTimer) {
+      stopGraphTimer();
+      runBtn.textContent = "Pausar ⏸";
+      gTimer = setInterval(stepGraph, Number(speedSlider.value));
+    }
+  });
+
+  initGraphSim();
+})();
+
+/* ============================================================================
+   2. SIMULADOR DE GRAFOS EM GRADE (COMPATÍVEL COM graphs/*.txt)
+   ============================================================================ */
+(() => {
+  const GRID_PRESETS = [
+    {
+      id: "agua_decisao",
+      name: "Novo: Decisão com Água (exemplo_agua_decisao.txt)",
+      desc: "Com Modo Água (-w) ligado, o lago central (7 águas = custo 16) é mais caro que o vau raso embaixo (1 água = custo 14). Desligue o Modo Água para ver o A* contornar por fora (custo 16)!",
+      txt: `11
+###########
+#         #
+# ####### #
+# ####### #
+# ####### #
+#A_______B#
+# ####### #
+#    _    #
+# ####### #
+#         #
+###########`
+    },
+    {
+      id: "armadilha_u",
+      name: "Novo: Armadilha em U (exemplo_armadilha_u.txt)",
+      desc: "Uma barreira em formato de U bloqueia o caminho reto entre A e B. Teste A* vs Busca Gulosa para ver como a Gulosa preenche o interior do U antes de contornar.",
+      txt: `11
+###########
+#         #
+#  #####  #
+#      #  #
+#  A   # B#
+#      #  #
+#  #####  #
+#         #
+#         #
+#         #
+###########`
+    },
+    {
+      id: "labirinto",
+      name: "Novo: Labirinto com Becos (exemplo_labirinto.txt)",
+      desc: "Labirinto 13x13 com bifurcações e corredores sem saída. O A* usa f = g + h para evitar explorar becos distantes do caminho ótimo.",
+      txt: `13
+#############
+#A  #       #
+### # ##### #
+#   # #   # #
+# ### # # # #
+#     # #   #
+##### # #####
+#   # #     #
+# # # ### # #
+# #       # #
+# ######### #
+#          B#
+#############`
+    },
+    {
+      id: "campo_aberto",
+      name: "Novo: Campo Aberto — A* vs Dijkstra (exemplo_campo_aberto.txt)",
+      desc: "Compare A* (Manhattan) com Dijkstra (h = 0) neste mapa aberto com dois pilares: veja a enorme diferença na quantidade de nós expandidos!",
+      txt: `11
+###########
+#A        #
+#         #
+#    #    #
+#    #    #
+#         #
+#    #    #
+#    #    #
+#         #
+#        B#
+###########`
+    },
+    {
+      id: "sem_caminho",
+      name: "Novo: Sem Caminho Possível (exemplo_sem_caminho.txt)",
+      desc: "O destino B está completamente cercado por paredes. O Open Set se esgota e o A* prova matematicamente que não existe rota.",
+      txt: `9
+#########
+#A      #
+#       #
+#   #####
+#   #   #
+#   # B #
+#   #   #
+#   #####
+#########`
+    },
+    {
+      id: "repo_g",
+      name: "Repo: graphs/g.txt (13x13)",
+      desc: "Mapa original do repositório (graphs/g.txt): teste com Modo Água ligado vs desligado para ver a mudança na rota.",
+      txt: `13
+#############
+#A_        B#
+# ######### #
+# ######### #
+#           #
+#           #
+#           #
+#           #
+#           #
+#           #
+#           #
+#           #
+#############`
+    },
+    {
+      id: "repo_e",
+      name: "Repo: graphs/e.txt (7x7)",
+      desc: "Mapa original compacto do repositório (graphs/e.txt) com corredor de água e paredes.",
+      txt: `7
+#######
+#A#  B#
+#_# # #
+#   # #
+# ### #
+#     #
+#######`
+    },
+    {
+      id: "repo_a",
+      name: "Repo: graphs/a.txt (20x20)",
+      desc: "Mapa principal do README do repositório (graphs/a.txt, 20x20) com múltiplos lagos de água e paredes.",
+      txt: `20
+####################
+#A    #           B#
+#     #            #
+#     #      #     #
+#     #      #     #
+# ___ #      # ___ #
+#     #      #     #
+# #####      # #####
+#     #      #     #
+#    ___    ___    #
+#    ___    ___    #
+#     #      #     #
+#     #      #     #
+#     # ######     #
+#     #      #     #
+#     # ____ #     #
+#     #      #     #
+#            #     #
+#            #     #
+####################`
+    }
+  ];
+
+  const presetSel = document.getElementById("gridPreset");
+  const algoSel = document.getElementById("gridAlgo");
+  const waterChk = document.getElementById("waterMode");
+  const scoresChk = document.getElementById("showScores");
+  const stepBtn = document.getElementById("gridStepBtn");
+  const runBtn = document.getElementById("gridRunBtn");
+  const clearSearchBtn = document.getElementById("gridClearSearchBtn");
+  const resetBtn = document.getElementById("gridResetBtn");
+  const speedSlider = document.getElementById("gridSpeed");
+  const boardEl = document.getElementById("gridBoard");
+  const descEl = document.getElementById("gridDesc");
+  const expandedEl = document.getElementById("gridExpanded");
+  const discoveredEl = document.getElementById("gridDiscovered");
+  const costEl = document.getElementById("gridCost");
+  const stepsEl = document.getElementById("gridSteps");
+  const statusEl = document.getElementById("gridStatus");
+  const txtArea = document.getElementById("gridTxtArea");
+  const importBtn = document.getElementById("gridImportBtn");
+  const copyBtn = document.getElementById("gridCopyBtn");
+  const logEl = document.getElementById("gridLog");
+  const brushBtns = document.querySelectorAll(".brush-btn");
+
+  GRID_PRESETS.forEach((p, i) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (i === 0) opt.selected = true;
+    presetSel.appendChild(opt);
+  });
+
+  let currentBrush = "wall";
+  let isDrawing = false;
+  let gridModel = null; // { n, cells: 2D array of '#', ' ', '_', 'A', 'B', start: [c,r], end: [c,r] }
+  let search = null;
+  let timer = null;
+
+  brushBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      brushBtns.forEach(b => b.classList.remove("active-tool"));
+      btn.classList.add("active-tool");
+      currentBrush = btn.dataset.brush;
+    });
+  });
+
+  function stopTimer() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+      runBtn.textContent = "Executar ⏩";
+    }
+  }
+
+  function parseTxtToGrid(txt) {
+    const lines = txt.replace(/\r/g, "").split("\n");
+    const first = parseInt((lines[0] || "").trim(), 10);
+    if (!Number.isFinite(first) || first < 3 || first > 30) {
+      throw new Error("A primeira linha deve ser um inteiro entre 3 e 30.");
+    }
+    const n = first;
+    const cells = [];
+    let start = null;
+    let end = null;
+    for (let r = 0; r < n; r++) {
+      const rowStr = lines[r + 1] || "";
+      const row = [];
+      for (let c = 0; c < n; c++) {
+        let ch = rowStr[c] ?? "#";
+        if (!["#", " ", "_", "A", "B"].includes(ch)) ch = "#";
+        if (ch === "A") {
+          if (start) ch = " ";
+          else start = [c, r];
+        }
+        if (ch === "B") {
+          if (end) ch = " ";
+          else end = [c, r];
+        }
+        row.push(ch);
+      }
+      cells.push(row);
+    }
+    if (!start) {
+      start = [1, 1];
+      cells[1][1] = "A";
+    }
+    if (!end) {
+      end = [n - 2, n - 2];
+      cells[n - 2][n - 2] = "B";
+    }
+    return { n, cells, start, end };
+  }
+
+  function exportGridToTxt() {
+    if (!gridModel) return "";
+    const lines = [String(gridModel.n)];
+    for (let r = 0; r < gridModel.n; r++) {
+      lines.push(gridModel.cells[r].join(""));
+    }
+    return lines.join("\n");
+  }
+
+  function keyOf(c, r) {
+    return `${c},${r}`;
+  }
+
+  function heuristic(c, r) {
+    const [ec, er] = gridModel.end;
+    const dx = Math.abs(c - ec);
+    const dy = Math.abs(r - er);
+    const mode = algoSel.value;
+    if (mode === "dijkstra") return 0;
+    if (mode === "euclidean") return Math.round(Math.hypot(dx, dy) * 10) / 10;
+    return dx + dy; // manhattan & greedy
+  }
+
+  function calcF(g, h) {
+    const mode = algoSel.value;
+    if (mode === "dijkstra") return g;
+    if (mode === "greedy") return h;
+    return g + h;
+  }
+
+  function edgeCost(typeA, typeB) {
+    if (typeA === "#" || typeB === "#") return null;
+    const waterActive = waterChk.checked;
+    if (!waterActive && (typeA === "_" || typeB === "_")) return null;
+    if (waterActive && (typeA === "_" || typeB === "_")) return 2;
+    return 1;
+  }
+
+  function resetSearchState() {
+    stopTimer();
+    const [sc, sr] = gridModel.start;
+    const h0 = heuristic(sc, sr);
+    const f0 = calcF(0, h0);
+    const k0 = keyOf(sc, sr);
+
+    search = {
+      openHeap: [{ c: sc, r: sr, g: 0, h: h0, f: f0 }],
+      gScore: new Map([[k0, 0]]),
+      hMap: new Map([[k0, h0]]),
+      fMap: new Map([[k0, f0]]),
+      parent: new Map(),
+      openSet: new Set([k0]),
+      closedSet: new Set(),
+      currentKey: null,
+      pathSet: new Set(),
+      finished: false,
+      foundCost: null,
+      logs: [`Busca pronta: origem A=(${sc},${sr}) até B=(${gridModel.end[0]},${gridModel.end[1]}).`]
+    };
+    renderGrid();
+  }
+
+  function loadPresetById(id) {
+    const p = GRID_PRESETS.find(x => x.id === id) || GRID_PRESETS[0];
+    gridModel = parseTxtToGrid(p.txt);
+    descEl.textContent = p.desc;
+    txtArea.value = exportGridToTxt();
+    resetSearchState();
+  }
+
+  function stepGrid() {
+    if (!search || search.finished) {
+      stopTimer();
+      return;
+    }
+
+    search.openHeap.sort((a, b) => (a.f - b.f) || (a.h - b.h));
+
+    let cur = null;
+    while (search.openHeap.length > 0) {
+      const item = search.openHeap.shift();
+      const k = keyOf(item.c, item.r);
+      if (item.g > (search.gScore.get(k) ?? Infinity) || search.closedSet.has(k)) continue;
+      cur = item;
+      break;
+    }
+
+    if (!cur) {
+      search.finished = true;
+      search.currentKey = null;
+      search.logs.unshift("❌ Open Set esvaziou! Não existe caminho válido até B.");
+      stopTimer();
+      renderGrid();
+      return;
+    }
+
+    const ck = keyOf(cur.c, cur.r);
+    search.currentKey = ck;
+    search.openSet.delete(ck);
+    search.closedSet.add(ck);
+
+    if (cur.c === gridModel.end[0] && cur.r === gridModel.end[1]) {
+      // Reconstruct path
+      let pk = ck;
+      while (pk) {
+        search.pathSet.add(pk);
+        pk = search.parent.get(pk);
+      }
+      search.finished = true;
+      search.foundCost = cur.g;
+      search.logs.unshift(`✅ Destino B=(${cur.c},${cur.r}) alcançado! Custo = ${cur.g}, Passos = ${search.pathSet.size - 1}.`);
+      stopTimer();
+      renderGrid();
+      return;
+    }
+
+    const curType = gridModel.cells[cur.r][cur.c];
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    let discoveredHere = 0;
+
+    for (const [dc, dr] of dirs) {
+      const nc = cur.c + dc;
+      const nr = cur.r + dr;
+      if (nc < 0 || nr < 0 || nc >= gridModel.n || nr >= gridModel.n) continue;
+
+      const nk = keyOf(nc, nr);
+      if (search.closedSet.has(nk)) continue;
+
+      const nType = gridModel.cells[nr][nc];
+      const stepCost = edgeCost(curType, nType);
+      if (stepCost === null) continue;
+
+      const tentG = cur.g + stepCost;
+      const prevG = search.gScore.get(nk) ?? Infinity;
+
+      if (tentG < prevG) {
+        const hVal = heuristic(nc, nr);
+        const fVal = calcF(tentG, hVal);
+        search.gScore.set(nk, tentG);
+        search.hMap.set(nk, hVal);
+        search.fMap.set(nk, fVal);
+        search.parent.set(nk, ck);
+        search.openSet.add(nk);
+        search.openHeap.push({ c: nc, r: nr, g: tentG, h: hVal, f: fVal });
+        discoveredHere++;
+      }
+    }
+
+    search.logs.unshift(`Expandiu (${cur.c},${cur.r}) [g=${cur.g}, h=${cur.h}, f=${cur.f}] → ${discoveredHere} vizinho(s) atualizado(s).`);
+    if (search.logs.length > 40) search.logs.pop();
+    renderGrid();
+  }
+
+  function applyBrush(c, r) {
+    const cur = gridModel.cells[r][c];
+    if (currentBrush === "start") {
+      if (c === gridModel.end[0] && r === gridModel.end[1]) return;
+      const [sc, sr] = gridModel.start;
+      gridModel.cells[sr][sc] = " ";
+      gridModel.cells[r][c] = "A";
+      gridModel.start = [c, r];
+    } else if (currentBrush === "end") {
+      if (c === gridModel.start[0] && r === gridModel.start[1]) return;
+      const [ec, er] = gridModel.end;
+      gridModel.cells[er][ec] = " ";
+      gridModel.cells[r][c] = "B";
+      gridModel.end = [c, r];
+    } else {
+      if (cur === "A" || cur === "B") return;
+      const mapBrush = { wall: "#", water: "_", empty: " " };
+      gridModel.cells[r][c] = mapBrush[currentBrush];
+    }
+    txtArea.value = exportGridToTxt();
+    resetSearchState();
+  }
+
+  function renderGrid() {
+    const n = gridModel.n;
+    const cellSize = n >= 18 ? 28 : n >= 13 ? 34 : 40;
+    boardEl.style.gridTemplateColumns = `repeat(${n}, ${cellSize}px)`;
+    boardEl.innerHTML = "";
+
+    const showDetails = scoresChk.checked && cellSize >= 32;
+
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const ch = gridModel.cells[r][c];
+        const k = keyOf(c, r);
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.style.width = `${cellSize}px`;
+        div.style.height = `${cellSize}px`;
+
+        if (ch === "#") div.classList.add("wall");
+        else if (ch === "_") div.classList.add(waterChk.checked ? "water" : "wall");
+        else div.classList.add("empty");
+
+        if (search.openSet.has(k)) div.classList.add("open");
+        if (search.closedSet.has(k)) div.classList.add("closed");
+        if (k === search.currentKey && !search.finished) div.classList.add("current");
+        if (search.pathSet.has(k)) div.classList.add("path");
+        if (ch === "A") div.classList.add("start");
+        if (ch === "B") div.classList.add("end");
+
+        if (ch === "A" || ch === "B") {
+          const gVal = search.gScore.get(k);
+          div.innerHTML = `<span class="cell-main">${ch}</span>` +
+            (showDetails && gVal !== undefined ? `<span class="cell-gh">g:${gVal}</span>` : "");
+        } else if (showDetails && search.fMap.has(k)) {
+          const gVal = search.gScore.get(k);
+          const hVal = search.hMap.get(k);
+          const fVal = search.fMap.get(k);
+          div.innerHTML = `<span class="cell-f">${fVal}</span><span class="cell-gh">${gVal}+${hVal}</span>`;
+        } else if (ch === "_" && waterChk.checked) {
+          div.innerHTML = `<span>~</span>`;
+        }
+
+        div.title = `(${c}, ${r})`;
+        div.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          isDrawing = true;
+          applyBrush(c, r);
+        });
+        div.addEventListener("mouseenter", () => {
+          if (isDrawing && currentBrush !== "start" && currentBrush !== "end") {
+            applyBrush(c, r);
+          }
+        });
+
+        boardEl.appendChild(div);
+      }
+    }
+
+    expandedEl.textContent = search.closedSet.size;
+    discoveredEl.textContent = search.openSet.size;
+    costEl.textContent = search.foundCost !== null ? search.foundCost : "—";
+    stepsEl.textContent = search.pathSet.size > 0 ? search.pathSet.size - 1 : "—";
+
+    if (search.finished && search.foundCost !== null) {
+      statusEl.innerHTML = `<span class="badge ok">Caminho encontrado!</span> Custo total = <strong>${search.foundCost}</strong>.`;
+    } else if (search.finished) {
+      statusEl.innerHTML = `<span class="badge bad">Sem caminho</span> Destino inacessível.`;
+    } else {
+      statusEl.textContent = "Pronto ou em execução passo a passo.";
+    }
+
+    logEl.innerHTML = search.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
+  }
+
+  window.addEventListener("mouseup", () => { isDrawing = false; });
+
+  presetSel.addEventListener("change", () => loadPresetById(presetSel.value));
+  algoSel.addEventListener("change", resetSearchState);
+  waterChk.addEventListener("change", resetSearchState);
+  scoresChk.addEventListener("change", renderGrid);
+  clearSearchBtn.addEventListener("click", resetSearchState);
+  resetBtn.addEventListener("click", () => loadPresetById(presetSel.value));
+
+  stepBtn.addEventListener("click", () => {
+    stopTimer();
+    stepGrid();
+  });
+
+  runBtn.addEventListener("click", () => {
+    if (timer) {
+      stopTimer();
+    } else {
+      if (search.finished) resetSearchState();
+      runBtn.textContent = "Pausar ⏸";
+      timer = setInterval(stepGrid, Number(speedSlider.value));
+    }
+  });
+
+  speedSlider.addEventListener("input", () => {
+    if (timer) {
+      stopTimer();
+      runBtn.textContent = "Pausar ⏸";
+      timer = setInterval(stepGrid, Number(speedSlider.value));
+    }
+  });
+
+  importBtn.addEventListener("click", () => {
+    try {
+      gridModel = parseTxtToGrid(txtArea.value);
+      descEl.textContent = "Mapa personalizado carregado a partir do texto.";
+      txtArea.value = exportGridToTxt();
+      resetSearchState();
+    } catch (err) {
+      alert("Erro ao ler mapa: " + err.message);
+    }
+  });
+
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(txtArea.value);
+      copyBtn.textContent = "Copiado ✓";
+      setTimeout(() => { copyBtn.textContent = "Copiar .txt"; }, 1200);
+    } catch {
+      txtArea.select();
+    }
+  });
+
+  loadPresetById(GRID_PRESETS[0].id);
+})();
+</script>
+</body>
+</html>
