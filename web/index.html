@@ -1001,11 +1001,53 @@
       line-height: 1.45;
     }
 
-    .speed-val {
+    .timeline-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+
+    .timeline-track {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1 1 280px;
+      min-width: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 9px;
+    }
+
+    .timeline-track label {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .timeline-slider {
+      flex: 1 1 120px;
+      min-width: 80px;
+      margin: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .timeline-slider:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .timeline-counter {
       font-family: var(--mono);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
+      font-weight: 600;
       color: var(--text);
-      min-width: 82px;
+      min-width: 96px;
       text-align: right;
       white-space: nowrap;
     }
@@ -1044,8 +1086,12 @@
       display: block;
     }
 
-    button.btn-run {
-      min-width: 112px;
+    button.timeline-step-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      flex-shrink: 0;
+      border-radius: 7px;
     }
 
     button:hover:not(:disabled) {
@@ -1569,6 +1615,14 @@
       }
       .control-group select {
         flex: 1 1 160px;
+      }
+      .timeline-track {
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .timeline-counter {
+        min-width: 0;
+        margin-left: auto;
       }
       .card {
         padding: 15px 16px;
@@ -2265,14 +2319,15 @@
         </div>
 
         <div class="controls-bar">
-          <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
-          <button id="gRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
-          <button id="gClearSearchBtn" type="button">Limpar busca</button>
-          <button id="gResetBtn" type="button">Restaurar grafo <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
-          <div class="control-group">
-            <label for="gSpeed">Velocidade:</label>
-            <input id="gSpeed" type="range" min="0.5" max="8" step="0.5" value="2" />
-            <span id="gSpeedVal" class="speed-val">2 passos/s</span>
+          <div class="timeline-bar">
+            <div class="timeline-track">
+              <label for="gProgress">Progresso:</label>
+              <button id="gPrevBtn" class="timeline-step-btn" type="button" title="Passo anterior" aria-label="Passo anterior"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M8.8 2.2 2.2 6l6.6 3.8Z"/></svg></button>
+              <input id="gProgress" class="timeline-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Progresso da busca no grafo" />
+              <button id="gNextBtn" class="timeline-step-btn" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
+              <span id="gStepCounter" class="timeline-counter">Passo 0 / 0</span>
+            </div>
+            <button id="gResetBtn" type="button">Restaurar grafo <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
           </div>
         </div>
 
@@ -2374,27 +2429,29 @@
         <div class="controls-bar">
           <div class="control-group" style="gap:6px;">
             <label>Pincel:</label>
-            <button class="brush-btn active-tool" data-brush="wall">Parede</button>
-            <button class="brush-btn" data-brush="empty">Livre</button>
-            <button class="brush-btn" data-brush="weight">Custo:</button>
+            <button class="brush-btn active-tool" data-brush="wall" type="button">Parede</button>
+            <button class="brush-btn" data-brush="empty" type="button">Livre</button>
+            <button class="brush-btn" data-brush="weight" type="button">Custo:</button>
             <div class="weight-stepper">
               <button id="weightDec" class="weight-step-btn" type="button" aria-label="Diminuir custo">−</button>
               <input id="brushWeight" class="weight-input" type="number" min="1" max="99" value="3" aria-label="Custo da célula" />
               <button id="weightInc" class="weight-step-btn" type="button" aria-label="Aumentar custo">+</button>
             </div>
-            <button class="brush-btn" data-brush="start">Origem (A)</button>
-            <button class="brush-btn" data-brush="end">Destino (B)</button>
+            <button class="brush-btn" data-brush="start" type="button">Origem (A)</button>
+            <button class="brush-btn" data-brush="end" type="button">Destino (B)</button>
           </div>
+        </div>
 
-          <button id="gridStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
-          <button id="gridRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
-          <button id="gridClearSearchBtn">Limpar busca</button>
-          <button id="gridResetBtn">Restaurar mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
-
-          <div class="control-group">
-            <label for="gridSpeed">Velocidade:</label>
-            <input id="gridSpeed" type="range" min="2" max="60" step="1" value="15" />
-            <span id="gridSpeedVal" class="speed-val">15 passos/s</span>
+        <div class="controls-bar">
+          <div class="timeline-bar">
+            <div class="timeline-track">
+              <label for="gridProgress">Progresso:</label>
+              <button id="gridPrevBtn" class="timeline-step-btn" type="button" title="Passo anterior" aria-label="Passo anterior"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M8.8 2.2 2.2 6l6.6 3.8Z"/></svg></button>
+              <input id="gridProgress" class="timeline-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Progresso da busca na grade" />
+              <button id="gridNextBtn" class="timeline-step-btn" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
+              <span id="gridStepCounter" class="timeline-counter">Passo 0 / 0</span>
+            </div>
+            <button id="gridResetBtn" type="button">Restaurar mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
           </div>
         </div>
 
@@ -2534,12 +2591,11 @@
   const presetSel = document.getElementById("graphPreset");
   const algoSel = document.getElementById("graphAlgo");
   const heurSel = document.getElementById("graphHeuristic");
-  const stepBtn = document.getElementById("gStepBtn");
-  const runBtn = document.getElementById("gRunBtn");
-  const clearSearchBtn = document.getElementById("gClearSearchBtn");
+  const prevBtn = document.getElementById("gPrevBtn");
+  const nextBtn = document.getElementById("gNextBtn");
+  const progressSlider = document.getElementById("gProgress");
+  const stepCounterEl = document.getElementById("gStepCounter");
   const resetBtn = document.getElementById("gResetBtn");
-  const speedSlider = document.getElementById("gSpeed");
-  const speedValEl = document.getElementById("gSpeedVal");
   const graphMetaEl = document.getElementById("graphMeta");
   const heurExplainEl = document.getElementById("graphHeurExplain");
   const toolHintEl = document.getElementById("graphToolHint");
@@ -2575,8 +2631,11 @@
   const MAX_ZOOM = 2.8;
 
   let graphModel = null;
+  let gHistory = [];
+  let gStepIdx = 0;
   let gState = null;
-  let gTimer = null;
+  let gTransientNotice = null;
+  let gEditNotice = null;
   let currentTool = "move";
   let cam = { x: 0, y: 0, w: BASE_W, h: BASE_H };
   let dragMode = null; // null | "node" | "pan"
@@ -2792,12 +2851,14 @@
     edgeDraftPos = null;
     resetCamera();
     renderGraphMeta();
-    initGraphSim();
+    rebuildGraphHistory(null, { resetStep: true });
   }
 
-  function initGraphSim(customNotice) {
-    stopGraphTimer();
-    const model = graphModel;
+  function edgeKey(u, v) {
+    return u < v ? `${u}-${v}` : `${v}-${u}`;
+  }
+
+  function computeGraphHistory(model) {
     const adj = buildAdjacency(model);
     const nodeMap = {};
     model.nodes.forEach(n => { nodeMap[n.id] = n; });
@@ -2815,25 +2876,154 @@
     const h0 = effectiveH(nodeMap[model.start], model);
     fScore[model.start] = computeF(0, h0);
 
-    const logs = [`Inicializado: origem ${model.start} inserida no open set com g=0, h=${h0}, f=${fScore[model.start]}.`];
-    if (customNotice) logs.unshift(customNotice);
+    const open = [{ id: model.start, g: 0, h: h0, f: fScore[model.start] }];
+    const closed = new Set();
+    let expandedCount = 0;
 
-    gState = {
-      preset: model,
-      adj,
-      nodeMap,
-      gScore,
-      fScore,
-      parent,
-      open: [{ id: model.start, g: 0, h: h0, f: fScore[model.start] }],
-      closed: new Set(),
-      current: null,
-      relaxedEdges: new Set(),
-      finalPath: [],
-      finished: false,
-      expandedCount: 0,
-      logs
-    };
+    function snapshotOpen() {
+      const byId = new Map();
+      for (const item of open) {
+        if (item.g === gScore[item.id] && !closed.has(item.id)) {
+          byId.set(item.id, item);
+        }
+      }
+      return Array.from(byId.values()).sort((a, b) => (a.f - b.f) || (a.h - b.h) || a.id.localeCompare(b.id));
+    }
+
+    function makeSnapshot(current, relaxedEdges, finalPath, finished, logLine) {
+      return {
+        preset: model,
+        nodeMap,
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        open: snapshotOpen(),
+        closed: new Set(closed),
+        current,
+        relaxedEdges: new Set(relaxedEdges),
+        finalPath: [...finalPath],
+        finished,
+        expandedCount,
+        logLine
+      };
+    }
+
+    const history = [
+      makeSnapshot(
+        null,
+        [],
+        [],
+        false,
+        `Inicializado: origem ${model.start} inserida no open set com g=0, h=${h0}, f=${fScore[model.start]}.`
+      )
+    ];
+
+    const MAX_STEPS = 500;
+    for (let step = 0; step < MAX_STEPS; step++) {
+      open.sort((a, b) => (a.f - b.f) || (a.h - b.h) || a.id.localeCompare(b.id));
+
+      let chosen = null;
+      while (open.length > 0) {
+        const cand = open.shift();
+        if (cand.g > gScore[cand.id] || closed.has(cand.id)) continue;
+        chosen = cand;
+        break;
+      }
+
+      if (!chosen) {
+        history.push(
+          makeSnapshot(null, [], [], true, "Open set vazio: nenhum caminho encontrado até o destino.")
+        );
+        break;
+      }
+
+      closed.add(chosen.id);
+      expandedCount++;
+
+      if (chosen.id === model.goal) {
+        const path = [];
+        let cur = model.goal;
+        while (cur) {
+          path.push(cur);
+          cur = parent[cur];
+        }
+        path.reverse();
+        history.push(
+          makeSnapshot(
+            chosen.id,
+            [],
+            path,
+            true,
+            `✅ Destino ${model.goal} EXPANDIDO! Caminho: ${path.join(" → ")} (custo total = ${gScore[model.goal]}).`
+          )
+        );
+        break;
+      }
+
+      const relaxedEdges = [];
+      const msgParts = [`Expandindo ${chosen.id} (g=${chosen.g}, h=${chosen.h}, f=${chosen.f}):`];
+
+      for (const { to, w } of adj[chosen.id]) {
+        if (closed.has(to)) {
+          msgParts.push(`${to} já no closed set`);
+          continue;
+        }
+        const tentativeG = chosen.g + w;
+        const hVal = effectiveH(nodeMap[to], model);
+        const newF = computeF(tentativeG, hVal);
+
+        if (tentativeG < gScore[to]) {
+          const wasDiscovered = gScore[to] < Infinity;
+          gScore[to] = tentativeG;
+          fScore[to] = newF;
+          parent[to] = chosen.id;
+          open.push({ id: to, g: tentativeG, h: hVal, f: newF });
+          relaxedEdges.push(edgeKey(chosen.id, to));
+          msgParts.push(
+            wasDiscovered
+              ? `↻ relaxou ${to} (g: → ${tentativeG}, f=${newF})`
+              : `+ descobriu ${to} (g=${tentativeG}, h=${hVal}, f=${newF})`
+          );
+        } else {
+          msgParts.push(`manteve ${to} (tentativa g=${tentativeG} ≥ ${gScore[to]})`);
+        }
+      }
+
+      history.push(makeSnapshot(chosen.id, relaxedEdges, [], false, msgParts.join(" | ")));
+    }
+
+    return history;
+  }
+
+  function syncGraphTimelineUI() {
+    const maxStep = Math.max(0, gHistory.length - 1);
+    progressSlider.max = String(maxStep);
+    progressSlider.value = String(gStepIdx);
+    progressSlider.disabled = maxStep === 0;
+    prevBtn.disabled = gStepIdx <= 0;
+    nextBtn.disabled = gStepIdx >= maxStep;
+    stepCounterEl.textContent = `Passo ${gStepIdx} / ${maxStep}`;
+  }
+
+  function setGraphStep(idx) {
+    if (!gHistory.length) return;
+    const maxStep = gHistory.length - 1;
+    gStepIdx = Math.max(0, Math.min(maxStep, idx));
+    gState = gHistory[gStepIdx];
+    gTransientNotice = null;
+    gEditNotice = null;
+    syncGraphTimelineUI();
+    renderGraph();
+  }
+
+  function rebuildGraphHistory(customNotice, { resetStep = false } = {}) {
+    const model = graphModel;
+    const wasAtEnd = !resetStep && gHistory.length > 1 && gStepIdx === gHistory.length - 1;
+    gHistory = computeGraphHistory(model);
+    const maxStep = Math.max(0, gHistory.length - 1);
+    gStepIdx = resetStep ? 0 : (wasAtEnd ? maxStep : Math.min(gStepIdx, maxStep));
+    gState = gHistory[gStepIdx];
+    gTransientNotice = null;
+    gEditNotice = customNotice || null;
 
     legendStartEl.textContent = `Origem (${model.start})`;
     legendGoalEl.textContent = `Destino (${model.goal})`;
@@ -2841,101 +3031,7 @@
       ? `Grafo editado (${model.nodes.length} nós, ${model.edges.length} arestas): h*(n) foi recalculado automaticamente até ${model.goal}.`
       : model.lesson;
     renderHeuristicTable(model);
-    renderGraph();
-  }
-
-  const RUN_LABEL_HTML = 'Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg>';
-  const PAUSE_LABEL_HTML = 'Pausar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2.2" y="2" width="2.8" height="8" rx="0.7"/><rect x="7" y="2" width="2.8" height="8" rx="0.7"/></svg>';
-
-  function stopGraphTimer() {
-    if (gTimer) {
-      clearInterval(gTimer);
-      gTimer = null;
-      runBtn.innerHTML = RUN_LABEL_HTML;
-    }
-  }
-
-  function edgeKey(u, v) {
-    return u < v ? `${u}-${v}` : `${v}-${u}`;
-  }
-
-  function stepGraph() {
-    if (!gState || gState.finished) {
-      stopGraphTimer();
-      return;
-    }
-
-    const s = gState;
-    s.relaxedEdges.clear();
-
-    s.open.sort((a, b) => (a.f - b.f) || (a.h - b.h) || a.id.localeCompare(b.id));
-
-    let chosen = null;
-    while (s.open.length > 0) {
-      const cand = s.open.shift();
-      if (cand.g > s.gScore[cand.id] || s.closed.has(cand.id)) continue;
-      chosen = cand;
-      break;
-    }
-
-    if (!chosen) {
-      s.finished = true;
-      s.current = null;
-      s.logs.unshift("Open set vazio: nenhum caminho encontrado até o destino.");
-      stopGraphTimer();
-      renderGraph();
-      return;
-    }
-
-    s.current = chosen.id;
-    s.closed.add(chosen.id);
-    s.expandedCount++;
-
-    if (chosen.id === s.preset.goal) {
-      const path = [];
-      let cur = s.preset.goal;
-      while (cur) {
-        path.push(cur);
-        cur = s.parent[cur];
-      }
-      path.reverse();
-      s.finalPath = path;
-      s.finished = true;
-      s.logs.unshift(`✅ Destino ${s.preset.goal} EXPANDIDO! Caminho: ${path.join(" → ")} (custo total = ${s.gScore[s.preset.goal]}).`);
-      stopGraphTimer();
-      renderGraph();
-      return;
-    }
-
-    const msgParts = [`Expandindo ${chosen.id} (g=${chosen.g}, h=${chosen.h}, f=${chosen.f}):`];
-
-    for (const { to, w } of s.adj[chosen.id]) {
-      if (s.closed.has(to)) {
-        msgParts.push(`${to} já no closed set`);
-        continue;
-      }
-      const tentativeG = chosen.g + w;
-      const hVal = effectiveH(s.nodeMap[to], s.preset);
-      const newF = computeF(tentativeG, hVal);
-
-      if (tentativeG < s.gScore[to]) {
-        const wasDiscovered = s.gScore[to] < Infinity;
-        s.gScore[to] = tentativeG;
-        s.fScore[to] = newF;
-        s.parent[to] = chosen.id;
-        s.open.push({ id: to, g: tentativeG, h: hVal, f: newF });
-        s.relaxedEdges.add(edgeKey(chosen.id, to));
-        msgParts.push(
-          wasDiscovered
-            ? `↻ relaxou ${to} (g: → ${tentativeG}, f=${newF})`
-            : `+ descobriu ${to} (g=${tentativeG}, h=${hVal}, f=${newF})`
-        );
-      } else {
-        msgParts.push(`manteve ${to} (tentativa g=${tentativeG} ≥ ${s.gScore[to]})`);
-      }
-    }
-
-    s.logs.unshift(msgParts.join(" | "));
+    syncGraphTimelineUI();
     renderGraph();
   }
 
@@ -3071,16 +3167,13 @@
       ? [...closed].map(id => `<span class="q-chip closed">${id} (g=${gScore[id]})</span>`).join("")
       : `<span style="color:var(--text-muted); font-size:0.8rem;">vazio</span>`;
 
-    logEl.innerHTML = s.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
-  }
-
-  function graphIntervalMs() {
-    return Math.round(1000 / Number(speedSlider.value));
-  }
-
-  function updateGraphSpeedLabel() {
-    const v = Number(speedSlider.value);
-    speedValEl.textContent = `${v} ${v === 1 ? "passo/s" : "passos/s"}`;
+    const logs = [];
+    if (gTransientNotice) logs.push(gTransientNotice);
+    if (gEditNotice) logs.push(gEditNotice);
+    for (let i = gStepIdx; i >= 0; i--) {
+      if (gHistory[i] && gHistory[i].logLine) logs.push(gHistory[i].logLine);
+    }
+    logEl.innerHTML = logs.map(l => `<div class="log-entry">${l}</div>`).join("");
   }
 
   function renderGraphMeta() {
@@ -3155,7 +3248,7 @@
     input.value = String(val);
     graphModel.edited = true;
     renderGraphMeta();
-    initGraphSim(`Heurística manual atualizada: h(${nodeId}) = ${val}.`);
+    rebuildGraphHistory(`Heurística manual atualizada: h(${nodeId}) = ${val}.`);
   });
 
   // Interações no canvas SVG (edição de nós/arestas + pan + zoom)
@@ -3208,7 +3301,7 @@
       graphModel.edited = true;
       recomputeHStar(graphModel);
       renderGraphMeta();
-      initGraphSim(`+ Nó ${id} adicionado.`);
+      rebuildGraphHistory(`+ Nó ${id} adicionado.`);
       return;
     }
 
@@ -3241,7 +3334,7 @@
           graphModel.edited = true;
           recomputeHStar(graphModel);
           renderGraphMeta();
-          initGraphSim(notice);
+          rebuildGraphHistory(notice);
         }
       } else if (edgeEl && !edgeDraftFrom) {
         e.preventDefault();
@@ -3255,7 +3348,7 @@
           graphModel.edited = true;
           recomputeHStar(graphModel);
           renderGraphMeta();
-          initGraphSim(`↻ Peso da aresta ${u}—${v} atualizado para ${w}.`);
+          rebuildGraphHistory(`↻ Peso da aresta ${u}—${v} atualizado para ${w}.`);
         }
       } else {
         edgeDraftFrom = null;
@@ -3270,7 +3363,7 @@
         e.preventDefault();
         const id = nodeEl.dataset.nodeId;
         if (id === graphModel.start || id === graphModel.goal) {
-          gState.logs.unshift(`Não é possível remover ${id} enquanto for origem ou destino (troque antes com Origem/Destino).`);
+          gTransientNotice = `Não é possível remover ${id} enquanto for origem ou destino (troque antes com Origem/Destino).`;
           renderGraph();
           return;
         }
@@ -3279,7 +3372,7 @@
         graphModel.edited = true;
         recomputeHStar(graphModel);
         renderGraphMeta();
-        initGraphSim(`− Nó ${id} e suas arestas foram removidos.`);
+        rebuildGraphHistory(`− Nó ${id} e suas arestas foram removidos.`);
       } else if (edgeEl) {
         e.preventDefault();
         const u = edgeEl.dataset.edgeU;
@@ -3289,7 +3382,7 @@
         graphModel.edited = true;
         recomputeHStar(graphModel);
         renderGraphMeta();
-        initGraphSim(`− Aresta ${u}—${v} removida.`);
+        rebuildGraphHistory(`− Aresta ${u}—${v} removida.`);
       }
       return;
     }
@@ -3301,7 +3394,7 @@
       graphModel.start = id;
       graphModel.edited = true;
       renderGraphMeta();
-      initGraphSim(`Origem alterada para ${id}.`);
+      rebuildGraphHistory(`Origem alterada para ${id}.`);
       return;
     }
 
@@ -3313,7 +3406,7 @@
       graphModel.edited = true;
       recomputeHStar(graphModel);
       renderGraphMeta();
-      initGraphSim(`Destino alterado para ${id} (h* recalculado).`);
+      rebuildGraphHistory(`Destino alterado para ${id} (h* recalculado).`);
     }
   });
 
@@ -3363,7 +3456,7 @@
       graphModel.edited = true;
       if (heurSel.value === "euclid") {
         renderGraphMeta();
-        initGraphSim();
+        rebuildGraphHistory();
       }
     }
   }
@@ -3414,30 +3507,13 @@
   });
 
   presetSel.addEventListener("change", loadGraphPreset);
-  algoSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
-  heurSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
-  clearSearchBtn.addEventListener("click", () => initGraphSim());
+  algoSel.addEventListener("change", () => { renderGraphMeta(); rebuildGraphHistory(); });
+  heurSel.addEventListener("change", () => { renderGraphMeta(); rebuildGraphHistory(); });
   resetBtn.addEventListener("click", loadGraphPreset);
-  stepBtn.addEventListener("click", () => { stopGraphTimer(); stepGraph(); });
-  runBtn.addEventListener("click", () => {
-    if (gTimer) {
-      stopGraphTimer();
-    } else {
-      if (gState.finished) initGraphSim();
-      runBtn.innerHTML = PAUSE_LABEL_HTML;
-      gTimer = setInterval(stepGraph, graphIntervalMs());
-    }
-  });
-  speedSlider.addEventListener("input", () => {
-    updateGraphSpeedLabel();
-    if (gTimer) {
-      stopGraphTimer();
-      runBtn.innerHTML = PAUSE_LABEL_HTML;
-      gTimer = setInterval(stepGraph, graphIntervalMs());
-    }
-  });
+  prevBtn.addEventListener("click", () => setGraphStep(gStepIdx - 1));
+  nextBtn.addEventListener("click", () => setGraphStep(gStepIdx + 1));
+  progressSlider.addEventListener("input", () => setGraphStep(Number(progressSlider.value)));
 
-  updateGraphSpeedLabel();
   selectTool("move");
   loadGraphPreset();
 })();
@@ -3598,12 +3674,11 @@
   const brushWeightInput = document.getElementById("brushWeight");
   const weightDecBtn = document.getElementById("weightDec");
   const weightIncBtn = document.getElementById("weightInc");
-  const stepBtn = document.getElementById("gridStepBtn");
-  const runBtn = document.getElementById("gridRunBtn");
-  const clearSearchBtn = document.getElementById("gridClearSearchBtn");
+  const prevBtn = document.getElementById("gridPrevBtn");
+  const nextBtn = document.getElementById("gridNextBtn");
+  const progressSlider = document.getElementById("gridProgress");
+  const stepCounterEl = document.getElementById("gridStepCounter");
   const resetBtn = document.getElementById("gridResetBtn");
-  const speedSlider = document.getElementById("gridSpeed");
-  const speedValEl = document.getElementById("gridSpeedVal");
   const gridMetaEl = document.getElementById("gridMeta");
   const boardEl = document.getElementById("gridBoard");
   const descEl = document.getElementById("gridDesc");
@@ -3627,8 +3702,11 @@
   let isDrawing = false;
   let lastPaintedKey = null;
   let gridModel = null; // { n, cells: 2D array of { wall, weight }, start: [c,r], end: [c,r] }
-  let search = null;
-  let timer = null;
+  let gridHistory = [];
+  let gridStepIdx = 0;
+  let cellEls = [];
+  let renderedGridN = 0;
+  let renderedCellSize = 0;
 
   function selectBrush(name) {
     currentBrush = name;
@@ -3661,17 +3739,6 @@
     brushWeightInput.value = String(Math.min(99, getBrushWeight() + 1));
     selectBrush("weight");
   });
-
-  const RUN_LABEL_HTML = 'Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg>';
-  const PAUSE_LABEL_HTML = 'Pausar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2.2" y="2" width="2.8" height="8" rx="0.7"/><rect x="7" y="2" width="2.8" height="8" rx="0.7"/></svg>';
-
-  function stopTimer() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-      runBtn.innerHTML = RUN_LABEL_HTML;
-    }
-  }
 
   function parseTxtToGrid(txt) {
     const lines = txt.replace(/\r/g, "").split("\n");
@@ -3806,27 +3873,221 @@
       `<span class="badge ${statusCls}">${statusText}</span>`;
   }
 
-  function resetSearchState() {
-    stopTimer();
+  function heapPush(heap, item) {
+    heap.push(item);
+    let i = heap.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      const cur = heap[i];
+      const par = heap[p];
+      if (cur.f < par.f || (cur.f === par.f && cur.h < par.h)) {
+        heap[i] = par;
+        heap[p] = cur;
+        i = p;
+      } else {
+        break;
+      }
+    }
+  }
+
+  function heapPop(heap) {
+    const top = heap[0];
+    const last = heap.pop();
+    if (heap.length > 0) {
+      heap[0] = last;
+      let i = 0;
+      const len = heap.length;
+      while (true) {
+        const l = i * 2 + 1;
+        const r = l + 1;
+        let smallest = i;
+        if (l < len && (heap[l].f < heap[smallest].f || (heap[l].f === heap[smallest].f && heap[l].h < heap[smallest].h))) {
+          smallest = l;
+        }
+        if (r < len && (heap[r].f < heap[smallest].f || (heap[r].f === heap[smallest].f && heap[r].h < heap[smallest].h))) {
+          smallest = r;
+        }
+        if (smallest === i) break;
+        const tmp = heap[i];
+        heap[i] = heap[smallest];
+        heap[smallest] = tmp;
+        i = smallest;
+      }
+    }
+    return top;
+  }
+
+  // Estado por célula no snapshot: 0=nenhum, 1=open, 2=closed, 3=current, 4=path
+  function computeGridHistory() {
+    const n = gridModel.n;
+    const size = n * n;
     const [sc, sr] = gridModel.start;
+    const [ec, er] = gridModel.end;
+    const startIdx = sr * n + sc;
+    const endIdx = er * n + ec;
+    const dirs = getActiveDirs();
+
+    const stateBase = new Uint8Array(size);
+    const gArr = new Float64Array(size).fill(-1);
+    const hArr = new Float64Array(size);
+    const fArr = new Float64Array(size);
+    const parent = new Int32Array(size).fill(-1);
+
     const h0 = heuristic(sc, sr);
     const f0 = calcF(0, h0);
-    const k0 = keyOf(sc, sr);
+    gArr[startIdx] = 0;
+    hArr[startIdx] = h0;
+    fArr[startIdx] = f0;
+    stateBase[startIdx] = 1;
 
-    search = {
-      openHeap: [{ c: sc, r: sr, g: 0, h: h0, f: f0 }],
-      gScore: new Map([[k0, 0]]),
-      hMap: new Map([[k0, h0]]),
-      fMap: new Map([[k0, f0]]),
-      parent: new Map(),
-      openSet: new Set([k0]),
-      closedSet: new Set(),
-      currentKey: null,
-      pathSet: new Set(),
+    const openHeap = [{ c: sc, r: sr, idx: startIdx, g: 0, h: h0, f: f0 }];
+    let openCount = 1;
+    let expandedCount = 0;
+
+    const history = [{
+      state: new Uint8Array(stateBase),
+      gArr: new Float64Array(gArr),
+      hArr: new Float64Array(hArr),
+      fArr: new Float64Array(fArr),
+      expandedCount: 0,
+      openCount: 1,
       finished: false,
       foundCost: null,
-      logs: [`Busca pronta: origem A=(${sc},${sr}) até B=(${gridModel.end[0]},${gridModel.end[1]}).`]
-    };
+      pathSteps: 0,
+      logLine: `Busca pronta: origem A=(${sc},${sr}) até B=(${ec},${er}).`
+    }];
+
+    const maxSteps = size + 2;
+    for (let step = 0; step < maxSteps; step++) {
+      let cur = null;
+      while (openHeap.length > 0) {
+        const item = heapPop(openHeap);
+        const curG = gArr[item.idx];
+        if (curG < 0 || item.g > curG || stateBase[item.idx] === 2) continue;
+        cur = item;
+        break;
+      }
+
+      if (!cur) {
+        history.push({
+          state: new Uint8Array(stateBase),
+          gArr: new Float64Array(gArr),
+          hArr: new Float64Array(hArr),
+          fArr: new Float64Array(fArr),
+          expandedCount,
+          openCount,
+          finished: true,
+          foundCost: null,
+          pathSteps: 0,
+          logLine: "❌ Open set esvaziou! Não existe caminho válido até B."
+        });
+        break;
+      }
+
+      if (stateBase[cur.idx] === 1) openCount--;
+      stateBase[cur.idx] = 2;
+      expandedCount++;
+
+      if (cur.idx === endIdx) {
+        const snapState = new Uint8Array(stateBase);
+        let p = endIdx;
+        let pathNodes = 0;
+        while (p !== -1) {
+          snapState[p] = 4;
+          pathNodes++;
+          p = parent[p];
+        }
+        const pathSteps = Math.max(0, pathNodes - 1);
+        history.push({
+          state: snapState,
+          gArr: new Float64Array(gArr),
+          hArr: new Float64Array(hArr),
+          fArr: new Float64Array(fArr),
+          expandedCount,
+          openCount,
+          finished: true,
+          foundCost: cur.g,
+          pathSteps,
+          logLine: `✅ Destino B=(${cur.c},${cur.r}) alcançado! Custo = ${cur.g}, passos = ${pathSteps}.`
+        });
+        break;
+      }
+
+      let discoveredHere = 0;
+      for (const [dc, dr, mult] of dirs) {
+        const nc = cur.c + dc;
+        const nr = cur.r + dr;
+        if (nc < 0 || nr < 0 || nc >= n || nr >= n) continue;
+
+        // Evita atravessar diagonalmente entre duas paredes adjacentes
+        if (dc !== 0 && dr !== 0 && gridModel.cells[cur.r][nc].wall && gridModel.cells[nr][cur.c].wall) continue;
+
+        const nIdx = nr * n + nc;
+        if (stateBase[nIdx] === 2) continue;
+
+        const stepCost = stepCostTo(nc, nr, mult);
+        if (stepCost === null) continue;
+
+        const tentG = round1(cur.g + stepCost);
+        const prevG = gArr[nIdx];
+
+        if (prevG < 0 || tentG < prevG) {
+          const hVal = heuristic(nc, nr);
+          const fVal = calcF(tentG, hVal);
+          if (stateBase[nIdx] === 0) openCount++;
+          stateBase[nIdx] = 1;
+          gArr[nIdx] = tentG;
+          hArr[nIdx] = hVal;
+          fArr[nIdx] = fVal;
+          parent[nIdx] = cur.idx;
+          heapPush(openHeap, { c: nc, r: nr, idx: nIdx, g: tentG, h: hVal, f: fVal });
+          discoveredHere++;
+        }
+      }
+
+      const snapState = new Uint8Array(stateBase);
+      snapState[cur.idx] = 3;
+      history.push({
+        state: snapState,
+        gArr: new Float64Array(gArr),
+        hArr: new Float64Array(hArr),
+        fArr: new Float64Array(fArr),
+        expandedCount,
+        openCount,
+        finished: false,
+        foundCost: null,
+        pathSteps: 0,
+        logLine: `Expandiu (${cur.c},${cur.r}) [g=${cur.g}, h=${cur.h}, f=${cur.f}] → ${discoveredHere} vizinho(s) atualizado(s).`
+      });
+    }
+
+    return history;
+  }
+
+  function syncGridTimelineUI() {
+    const maxStep = Math.max(0, gridHistory.length - 1);
+    progressSlider.max = String(maxStep);
+    progressSlider.value = String(gridStepIdx);
+    progressSlider.disabled = maxStep === 0;
+    prevBtn.disabled = gridStepIdx <= 0;
+    nextBtn.disabled = gridStepIdx >= maxStep;
+    stepCounterEl.textContent = `Passo ${gridStepIdx} / ${maxStep}`;
+  }
+
+  function setGridStep(idx) {
+    if (!gridHistory.length) return;
+    const maxStep = gridHistory.length - 1;
+    gridStepIdx = Math.max(0, Math.min(maxStep, idx));
+    syncGridTimelineUI();
+    renderGrid();
+  }
+
+  function rebuildGridHistory({ resetStep = false } = {}) {
+    const wasAtEnd = !resetStep && gridHistory.length > 1 && gridStepIdx === gridHistory.length - 1;
+    gridHistory = computeGridHistory();
+    const maxStep = Math.max(0, gridHistory.length - 1);
+    gridStepIdx = resetStep ? 0 : (wasAtEnd ? maxStep : Math.min(gridStepIdx, maxStep));
+    syncGridTimelineUI();
     renderGrid();
   }
 
@@ -3834,91 +4095,7 @@
     const p = GRID_PRESETS.find(x => x.id === id) || GRID_PRESETS[0];
     gridModel = parseTxtToGrid(p.txt);
     descEl.textContent = p.desc;
-    resetSearchState();
-  }
-
-  function stepGrid() {
-    if (!search || search.finished) {
-      stopTimer();
-      return;
-    }
-
-    search.openHeap.sort((a, b) => (a.f - b.f) || (a.h - b.h));
-
-    let cur = null;
-    while (search.openHeap.length > 0) {
-      const item = search.openHeap.shift();
-      const k = keyOf(item.c, item.r);
-      if (item.g > (search.gScore.get(k) ?? Infinity) || search.closedSet.has(k)) continue;
-      cur = item;
-      break;
-    }
-
-    if (!cur) {
-      search.finished = true;
-      search.currentKey = null;
-      search.logs.unshift("❌ Open set esvaziou! Não existe caminho válido até B.");
-      stopTimer();
-      renderGrid();
-      return;
-    }
-
-    const ck = keyOf(cur.c, cur.r);
-    search.currentKey = ck;
-    search.openSet.delete(ck);
-    search.closedSet.add(ck);
-
-    if (isEnd(cur.c, cur.r)) {
-      // Reconstruct path
-      let pk = ck;
-      while (pk) {
-        search.pathSet.add(pk);
-        pk = search.parent.get(pk);
-      }
-      search.finished = true;
-      search.foundCost = cur.g;
-      search.logs.unshift(`✅ Destino B=(${cur.c},${cur.r}) alcançado! Custo = ${cur.g}, passos = ${search.pathSet.size - 1}.`);
-      stopTimer();
-      renderGrid();
-      return;
-    }
-
-    const dirs = getActiveDirs();
-    let discoveredHere = 0;
-
-    for (const [dc, dr, mult] of dirs) {
-      const nc = cur.c + dc;
-      const nr = cur.r + dr;
-      if (nc < 0 || nr < 0 || nc >= gridModel.n || nr >= gridModel.n) continue;
-
-      // Evita atravessar diagonalmente entre duas paredes adjacentes
-      if (dc !== 0 && dr !== 0 && gridModel.cells[cur.r][nc].wall && gridModel.cells[nr][cur.c].wall) continue;
-
-      const nk = keyOf(nc, nr);
-      if (search.closedSet.has(nk)) continue;
-
-      const stepCost = stepCostTo(nc, nr, mult);
-      if (stepCost === null) continue;
-
-      const tentG = round1(cur.g + stepCost);
-      const prevG = search.gScore.get(nk) ?? Infinity;
-
-      if (tentG < prevG) {
-        const hVal = heuristic(nc, nr);
-        const fVal = calcF(tentG, hVal);
-        search.gScore.set(nk, tentG);
-        search.hMap.set(nk, hVal);
-        search.fMap.set(nk, fVal);
-        search.parent.set(nk, ck);
-        search.openSet.add(nk);
-        search.openHeap.push({ c: nc, r: nr, g: tentG, h: hVal, f: fVal });
-        discoveredHere++;
-      }
-    }
-
-    search.logs.unshift(`Expandiu (${cur.c},${cur.r}) [g=${cur.g}, h=${cur.h}, f=${cur.f}] → ${discoveredHere} vizinho(s) atualizado(s).`);
-    if (search.logs.length > 40) search.logs.pop();
-    renderGrid();
+    rebuildGridHistory({ resetStep: true });
   }
 
   function applyBrush(c, r) {
@@ -3940,80 +4117,133 @@
         gridModel.cells[r][c] = { wall: false, weight: 1 };
       }
     }
-    resetSearchState();
+    rebuildGridHistory();
+  }
+
+  function ensureGridDom(n, cellSize) {
+    if (renderedGridN !== n) {
+      boardEl.innerHTML = "";
+      cellEls = new Array(n * n);
+      const frag = document.createDocumentFragment();
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          const div = document.createElement("div");
+          div.className = "cell";
+          div.dataset.c = String(c);
+          div.dataset.r = String(r);
+          div._cls = "";
+          div._html = "";
+          div._title = "";
+          cellEls[r * n + c] = div;
+          frag.appendChild(div);
+        }
+      }
+      boardEl.appendChild(frag);
+      renderedGridN = n;
+      renderedCellSize = 0;
+    }
+
+    if (renderedCellSize !== cellSize) {
+      boardEl.style.gridTemplateColumns = `repeat(${n}, ${cellSize}px)`;
+      const sizePx = `${cellSize}px`;
+      for (let i = 0; i < cellEls.length; i++) {
+        cellEls[i].style.width = sizePx;
+        cellEls[i].style.height = sizePx;
+      }
+      renderedCellSize = cellSize;
+    }
   }
 
   function renderGrid() {
+    const snap = gridHistory[gridStepIdx];
+    if (!snap) return;
+
     const n = gridModel.n;
     const wrapWidth = boardEl.parentElement ? boardEl.parentElement.clientWidth : 0;
     const idealCell = n >= 18 ? 36 : n >= 13 ? 40 : 44;
     const fitCell = wrapWidth > 0 ? Math.floor((wrapWidth - 16 - (n - 1) * 2) / n) : idealCell;
     const cellSize = Math.max(16, Math.min(idealCell, fitCell));
-    boardEl.style.gridTemplateColumns = `repeat(${n}, ${cellSize}px)`;
-    boardEl.innerHTML = "";
+
+    ensureGridDom(n, cellSize);
 
     const showDetails = cellSize >= 32;
+    const { state, gArr, hArr, fArr } = snap;
+    const [sc, sr] = gridModel.start;
+    const [ec, er] = gridModel.end;
 
     for (let r = 0; r < n; r++) {
+      const rowCells = gridModel.cells[r];
+      const rowOffset = r * n;
       for (let c = 0; c < n; c++) {
-        const cell = gridModel.cells[r][c];
-        const k = keyOf(c, r);
-        const startCell = isStart(c, r);
-        const endCell = isEnd(c, r);
-        const div = document.createElement("div");
-        div.className = "cell";
-        div.dataset.c = String(c);
-        div.dataset.r = String(r);
-        div.style.width = `${cellSize}px`;
-        div.style.height = `${cellSize}px`;
+        const idx = rowOffset + c;
+        const cell = rowCells[c];
+        const div = cellEls[idx];
+        const startCell = c === sc && r === sr;
+        const endCell = c === ec && r === er;
+        const st = state[idx];
 
-        if (cell.wall) div.classList.add("wall");
-        else div.classList.add("empty");
+        let cls = cell.wall ? "cell wall" : "cell empty";
+        if (st === 1) cls += " open";
+        else if (st === 2) cls += " closed";
+        else if (st === 3) cls += " current";
+        else if (st === 4) cls += " path";
+        if (startCell) cls += " start";
+        if (endCell) cls += " end";
 
-        if (search.openSet.has(k)) div.classList.add("open");
-        if (search.closedSet.has(k)) div.classList.add("closed");
-        if (k === search.currentKey && !search.finished) div.classList.add("current");
-        if (search.pathSet.has(k)) div.classList.add("path");
-        if (startCell) div.classList.add("start");
-        if (endCell) div.classList.add("end");
-
-        if (startCell || endCell) {
-          const gVal = search.gScore.get(k);
-          const lbl = startCell ? "A" : "B";
-          div.innerHTML = `<span class="cell-main">${lbl}</span>` +
-            (showDetails && gVal !== undefined ? `<span class="cell-gh">g:${gVal}</span>` : "");
-        } else if (showDetails && search.fMap.has(k)) {
-          const gVal = search.gScore.get(k);
-          const hVal = search.hMap.get(k);
-          const fVal = search.fMap.get(k);
-          div.innerHTML = `<span class="cell-f">${fVal}</span><span class="cell-gh">${gVal}+${hVal}</span>`;
-        } else if (!cell.wall) {
-          const weightCls = cell.weight > 1 ? "cell-weight heavy" : "cell-weight";
-          div.innerHTML = `<span class="${weightCls}">${cell.weight}</span>`;
+        if (div._cls !== cls) {
+          div.className = cls;
+          div._cls = cls;
         }
 
-        div.title = cell.wall
+        const gVal = gArr[idx];
+        let html = "";
+        if (startCell || endCell) {
+          const lbl = startCell ? "A" : "B";
+          html = `<span class="cell-main">${lbl}</span>` +
+            (showDetails && gVal >= 0 ? `<span class="cell-gh">g:${gVal}</span>` : "");
+        } else if (showDetails && gVal >= 0) {
+          html = `<span class="cell-f">${fArr[idx]}</span><span class="cell-gh">${gVal}+${hArr[idx]}</span>`;
+        } else if (!cell.wall) {
+          const weightCls = cell.weight > 1 ? "cell-weight heavy" : "cell-weight";
+          html = `<span class="${weightCls}">${cell.weight}</span>`;
+        }
+
+        if (div._html !== html) {
+          div.innerHTML = html;
+          div._html = html;
+        }
+
+        const title = cell.wall
           ? `(${c}, ${r}) • parede`
           : `(${c}, ${r}) • custo ${cell.weight}`;
-
-        boardEl.appendChild(div);
+        if (div._title !== title) {
+          div.title = title;
+          div._title = title;
+        }
       }
     }
 
-    expandedEl.textContent = search.closedSet.size;
-    discoveredEl.textContent = search.openSet.size;
-    costEl.textContent = search.foundCost !== null ? search.foundCost : "—";
-    stepsEl.textContent = search.pathSet.size > 0 ? search.pathSet.size - 1 : "—";
+    expandedEl.textContent = snap.expandedCount;
+    discoveredEl.textContent = snap.openCount;
+    costEl.textContent = snap.foundCost !== null ? snap.foundCost : "—";
+    stepsEl.textContent = snap.foundCost !== null ? snap.pathSteps : "—";
 
-    if (search.finished && search.foundCost !== null) {
-      statusEl.innerHTML = `<span class="badge ok">Caminho encontrado!</span> Custo total = <strong>${search.foundCost}</strong>.`;
-    } else if (search.finished) {
+    if (snap.finished && snap.foundCost !== null) {
+      statusEl.innerHTML = `<span class="badge ok">Caminho encontrado!</span> Custo total = <strong>${snap.foundCost}</strong>.`;
+    } else if (snap.finished) {
       statusEl.innerHTML = `<span class="badge bad">Sem caminho</span> Destino inacessível.`;
+    } else if (gridStepIdx === 0) {
+      statusEl.textContent = "Arraste o controle de progresso para acompanhar a busca passo a passo.";
     } else {
-      statusEl.textContent = "Pronto ou em execução passo a passo.";
+      statusEl.textContent = `Passo ${gridStepIdx} de ${gridHistory.length - 1}.`;
     }
 
-    logEl.innerHTML = search.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
+    const logEntries = [];
+    const minLogIdx = Math.max(0, gridStepIdx - 39);
+    for (let i = gridStepIdx; i >= minLogIdx; i--) {
+      logEntries.push(`<div class="log-entry">${gridHistory[i].logLine}</div>`);
+    }
+    logEl.innerHTML = logEntries.join("");
   }
 
   function cellFromEvent(e) {
@@ -4062,53 +4292,21 @@
     let lastWidth = 0;
     new ResizeObserver((entries) => {
       const w = Math.round(entries[0].contentRect.width);
-      if (w > 0 && w !== lastWidth && gridModel && search) {
+      if (w > 0 && w !== lastWidth && gridModel && gridHistory.length > 0) {
         lastWidth = w;
         renderGrid();
       }
     }).observe(boardEl.parentElement);
   }
 
-  function gridIntervalMs() {
-    return Math.round(1000 / Number(speedSlider.value));
-  }
-
-  function updateGridSpeedLabel() {
-    const v = Number(speedSlider.value);
-    speedValEl.textContent = `${v} passos/s`;
-  }
-
   presetSel.addEventListener("change", () => loadPresetById(presetSel.value));
-  algoSel.addEventListener("change", () => { renderGridMeta(); resetSearchState(); });
-  dirsSel.addEventListener("change", () => { renderGridMeta(); resetSearchState(); });
-  clearSearchBtn.addEventListener("click", resetSearchState);
+  algoSel.addEventListener("change", () => { renderGridMeta(); rebuildGridHistory(); });
+  dirsSel.addEventListener("change", () => { renderGridMeta(); rebuildGridHistory(); });
   resetBtn.addEventListener("click", () => loadPresetById(presetSel.value));
+  prevBtn.addEventListener("click", () => setGridStep(gridStepIdx - 1));
+  nextBtn.addEventListener("click", () => setGridStep(gridStepIdx + 1));
+  progressSlider.addEventListener("input", () => setGridStep(Number(progressSlider.value)));
 
-  stepBtn.addEventListener("click", () => {
-    stopTimer();
-    stepGrid();
-  });
-
-  runBtn.addEventListener("click", () => {
-    if (timer) {
-      stopTimer();
-    } else {
-      if (search.finished) resetSearchState();
-      runBtn.innerHTML = PAUSE_LABEL_HTML;
-      timer = setInterval(stepGrid, gridIntervalMs());
-    }
-  });
-
-  speedSlider.addEventListener("input", () => {
-    updateGridSpeedLabel();
-    if (timer) {
-      stopTimer();
-      runBtn.innerHTML = PAUSE_LABEL_HTML;
-      timer = setInterval(stepGrid, gridIntervalMs());
-    }
-  });
-
-  updateGridSpeedLabel();
   renderGridMeta();
   loadPresetById(GRID_PRESETS[0].id);
 })();
