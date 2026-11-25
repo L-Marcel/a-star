@@ -525,9 +525,10 @@
       animation: secTargetPulse 0.9s ease-out;
     }
 
-    h2.sec-title.sec-focus-pulse .sec-num {
+    section.is-focused:not(.is-collapsed) h2.sec-title .sec-num {
       box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
       border-color: var(--accent);
+      background: rgba(96, 165, 250, 0.22);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -3219,10 +3220,25 @@
     toggleAllBtn.textContent = anyExpanded ? "Recolher todas as seções" : "Expandir todas as seções";
   }
 
+  function setFocusedSection(id) {
+    sections.forEach((sec) => {
+      const match = id !== null && sec.id === id && !sec.classList.contains("is-collapsed");
+      sec.classList.toggle("is-focused", match);
+      if (!match) {
+        const ctrl = sectionControls.get(sec.id);
+        if (ctrl) ctrl.heading.classList.remove("sec-focus-pulse");
+      }
+    });
+  }
+
   function setSectionExpanded(sec, expanded) {
     const ctrl = sectionControls.get(sec.id);
     if (!ctrl) return;
     sec.classList.toggle("is-collapsed", !expanded);
+    if (!expanded) {
+      sec.classList.remove("is-focused");
+      ctrl.heading.classList.remove("sec-focus-pulse");
+    }
     ctrl.toggle.setAttribute("aria-expanded", String(expanded));
     ctrl.chevronBtn.setAttribute("aria-expanded", String(expanded));
     ctrl.chevronBtn.title = expanded ? "Recolher seção" : "Expandir seção";
@@ -3294,9 +3310,20 @@
     const onToggle = () => {
       const nextExpanded = sec.classList.contains("is-collapsed");
       setSectionExpanded(sec, nextExpanded);
+      if (nextExpanded) {
+        setFocusedSection(id);
+        setActiveLink(id);
+        pulseSectionTitle(sectionControls.get(id));
+      }
     };
     toggle.addEventListener("click", onToggle);
     chevronBtn.addEventListener("click", onToggle);
+
+    collapse.addEventListener("pointerdown", () => {
+      if (!sec.classList.contains("is-collapsed") && !sec.classList.contains("is-focused")) {
+        setFocusedSection(id);
+      }
+    });
 
     anchor.addEventListener("click", (e) => {
       e.preventDefault();
@@ -3330,6 +3357,7 @@
 
     const wasCollapsed = sec.classList.contains("is-collapsed");
     setSectionExpanded(sec, true);
+    setFocusedSection(id);
     setActiveLink(id);
 
     if (pushHash && location.hash !== `#${id}`) {
