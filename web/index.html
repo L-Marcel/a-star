@@ -1001,12 +1001,17 @@
       line-height: 1.45;
     }
 
+    .control-group.action-group {
+      padding: 6px;
+    }
+
     .timeline-bar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 10px;
       flex: 1 1 100%;
+      width: 100%;
       min-width: 0;
     }
 
@@ -1014,7 +1019,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      flex: 1 1 280px;
+      flex: 1 1 100%;
+      width: 100%;
       min-width: 0;
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -1615,6 +1621,9 @@
       }
       .control-group select {
         flex: 1 1 160px;
+      }
+      .control-group.action-group button {
+        width: 100%;
       }
       .timeline-track {
         flex-wrap: wrap;
@@ -2316,6 +2325,9 @@
             <button class="gtool-btn" data-gtool="start" type="button">Origem</button>
             <button class="gtool-btn" data-gtool="goal" type="button">Destino</button>
           </div>
+          <div class="control-group action-group">
+            <button id="gResetBtn" type="button">Restaurar grafo <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
+          </div>
         </div>
 
         <div class="controls-bar">
@@ -2327,7 +2339,6 @@
               <button id="gNextBtn" class="timeline-step-btn" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
               <span id="gStepCounter" class="timeline-counter">Passo 0 / 0</span>
             </div>
-            <button id="gResetBtn" type="button">Restaurar grafo <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
           </div>
         </div>
 
@@ -2440,6 +2451,9 @@
             <button class="brush-btn" data-brush="start" type="button">Origem (A)</button>
             <button class="brush-btn" data-brush="end" type="button">Destino (B)</button>
           </div>
+          <div class="control-group action-group">
+            <button id="gridResetBtn" type="button">Restaurar mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
+          </div>
         </div>
 
         <div class="controls-bar">
@@ -2451,7 +2465,6 @@
               <button id="gridNextBtn" class="timeline-step-btn" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
               <span id="gridStepCounter" class="timeline-counter">Passo 0 / 0</span>
             </div>
-            <button id="gridResetBtn" type="button">Restaurar mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
           </div>
         </div>
 
