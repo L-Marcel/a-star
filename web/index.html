@@ -304,6 +304,47 @@
       line-height: 1.45;
     }
 
+    .hero-authors {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: var(--text-muted);
+    }
+
+    .hero-author {
+      white-space: nowrap;
+      color: #c4d1f0;
+      font-weight: 500;
+    }
+
+    .hero-author-sep {
+      color: #5a6ea8;
+      user-select: none;
+    }
+
+    @media (max-width: 460px) {
+      .hero-authors {
+        gap: 6px;
+        margin-top: 18px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(54, 71, 125, 0.35);
+      }
+      .hero-author-sep {
+        display: none;
+      }
+      .hero-author {
+        font-size: 0.76rem;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(13, 19, 38, 0.65);
+        border: 1px solid rgba(54, 71, 125, 0.45);
+      }
+    }
+
     .f-sym { color: var(--accent-warn); font-weight: 700; }
     .g-sym { color: var(--accent); font-weight: 700; }
     .h-sym { color: var(--accent-2); font-weight: 700; }
@@ -1442,6 +1483,13 @@
         <span class="hero-formula-note">
           (custo total estimado = custo real percorrido + estimativa até o destino)
         </span>
+      </div>
+      <div class="hero-authors" aria-label="Autores">
+        <span class="hero-author">Lucas Marcel</span>
+        <span class="hero-author-sep" aria-hidden="true">•</span>
+        <span class="hero-author">Glauco Paiva</span>
+        <span class="hero-author-sep" aria-hidden="true">•</span>
+        <span class="hero-author">Filipe Campos</span>
       </div>
     </header>
 
