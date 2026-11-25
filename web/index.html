@@ -6,6 +6,7 @@
   <title>Algoritmo A* — do conceito à prática</title>
   <style>
     :root {
+      color-scheme: dark;
       --bg: #0b1020;
       --bg-elevated: #121931;
       --bg-card: #161f3b;
@@ -31,6 +32,37 @@
 
     * {
       box-sizing: border-box;
+    }
+
+    *::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: var(--bg-code);
+      border-radius: 999px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 999px;
+      border: 2px solid var(--bg-code);
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: #4f66a8;
+    }
+
+    *::-webkit-scrollbar-corner {
+      background: var(--bg-code);
+    }
+
+    @supports not selector(::-webkit-scrollbar) {
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #36477d #0d1326;
+      }
     }
 
     html {
@@ -543,6 +575,11 @@
       max-width: 100%;
       min-width: 0;
       text-overflow: ellipsis;
+    }
+
+    select:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     .weight-input {
@@ -1472,9 +1509,9 @@
     <section id="simulador-grafo">
       <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Simulador: grafos ponderados</span></h2>
       <p>
-        Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
-        a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
-        <strong>busca gulosa</strong> e <strong>A* ponderado</strong> para comparar o comportamento em cada exemplo!
+        Em grafos genéricos (sem grade fixa), a heurística <code>h(n)</code> é fornecida como uma estimativa por nó.
+        Alterne entre o <strong>algoritmo</strong> e diferentes <strong>heurísticas</strong> (da tabela do grafo até
+        estimativas exatas, fracas ou superestimadas) para ver na prática o efeito sobre os nós expandidos e a otimalidade.
       </p>
 
       <div class="lab-panel">
@@ -1492,6 +1529,19 @@
               <option value="weighted">A* ponderado</option>
             </select>
           </div>
+          <div class="control-group">
+            <label for="graphHeuristic">Heurística h(n):</label>
+            <select id="graphHeuristic">
+              <option value="preset">Tabela do grafo · padrão</option>
+              <option value="exact">Exata · h*(n) real</option>
+              <option value="weak">Fraca · 50% de h*(n)</option>
+              <option value="zero">Nula · h(n) = 0</option>
+              <option value="over">Superestimada · 1,5× h*(n)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="controls-bar">
           <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
           <button id="gRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
           <button id="gResetBtn">Reiniciar <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
@@ -1746,6 +1796,7 @@
 
   const presetSel = document.getElementById("graphPreset");
   const algoSel = document.getElementById("graphAlgo");
+  const heurSel = document.getElementById("graphHeuristic");
   const stepBtn = document.getElementById("gStepBtn");
   const runBtn = document.getElementById("gRunBtn");
   const resetBtn = document.getElementById("gResetBtn");
@@ -1784,8 +1835,14 @@
     return g + h;
   }
 
-  function effectiveH(h) {
-    return algoSel.value === "dijkstra" ? 0 : h;
+  function effectiveH(node) {
+    if (algoSel.value === "dijkstra") return 0;
+    const hMode = heurSel.value;
+    if (hMode === "zero") return 0;
+    if (hMode === "exact") return node.hStar;
+    if (hMode === "weak") return Math.floor(node.hStar * 0.5);
+    if (hMode === "over") return Math.ceil(node.hStar * 1.5);
+    return node.h;
   }
 
   function buildAdjacency(preset) {
@@ -1815,7 +1872,7 @@
     });
 
     gScore[preset.start] = 0;
-    const h0 = effectiveH(nodeMap[preset.start].h);
+    const h0 = effectiveH(nodeMap[preset.start]);
     fScore[preset.start] = computeF(0, h0);
 
     gState = {
@@ -1916,7 +1973,7 @@
         continue;
       }
       const tentativeG = chosen.g + w;
-      const hVal = effectiveH(s.nodeMap[to].h);
+      const hVal = effectiveH(s.nodeMap[to]);
       const newF = computeF(tentativeG, hVal);
 
       if (tentativeG < s.gScore[to]) {
@@ -1942,7 +1999,7 @@
 
   function renderHeuristicTable(preset) {
     const rows = preset.nodes.map(n => {
-      const hVal = effectiveH(n.h);
+      const hVal = effectiveH(n);
       const ok = hVal <= n.hStar;
       return `<tr>
         <td><strong>${n.id}</strong></td>
@@ -2010,7 +2067,7 @@
       }
 
       const gTxt = gScore[n.id] === Infinity ? "∞" : gScore[n.id];
-      const hVal = effectiveH(n.h);
+      const hVal = effectiveH(n);
       const fTxt = fScore[n.id] === Infinity ? "∞" : fScore[n.id];
 
       const badgeY = n.y > 250 ? n.y + 42 : n.y - 34;
@@ -2059,17 +2116,51 @@
 
   function renderGraphMeta() {
     const algo = algoSel.value;
-    const info = {
-      astar: { formula: "f = g + h", status: "Ótimo se h admissível", cls: "ok" },
-      dijkstra: { formula: "f = g (h = 0)", status: "Ótimo (sem heurística)", cls: "ok" },
-      greedy: { formula: "f = h (g = 0)", status: "Não garante ótimo", cls: "bad" },
-      weighted: { formula: "f = g + 2h", status: "Subótimo (≤ 2·C*)", cls: "warn" }
-    }[algo];
-    graphMetaEl.innerHTML = `<span class="badge">${info.formula}</span><span class="badge ${info.cls}">${info.status}</span>`;
+    const hMode = heurSel.value;
+    const preset = getPreset();
+    const isDijkstra = algo === "dijkstra";
+    heurSel.disabled = isDijkstra;
+
+    const formulaMap = {
+      astar: "f = g + h",
+      dijkstra: "f = g",
+      greedy: "f = h",
+      weighted: "f = g + 2h"
+    };
+    const heurLabelMap = {
+      preset: "h(n): tabela do grafo",
+      exact: "h(n): exata h*(n)",
+      weak: "h(n): fraca (50%)",
+      zero: "h(n) = 0",
+      over: "h(n): superestimada (1,5×)"
+    };
+    const allAdmissible = preset.nodes.every(n => effectiveH(n) <= n.hStar);
+
+    let statusText = "Heurística admissível";
+    let statusCls = "ok";
+    if (isDijkstra) {
+      statusText = "Ótimo (ignora h)";
+    } else if (algo === "greedy") {
+      statusText = "Não garante ótimo";
+      statusCls = "bad";
+    } else if (algo === "weighted") {
+      statusText = allAdmissible ? "Subótimo (≤ 2·C*)" : "Não admissível";
+      statusCls = allAdmissible ? "warn" : "bad";
+    } else if (!allAdmissible) {
+      statusText = "Heurística não admissível";
+      statusCls = "bad";
+    }
+
+    const heurBadge = isDijkstra ? "h(n) = 0 (ignorada)" : heurLabelMap[hMode];
+    graphMetaEl.innerHTML =
+      `<span class="badge">${formulaMap[algo]}</span>` +
+      `<span class="badge">${heurBadge}</span>` +
+      `<span class="badge ${statusCls}">${statusText}</span>`;
   }
 
-  presetSel.addEventListener("change", initGraphSim);
+  presetSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
   algoSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
+  heurSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
   resetBtn.addEventListener("click", initGraphSim);
   stepBtn.addEventListener("click", () => { stopGraphTimer(); stepGraph(); });
   runBtn.addEventListener("click", () => {
