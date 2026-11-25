@@ -796,19 +796,6 @@
       opacity: 0.9;
     }
 
-    textarea.txt-io {
-      width: 100%;
-      min-height: 125px;
-      background: var(--bg-code);
-      color: #d9e4ff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px;
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      resize: vertical;
-    }
-
     .badge {
       display: inline-flex;
       align-items: center;
@@ -954,7 +941,7 @@
       <div class="nav-group-label">Atalhos rápidos</div>
       <nav>
         <a href="#simulador-grafo">▶ Testar grafo ponderado</a>
-        <a href="#simulador-grade">▶ Testar labirintos e água</a>
+        <a href="#simulador-grade">▶ Testar grafos em grade</a>
       </nav>
     </div>
   </aside>
@@ -1095,7 +1082,7 @@
 
     <!-- SEÇÃO 3 -->
     <section id="estruturas">
-      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Estruturas de dados e funcionamento passo a passo</span></h2>
+      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Estruturas e passo a passo</span></h2>
 
       <div class="grid-2">
         <div class="card">
@@ -1112,16 +1099,15 @@
         </div>
 
         <div class="card">
-          <h4>2. gScore (<code>min_cost</code>) e closed set</h4>
+          <h4>2. gScore e closed set</h4>
           <p>
             O mapa <code>gScore[n]</code> guarda o menor custo real <code>g(n)</code> encontrado até o momento
             (inicia como <code>&infin;</code> para todos, exceto <code>gScore[A] = 0</code>).
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            O <strong>closed set</strong> registra nós já expandidos. Em implementações práticas com
-            <code>BinaryHeap</code> (como no código Rust deste repositório), em vez de remover entradas antigas
-            do heap quando um nó é relaxado, insere-se a nova entrada e descartam-se entradas obsoletas na remoção
-            (<em>lazy deletion</em>: se <code>g_popped &gt; gScore[n]</code>, ignore).
+            O <strong>closed set</strong> registra nós já expandidos. Em implementações práticas com heap binário,
+            em vez de remover entradas antigas quando um nó é relaxado, insere-se a nova entrada e descartam-se
+            entradas obsoletas na remoção (<em>lazy deletion</em>: se <code>g_popped &gt; gScore[n]</code>, ignore).
           </p>
         </div>
       </div>
@@ -1185,7 +1171,7 @@
 
     <!-- SEÇÃO 4: SIMULADOR DE GRAFOS PONDERADOS -->
     <section id="simulador-grafo">
-      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Simulador interativo: grafos ponderados</span></h2>
+      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Simulador: grafos ponderados</span></h2>
       <p>
         Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
         a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
@@ -1266,7 +1252,7 @@
 
     <!-- SEÇÃO 5 -->
     <section id="propriedades">
-      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Admissibilidade, consistência e garantias matemáticas</span></h2>
+      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Admissibilidade e consistência</span></h2>
       <p>
         Nem toda função <code>h(n)</code> garante que o A* encontre o menor caminho. A qualidade da resposta depende
         diretamente de duas propriedades matemáticas formais.
@@ -1336,7 +1322,7 @@
 
     <!-- SEÇÃO 6 -->
     <section id="heuristicas">
-      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Principais funções heurísticas (grades e espaços 2D)</span></h2>
+      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Funções heurísticas</span></h2>
 
       <div class="table-wrap">
         <table>
@@ -1353,7 +1339,7 @@
               <td><strong>Manhattan (L₁)</strong></td>
               <td><code>c_min &middot; (dx + dy)</code></td>
               <td>4 direções (N, S, L, O)</td>
-              <td>Exata quando não há obstáculos nem terreno mais caro. Usada neste repositório.</td>
+              <td>Exata quando não há obstáculos nem arestas com pesos diferentes.</td>
             </tr>
             <tr>
               <td><strong>Euclidiana (L₂)</strong></td>
@@ -1378,17 +1364,17 @@
       </div>
 
       <div class="callout success">
-        <strong class="title">Cuidado com pesos de terreno (ex.: água custando 2)!</strong>
-        Para que a distância geométrica seja admissível, multiplique-a pelo <strong>menor custo possível de passo</strong>
-        <code>c_min</code>. No projeto deste repositório, terreno comum custa <code>1</code> e água custa <code>2</code>,
-        então <code>c_min = 1</code>: a distância de Manhattan pura continua admissível! Mas se existisse algum terreno
-        "rodovia rápida" custando <code>0.5</code>, a Manhattan sem fator <code>0.5</code> deixaria de ser admissível.
+        <strong class="title">Cuidado com os pesos!</strong>
+        Para que uma distância geométrica seja admissível, multiplique-a pelo <strong>menor custo possível de aresta</strong>
+        <code>c_min</code>. Quando o menor peso do grafo é <code>1</code> e os demais são maiores ou iguais a <code>1</code>,
+        a distância de Manhattan pura continua admissível. Já se existir alguma aresta mais barata (como custo <code>0.5</code>),
+        é preciso aplicar o fator <code>c_min = 0.5</code> para não superestimar o custo real.
       </div>
     </section>
 
     <!-- SEÇÃO 7 -->
     <section id="complexidade">
-      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade, limitações e variações</span></h2>
+      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade e variações</span></h2>
 
       <div class="grid-2">
         <div class="card">
@@ -1418,17 +1404,16 @@
         <li><strong>IDA* (Iterative Deepening A*):</strong> troca a fila de prioridade por busca em profundidade limitada por um limiar de <code>f(n)</code>, reduzindo a memória para <code>O(d)</code>.</li>
         <li><strong>A* bidirecional:</strong> dispara duas buscas simultâneas — uma de <code>A &rarr; B</code> e outra de <code>B &rarr; A</code> — reduzindo a área explorada.</li>
         <li><strong>Jump Point Search (JPS):</strong> otimização para grades uniformes que "pula" células simétricas em linha reta sem colocá-las no heap.</li>
-        <li><strong>A* concorrente / paralelo:</strong> distribui a expansão ou o cálculo de vizinhos entre múltiplas threads (tema comparado no código deste repositório!).</li>
+        <li><strong>A* concorrente / paralelo:</strong> distribui a expansão de nós ou o cálculo de vizinhos entre múltiplas threads para acelerar grafos grandes.</li>
       </ul>
     </section>
 
     <!-- SEÇÃO 8: SIMULADOR DE GRADES -->
     <section id="simulador-grade">
-      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Simulador interativo: grafos em grade (compatível com <code>graphs/*.txt</code>)</span></h2>
+      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Simulador: grafos em grade</span></h2>
       <p>
-        Aqui você pode testar grafos de exemplo prontos — incluindo os <strong>novos exemplos criados para estudo</strong>
-        e os mapas originais do projeto — além de desenhar seus próprios obstáculos, blocos de água e importar/exportar
-        no formato exato aceito pelo programa em Rust.
+        Teste mapas prontos ou desenhe seus próprios obstáculos e terrenos com peso maior para observar o comportamento
+        do A*, Dijkstra e busca gulosa célula por célula.
       </p>
 
       <div class="lab-panel">
@@ -1450,7 +1435,7 @@
 
           <div class="control-group">
             <input type="checkbox" id="waterMode" checked />
-            <label for="waterMode" style="cursor:pointer;">Modo água <code>-w</code> (custo 2)</label>
+            <label for="waterMode" style="cursor:pointer;">Permitir água (custo 2)</label>
           </div>
 
           <div class="control-group">
@@ -1512,17 +1497,8 @@
             </div>
 
             <div class="inspector-box">
-              <h4>Formato <code>.txt</code> do projeto (importar / exportar)</h4>
-              <textarea id="gridTxtArea" class="txt-io" spellcheck="false"></textarea>
-              <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-                <button id="gridImportBtn">Carregar texto ↑</button>
-                <button id="gridCopyBtn">Copiar .txt</button>
-              </div>
-            </div>
-
-            <div class="inspector-box">
               <h4>Últimas ações</h4>
-              <div class="log-box" id="gridLog" style="max-height: 150px;"></div>
+              <div class="log-box" id="gridLog" style="max-height: 220px;"></div>
             </div>
           </div>
         </div>
@@ -1948,14 +1924,14 @@
 })();
 
 /* ============================================================================
-   2. SIMULADOR DE GRAFOS EM GRADE (COMPATÍVEL COM graphs/*.txt)
+   2. SIMULADOR DE GRAFOS EM GRADE
    ============================================================================ */
 (() => {
   const GRID_PRESETS = [
     {
       id: "agua_decisao",
-      name: "Novo: decisão com água (exemplo_agua_decisao.txt)",
-      desc: "Com Modo Água (-w) ligado, o lago central (7 águas = custo 16) é mais caro que o vau raso embaixo (1 água = custo 14). Desligue o Modo Água para ver o A* contornar por fora (custo 16)!",
+      name: "1. Decisão com terreno pesado",
+      desc: "Com a travessia de água ativada, o lago central (custo 16) é mais caro que a passagem rasa embaixo (custo 14). Desligue a opção para ver o A* contornar por fora (custo 16).",
       txt: `11
 ###########
 #         #
@@ -1971,8 +1947,8 @@
     },
     {
       id: "armadilha_u",
-      name: "Novo: armadilha em U (exemplo_armadilha_u.txt)",
-      desc: "Uma barreira em formato de U bloqueia o caminho reto entre A e B. Teste A* vs Busca Gulosa para ver como a Gulosa preenche o interior do U antes de contornar.",
+      name: "2. Armadilha em U",
+      desc: "Uma barreira em formato de U bloqueia o caminho reto entre A e B. Teste A* vs busca gulosa para ver como a gulosa preenche o interior do U antes de contornar.",
       txt: `11
 ###########
 #         #
@@ -1988,8 +1964,8 @@
     },
     {
       id: "labirinto",
-      name: "Novo: labirinto com becos (exemplo_labirinto.txt)",
-      desc: "Labirinto 13x13 com bifurcações e corredores sem saída. O A* usa f = g + h para evitar explorar becos distantes do caminho ótimo.",
+      name: "3. Labirinto com becos",
+      desc: "Labirinto 13×13 com bifurcações e corredores sem saída. O A* usa f = g + h para evitar explorar becos distantes do caminho ótimo.",
       txt: `13
 #############
 #A  #       #
@@ -2007,8 +1983,8 @@
     },
     {
       id: "campo_aberto",
-      name: "Novo: campo aberto — A* vs Dijkstra (exemplo_campo_aberto.txt)",
-      desc: "Compare A* (Manhattan) com Dijkstra (h = 0) neste mapa aberto com dois pilares: veja a enorme diferença na quantidade de nós expandidos!",
+      name: "4. Campo aberto (A* vs Dijkstra)",
+      desc: "Compare A* (Manhattan) com Dijkstra (h = 0) neste mapa aberto com dois pilares: veja a diferença na quantidade de nós expandidos.",
       txt: `11
 ###########
 #A        #
@@ -2024,8 +2000,8 @@
     },
     {
       id: "sem_caminho",
-      name: "Novo: sem caminho possível (exemplo_sem_caminho.txt)",
-      desc: "O destino B está completamente cercado por paredes. O Open Set se esgota e o A* prova matematicamente que não existe rota.",
+      name: "5. Sem caminho possível",
+      desc: "O destino B está completamente cercado por paredes. O open set se esgota e o A* prova matematicamente que não existe rota.",
       txt: `9
 #########
 #A      #
@@ -2038,9 +2014,9 @@
 #########`
     },
     {
-      id: "repo_g",
-      name: "Repo: graphs/g.txt (13x13)",
-      desc: "Mapa original do repositório (graphs/g.txt): teste com Modo Água ligado vs desligado para ver a mudança na rota.",
+      id: "corredor",
+      name: "6. Corredor com obstáculo (13×13)",
+      desc: "Teste com a travessia de água ligada e desligada para observar como o custo extra altera a rota escolhida.",
       txt: `13
 #############
 #A_        B#
@@ -2057,9 +2033,9 @@
 #############`
     },
     {
-      id: "repo_e",
-      name: "Repo: graphs/e.txt (7x7)",
-      desc: "Mapa original compacto do repositório (graphs/e.txt) com corredor de água e paredes.",
+      id: "compacto",
+      name: "7. Mapa compacto (7×7)",
+      desc: "Grade compacta com paredes e passagem de custo 2, ideal para acompanhar os valores g, h e f em cada célula.",
       txt: `7
 #######
 #A#  B#
@@ -2070,9 +2046,9 @@
 #######`
     },
     {
-      id: "repo_a",
-      name: "Repo: graphs/a.txt (20x20)",
-      desc: "Mapa principal do README do repositório (graphs/a.txt, 20x20) com múltiplos lagos de água e paredes.",
+      id: "amplo",
+      name: "8. Mapa amplo com lagos (20×20)",
+      desc: "Grade 20×20 com múltiplos obstáculos e áreas de custo maior para testar a eficiência da heurística.",
       txt: `20
 ####################
 #A    #           B#
@@ -2113,9 +2089,6 @@
   const costEl = document.getElementById("gridCost");
   const stepsEl = document.getElementById("gridSteps");
   const statusEl = document.getElementById("gridStatus");
-  const txtArea = document.getElementById("gridTxtArea");
-  const importBtn = document.getElementById("gridImportBtn");
-  const copyBtn = document.getElementById("gridCopyBtn");
   const logEl = document.getElementById("gridLog");
   const brushBtns = document.querySelectorAll(".brush-btn");
 
@@ -2191,15 +2164,6 @@
     return { n, cells, start, end };
   }
 
-  function exportGridToTxt() {
-    if (!gridModel) return "";
-    const lines = [String(gridModel.n)];
-    for (let r = 0; r < gridModel.n; r++) {
-      lines.push(gridModel.cells[r].join(""));
-    }
-    return lines.join("\n");
-  }
-
   function keyOf(c, r) {
     return `${c},${r}`;
   }
@@ -2257,7 +2221,6 @@
     const p = GRID_PRESETS.find(x => x.id === id) || GRID_PRESETS[0];
     gridModel = parseTxtToGrid(p.txt);
     descEl.textContent = p.desc;
-    txtArea.value = exportGridToTxt();
     resetSearchState();
   }
 
@@ -2363,7 +2326,6 @@
       const mapBrush = { wall: "#", water: "_", empty: " " };
       gridModel.cells[r][c] = mapBrush[currentBrush];
     }
-    txtArea.value = exportGridToTxt();
     resetSearchState();
   }
 
@@ -2484,27 +2446,6 @@
       stopTimer();
       runBtn.innerHTML = PAUSE_LABEL_HTML;
       timer = setInterval(stepGrid, Number(speedSlider.value));
-    }
-  });
-
-  importBtn.addEventListener("click", () => {
-    try {
-      gridModel = parseTxtToGrid(txtArea.value);
-      descEl.textContent = "Mapa personalizado carregado a partir do texto.";
-      txtArea.value = exportGridToTxt();
-      resetSearchState();
-    } catch (err) {
-      alert("Erro ao ler mapa: " + err.message);
-    }
-  });
-
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(txtArea.value);
-      copyBtn.textContent = "Copiado ✓";
-      setTimeout(() => { copyBtn.textContent = "Copiar .txt"; }, 1200);
-    } catch {
-      txtArea.select();
     }
   });
 
