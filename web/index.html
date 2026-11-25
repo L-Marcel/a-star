@@ -820,24 +820,10 @@
       color: #cbd5e1;
     }
     .cell.empty { background: #0c1324; border-color: rgba(148, 163, 184, 0.14); color: #94a3b8; }
-    .cell.weighted { background: #133b4a; border-color: #2dd4bf; color: #99f6e4; }
-    .cell.weighted::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: #2dd4bf;
-    }
     .cell.open { background: rgba(56, 189, 248, 0.28); border-color: #38bdf8; color: #e0f2fe; }
     .cell.closed { background: rgba(139, 92, 246, 0.28); border-color: #8b5cf6; color: #ede9fe; }
     .cell.current { background: #f97316; border-color: #fed7aa; color: #1c0a00; font-weight: 800; }
     .cell.path { background: #eab308; border-color: #fef08a; color: #1f1600; font-weight: 800; }
-    .cell.weighted.open { background: rgba(45, 212, 191, 0.28); border-color: #38bdf8; color: #e0f2fe; }
-    .cell.weighted.closed { background: rgba(124, 58, 237, 0.36); border-color: #a78bfa; color: #ede9fe; }
-    .cell.weighted.path { background: #eab308; border-color: #fef08a; color: #1f1600; }
     .cell.start { background: #10b981 !important; border-color: #a7f3d0 !important; color: #022c22 !important; font-weight: 800; }
     .cell.end { background: #ef4444 !important; border-color: #fecaca !important; color: #ffffff !important; font-weight: 800; }
 
@@ -852,8 +838,22 @@
     }
 
     .cell-weight {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #546685;
+    }
+
+    .cell-weight.heavy {
       font-size: 0.74rem;
       font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .cell.open .cell-weight,
+    .cell.closed .cell-weight,
+    .cell.current .cell-weight,
+    .cell.path .cell-weight {
+      color: inherit;
     }
 
     .cell-f {
@@ -1500,18 +1500,13 @@
               <option value="greedy">Busca gulosa (g = 0)</option>
             </select>
           </div>
-
-          <div class="control-group">
-            <input type="checkbox" id="showScores" checked />
-            <label for="showScores" style="cursor:pointer;">Mostrar g / h / f</label>
-          </div>
         </div>
 
         <div class="controls-bar">
           <div class="control-group" style="gap:6px;">
             <label>Pincel:</label>
             <button class="brush-btn active-tool" data-brush="wall">Parede</button>
-            <button class="brush-btn" data-brush="empty">Livre (1)</button>
+            <button class="brush-btn" data-brush="empty">Livre</button>
             <button class="brush-btn" data-brush="weight">Custo:</button>
             <input id="brushWeight" class="weight-input" type="number" min="1" max="99" value="3" aria-label="Custo da célula" />
             <button class="brush-btn" data-brush="start">Origem (A)</button>
@@ -1540,8 +1535,7 @@
               <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> A (origem)</span>
               <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> B (destino)</span>
               <span class="legend-item"><span class="swatch swatch-wall"></span> Parede</span>
-              <span class="legend-item"><span class="swatch" style="background:#0c1324; border-color:rgba(148,163,184,0.3);"></span> Livre (custo 1)</span>
-              <span class="legend-item"><span class="swatch" style="background:#133b4a; border-color:#2dd4bf;"></span> Custo &gt; 1</span>
+              <span class="legend-item"><span class="swatch" style="background:#0c1324; border-color:rgba(148,163,184,0.3);"></span> Livre</span>
               <span class="legend-item"><span class="swatch" style="background:rgba(56,189,248,0.45);"></span> Open set</span>
               <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Atual</span>
               <span class="legend-item"><span class="swatch" style="background:rgba(139,92,246,0.45);"></span> Closed set</span>
@@ -2140,7 +2134,6 @@
 
   const presetSel = document.getElementById("gridPreset");
   const algoSel = document.getElementById("gridAlgo");
-  const scoresChk = document.getElementById("showScores");
   const brushWeightInput = document.getElementById("brushWeight");
   const stepBtn = document.getElementById("gridStepBtn");
   const runBtn = document.getElementById("gridRunBtn");
@@ -2167,6 +2160,7 @@
 
   let currentBrush = "wall";
   let isDrawing = false;
+  let lastPaintedKey = null;
   let gridModel = null; // { n, cells: 2D array of { wall, weight }, start: [c,r], end: [c,r] }
   let search = null;
   let timer = null;
@@ -2424,7 +2418,7 @@
     boardEl.style.gridTemplateColumns = `repeat(${n}, ${cellSize}px)`;
     boardEl.innerHTML = "";
 
-    const showDetails = scoresChk.checked && cellSize >= 32;
+    const showDetails = cellSize >= 32;
 
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
@@ -2434,11 +2428,12 @@
         const endCell = isEnd(c, r);
         const div = document.createElement("div");
         div.className = "cell";
+        div.dataset.c = String(c);
+        div.dataset.r = String(r);
         div.style.width = `${cellSize}px`;
         div.style.height = `${cellSize}px`;
 
         if (cell.wall) div.classList.add("wall");
-        else if (cell.weight > 1) div.classList.add("weighted");
         else div.classList.add("empty");
 
         if (search.openSet.has(k)) div.classList.add("open");
@@ -2458,23 +2453,14 @@
           const hVal = search.hMap.get(k);
           const fVal = search.fMap.get(k);
           div.innerHTML = `<span class="cell-f">${fVal}</span><span class="cell-gh">${gVal}+${hVal}</span>`;
-        } else if (!cell.wall && cell.weight > 1) {
-          div.innerHTML = `<span class="cell-weight">${cell.weight}</span>`;
+        } else if (!cell.wall) {
+          const weightCls = cell.weight > 1 ? "cell-weight heavy" : "cell-weight";
+          div.innerHTML = `<span class="${weightCls}">${cell.weight}</span>`;
         }
 
         div.title = cell.wall
           ? `(${c}, ${r}) • parede`
           : `(${c}, ${r}) • custo ${cell.weight}`;
-        div.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          isDrawing = true;
-          applyBrush(c, r);
-        });
-        div.addEventListener("pointerenter", () => {
-          if (isDrawing && currentBrush !== "start" && currentBrush !== "end") {
-            applyBrush(c, r);
-          }
-        });
 
         boardEl.appendChild(div);
       }
@@ -2496,8 +2482,47 @@
     logEl.innerHTML = search.logs.map(l => `<div class="log-entry">${l}</div>`).join("");
   }
 
-  window.addEventListener("pointerup", () => { isDrawing = false; });
-  window.addEventListener("pointercancel", () => { isDrawing = false; });
+  function cellFromEvent(e) {
+    const el = e.pointerType === "mouse"
+      ? e.target.closest(".cell")
+      : document.elementFromPoint(e.clientX, e.clientY)?.closest(".cell");
+    if (!el || !boardEl.contains(el)) return null;
+    return [Number(el.dataset.c), Number(el.dataset.r)];
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+    lastPaintedKey = null;
+  }
+
+  boardEl.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    const pos = cellFromEvent(e);
+    if (!pos) return;
+    e.preventDefault();
+    isDrawing = true;
+    lastPaintedKey = keyOf(pos[0], pos[1]);
+    applyBrush(pos[0], pos[1]);
+  });
+
+  boardEl.addEventListener("pointermove", (e) => {
+    if (!isDrawing) return;
+    if (e.pointerType === "mouse" && (e.buttons & 1) === 0) {
+      stopDrawing();
+      return;
+    }
+    if (currentBrush === "start" || currentBrush === "end") return;
+    const pos = cellFromEvent(e);
+    if (!pos) return;
+    const k = keyOf(pos[0], pos[1]);
+    if (k === lastPaintedKey) return;
+    lastPaintedKey = k;
+    applyBrush(pos[0], pos[1]);
+  });
+
+  window.addEventListener("pointerup", stopDrawing);
+  window.addEventListener("pointercancel", stopDrawing);
+  window.addEventListener("blur", stopDrawing);
 
   if (typeof ResizeObserver !== "undefined" && boardEl.parentElement) {
     let lastWidth = 0;
@@ -2512,7 +2537,6 @@
 
   presetSel.addEventListener("change", () => loadPresetById(presetSel.value));
   algoSel.addEventListener("change", resetSearchState);
-  scoresChk.addEventListener("change", renderGrid);
   clearSearchBtn.addEventListener("click", resetSearchState);
   resetBtn.addEventListener("click", () => loadPresetById(presetSel.value));
 
