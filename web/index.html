@@ -1096,8 +1096,8 @@
 
     .sim-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr);
-      gap: 18px;
+      grid-template-columns: 1fr;
+      gap: 16px;
       align-items: start;
     }
 
@@ -1121,6 +1121,7 @@
     .graph-svg {
       width: 100%;
       height: auto;
+      max-height: 520px;
       aspect-ratio: 740 / 380;
       display: block;
       user-select: none;
@@ -1258,18 +1259,34 @@
     }
 
     .inspector {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 12px;
+      align-items: stretch;
       min-width: 0;
     }
 
     .inspector-box {
+      grid-column: span 3;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px 14px;
       min-width: 0;
+    }
+
+    .inspector-box.span-2 {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 780px) {
+      .inspector {
+        grid-template-columns: 1fr;
+      }
+      .inspector-box,
+      .inspector-box.span-2 {
+        grid-column: 1 / -1;
+      }
     }
 
     .inspector-box h4 {
@@ -2285,7 +2302,7 @@
           </div>
 
           <div class="inspector">
-            <div class="inspector-box">
+            <div class="inspector-box span-2">
               <h4>Métricas da execução</h4>
               <div class="stats-row">
                 <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gExpandedCount">0</span></div>
@@ -2293,12 +2310,12 @@
               </div>
             </div>
 
-            <div class="inspector-box">
+            <div class="inspector-box span-2">
               <h4>Open set (ordenado por f)</h4>
               <div class="queue-list" id="gOpenList"></div>
             </div>
 
-            <div class="inspector-box">
+            <div class="inspector-box span-2">
               <h4>Closed set (já expandidos)</h4>
               <div class="queue-list" id="gClosedList"></div>
             </div>
@@ -3092,7 +3109,7 @@
 
     const explainMap = {
       preset: allAdmissible
-        ? `<strong>Estimativa manual:</strong> valores atribuídos a cada nó até <code>${model.goal}</code> — você pode editar cada <code>h(n)</code> diretamente na tabela ao lado.`
+        ? `<strong>Estimativa manual:</strong> valores atribuídos a cada nó até <code>${model.goal}</code> — você pode editar cada <code>h(n)</code> diretamente na tabela abaixo.`
         : `<strong>Estimativa manual:</strong> há pelo menos um nó superestimado (<code>h &gt; h*</code>), mostrando quando o A* pode perder o caminho mínimo.`,
       euclid: `<strong>Distância em linha reta (Euclidiana):</strong> calculada diretamente pela posição visual <code>(x, y)</code> de cada nó até <code>${model.goal}</code>, convertida para a escala de custos do grafo (sempre admissível).`,
       exact: "<strong>Heurística perfeita:</strong> usa o menor custo real restante <code>h*(n)</code>. Serve para ver o limite ideal: o A* segue direto pelo caminho ótimo.",
@@ -3929,7 +3946,7 @@
   function renderGrid() {
     const n = gridModel.n;
     const wrapWidth = boardEl.parentElement ? boardEl.parentElement.clientWidth : 0;
-    const idealCell = n >= 18 ? 28 : n >= 13 ? 34 : 40;
+    const idealCell = n >= 18 ? 36 : n >= 13 ? 40 : 44;
     const fitCell = wrapWidth > 0 ? Math.floor((wrapWidth - 16 - (n - 1) * 2) / n) : idealCell;
     const cellSize = Math.max(16, Math.min(idealCell, fitCell));
     boardEl.style.gridTemplateColumns = `repeat(${n}, ${cellSize}px)`;
