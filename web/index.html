@@ -195,8 +195,28 @@
       border-left-color: var(--accent);
     }
 
+    button.sidebar-all-btn {
+      width: 100%;
+      margin-top: 16px;
+      height: 32px;
+      padding: 0 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transform: none !important;
+    }
+
+    button.sidebar-all-btn:hover:not(:disabled) {
+      background: rgba(96, 165, 250, 0.1);
+      border-color: var(--border-light);
+      color: var(--text);
+    }
+
     main {
-      padding: clamp(20px, 3vw, 36px) clamp(16px, 3.5vw, 52px) 80px;
+      padding: clamp(20px, 3vw, 36px) clamp(16px, 3.5vw, 52px) clamp(90px, 12vh, 140px);
       max-width: 1180px;
       width: 100%;
       min-width: 0;
@@ -290,19 +310,77 @@
 
     /* Sections */
     section {
-      margin-bottom: 52px;
-      scroll-margin-top: 24px;
+      margin-bottom: 42px;
+      scroll-margin-top: 20px;
+      transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                  margin-bottom 0.3s ease;
+    }
+
+    section.is-collapsed {
+      margin-bottom: 18px;
+    }
+
+    section.reveal-pending {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    section.is-revealed {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     h2.sec-title {
-      font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+      font-size: clamp(1.22rem, 2.2vw, 1.62rem);
       line-height: 1.3;
-      margin: 0 0 16px;
-      padding-bottom: 10px;
+      margin: 0 0 14px;
+      padding: 6px 4px 10px 0;
       border-bottom: 1px solid var(--border);
       display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.25s ease, margin-bottom 0.28s ease;
+    }
+
+    h2.sec-title:hover {
+      border-bottom-color: var(--border-light);
+    }
+
+    section.is-collapsed h2.sec-title {
+      margin-bottom: 0;
+    }
+
+    button.sec-toggle {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: auto;
+      min-height: 36px;
+      padding: 2px 4px 2px 0;
+      margin: 0;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+      white-space: normal;
+      justify-content: flex-start;
       align-items: flex-start;
+      text-align: left;
       gap: 12px;
+      transform: none !important;
+    }
+
+    button.sec-toggle:hover:not(:disabled) {
+      background: transparent;
+      color: #ffffff;
+    }
+
+    button.sec-toggle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
     }
 
     .sec-title-text {
@@ -321,6 +399,153 @@
       border-radius: 6px;
       flex-shrink: 0;
       margin-top: 3px;
+      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease;
+    }
+
+    h2.sec-title:hover .sec-num {
+      background: rgba(96, 165, 250, 0.22);
+      border-color: rgba(96, 165, 250, 0.5);
+    }
+
+    .sec-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    a.sec-anchor {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1;
+      opacity: 0.65;
+      transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    h2.sec-title:hover a.sec-anchor,
+    a.sec-anchor:focus-visible {
+      opacity: 1;
+    }
+
+    a.sec-anchor:hover,
+    a.sec-anchor:focus-visible {
+      color: var(--accent);
+      background: rgba(96, 165, 250, 0.14);
+      border-color: rgba(96, 165, 250, 0.35);
+      outline: none;
+    }
+
+    a.sec-anchor.copied {
+      opacity: 1;
+      color: var(--accent-2);
+      background: rgba(52, 211, 153, 0.14);
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+
+    button.sec-chevron-btn {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      transform: none !important;
+    }
+
+    button.sec-chevron-btn:hover:not(:disabled) {
+      background: rgba(96, 165, 250, 0.14);
+      border-color: rgba(96, 165, 250, 0.35);
+      color: var(--text);
+    }
+
+    .sec-chevron {
+      width: 15px;
+      height: 15px;
+      display: block;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    section.is-collapsed .sec-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .sec-collapse {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    section.is-collapsed .sec-collapse {
+      grid-template-rows: 0fr;
+    }
+
+    .sec-body {
+      overflow: hidden;
+      min-height: 0;
+      opacity: 1;
+      transform: translateY(0);
+      margin: 0 -6px;
+      padding: 2px 6px 12px;
+      transition: opacity 0.24s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), padding 0.3s ease;
+    }
+
+    section.is-collapsed .sec-body {
+      opacity: 0;
+      transform: translateY(-6px);
+      padding-top: 0;
+      padding-bottom: 0;
+      pointer-events: none;
+    }
+
+    @keyframes secTargetPulse {
+      0% {
+        border-bottom-color: var(--accent);
+      }
+      50% {
+        border-bottom-color: var(--accent-2);
+      }
+      100% {
+        border-bottom-color: var(--border);
+      }
+    }
+
+    h2.sec-title.sec-focus-pulse {
+      animation: secTargetPulse 0.9s ease-out;
+    }
+
+    h2.sec-title.sec-focus-pulse .sec-num {
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+      border-color: var(--accent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      section,
+      .sec-collapse,
+      .sec-body,
+      .sec-chevron,
+      h2.sec-title {
+        transition: none !important;
+        animation: none !important;
+      }
+      section.reveal-pending {
+        opacity: 1;
+        transform: none;
+      }
     }
 
     h3 {
@@ -1136,6 +1361,8 @@
         <a href="#simulador-grafo">7. Simulador: grafos ponderados</a>
         <a href="#simulador-grade">8. Simulador: grafos em grade</a>
       </nav>
+
+      <button id="toggleAllSections" class="sidebar-all-btn" type="button">Recolher todas as seções</button>
     </div>
   </aside>
 
@@ -2955,51 +3182,279 @@
 })();
 
 /* ============================================================================
-   3. MENU RESPONSIVO E DESTAQUE DA SEÇÃO ATUAL
+   3. SEÇÕES EXPANDÍVEIS, ÂNCORAS, ANIMAÇÕES E MENU RESPONSIVO
    ============================================================================ */
 (() => {
   const sidebar = document.getElementById("sidebar");
   const toggleBtn = document.getElementById("menuToggle");
-  const navLinks = sidebar ? sidebar.querySelectorAll("nav a") : [];
+  const toggleAllBtn = document.getElementById("toggleAllSections");
+  const tocLinks = [...document.querySelectorAll("#sidebar nav a[href^='#']")];
+  const linkById = new Map(tocLinks.map((a) => [a.getAttribute("href").slice(1), a]));
+  const sections = [...document.querySelectorAll("main > section[id]")];
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const CHEVRON_SVG = '<svg class="sec-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
+
+  const sectionControls = new Map();
+
+  function closeMobileSidebar() {
+    if (sidebar && sidebar.classList.contains("open")) {
+      sidebar.classList.remove("open");
+      if (toggleBtn) {
+        toggleBtn.setAttribute("aria-expanded", "false");
+        toggleBtn.textContent = "Sumário ☰";
+      }
+    }
+  }
+
+  function setActiveLink(id) {
+    tocLinks.forEach((a) => a.classList.remove("active"));
+    const active = linkById.get(id);
+    if (active) active.classList.add("active");
+  }
+
+  function updateToggleAllLabel() {
+    if (!toggleAllBtn) return;
+    const anyExpanded = sections.some((s) => !s.classList.contains("is-collapsed"));
+    toggleAllBtn.textContent = anyExpanded ? "Recolher todas as seções" : "Expandir todas as seções";
+  }
+
+  function setSectionExpanded(sec, expanded) {
+    const ctrl = sectionControls.get(sec.id);
+    if (!ctrl) return;
+    sec.classList.toggle("is-collapsed", !expanded);
+    ctrl.toggle.setAttribute("aria-expanded", String(expanded));
+    ctrl.chevronBtn.setAttribute("aria-expanded", String(expanded));
+    ctrl.chevronBtn.title = expanded ? "Recolher seção" : "Expandir seção";
+    if ("inert" in ctrl.collapse) {
+      ctrl.collapse.inert = !expanded;
+    }
+    updateToggleAllLabel();
+  }
+
+  // Transforma cada <section> em bloco expandível com âncora no título
+  sections.forEach((sec) => {
+    const heading = sec.querySelector(":scope > h2.sec-title");
+    if (!heading) return;
+
+    const id = sec.id;
+    const bodyId = `sec-body-${id}`;
+    const titleLabel = (heading.querySelector(".sec-title-text")?.textContent || heading.textContent).trim();
+
+    // Move conteúdo após o h2 para dentro do wrapper colapsável
+    const collapse = document.createElement("div");
+    collapse.className = "sec-collapse";
+    collapse.id = bodyId;
+
+    const body = document.createElement("div");
+    body.className = "sec-body";
+    while (heading.nextSibling) {
+      body.appendChild(heading.nextSibling);
+    }
+    collapse.appendChild(body);
+    sec.appendChild(collapse);
+
+    // Envolve número + título no botão principal de expandir/recolher
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "sec-toggle";
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-controls", bodyId);
+    while (heading.firstChild) {
+      toggle.appendChild(heading.firstChild);
+    }
+
+    // Ações à direita: link âncora (#) e botão chevron
+    const actions = document.createElement("span");
+    actions.className = "sec-actions";
+
+    const anchor = document.createElement("a");
+    anchor.className = "sec-anchor";
+    anchor.href = `#${id}`;
+    anchor.textContent = "#";
+    anchor.title = `Link direto para "${titleLabel}"`;
+    anchor.setAttribute("aria-label", `Âncora para a seção ${titleLabel}`);
+
+    const chevronBtn = document.createElement("button");
+    chevronBtn.type = "button";
+    chevronBtn.className = "sec-chevron-btn";
+    chevronBtn.setAttribute("aria-expanded", "true");
+    chevronBtn.setAttribute("aria-controls", bodyId);
+    chevronBtn.setAttribute("aria-label", `Alternar seção ${titleLabel}`);
+    chevronBtn.title = "Recolher seção";
+    chevronBtn.innerHTML = CHEVRON_SVG;
+
+    actions.appendChild(anchor);
+    actions.appendChild(chevronBtn);
+    heading.appendChild(toggle);
+    heading.appendChild(actions);
+
+    sectionControls.set(id, { heading, toggle, anchor, chevronBtn, collapse });
+
+    const onToggle = () => {
+      const nextExpanded = sec.classList.contains("is-collapsed");
+      setSectionExpanded(sec, nextExpanded);
+    };
+    toggle.addEventListener("click", onToggle);
+    chevronBtn.addEventListener("click", onToggle);
+
+    anchor.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateToSection(id, { pushHash: true, copyUrl: true });
+    });
+  });
+
+  function scrollToSectionTop(sec, behavior) {
+    const isCompact = window.innerWidth <= 1024;
+    const offset = isCompact && sidebar ? Math.ceil(sidebar.getBoundingClientRect().height) + 12 : 20;
+    const targetTop = Math.max(0, Math.round(window.scrollY + sec.getBoundingClientRect().top - offset));
+    window.scrollTo({ top: targetTop, behavior: reducedMotion ? "auto" : behavior });
+  }
+
+  function pulseSectionTitle(ctrl) {
+    ctrl.heading.classList.remove("sec-focus-pulse");
+    void ctrl.heading.offsetWidth;
+    ctrl.heading.classList.add("sec-focus-pulse");
+  }
+
+  function navigateToSection(id, { pushHash = true, copyUrl = false, instant = false } = {}) {
+    const sec = document.getElementById(id);
+    const ctrl = sectionControls.get(id);
+    if (!sec || !ctrl) return;
+
+    closeMobileSidebar();
+
+    sec.classList.remove("reveal-pending");
+    sec.classList.add("is-revealed");
+
+    const wasCollapsed = sec.classList.contains("is-collapsed");
+    setSectionExpanded(sec, true);
+    setActiveLink(id);
+
+    if (pushHash && location.hash !== `#${id}`) {
+      history.pushState(null, "", `#${id}`);
+    }
+
+    if (copyUrl) {
+      const fullUrl = `${location.href.split("#")[0]}#${id}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(fullUrl).then(() => {
+          ctrl.anchor.textContent = "✓";
+          ctrl.anchor.classList.add("copied");
+          setTimeout(() => {
+            ctrl.anchor.textContent = "#";
+            ctrl.anchor.classList.remove("copied");
+          }, 1200);
+        }).catch(() => {});
+      }
+    }
+
+    const scrollBehavior = instant ? "auto" : "smooth";
+    requestAnimationFrame(() => {
+      scrollToSectionTop(sec, scrollBehavior);
+      ctrl.toggle.focus({ preventScroll: true });
+      pulseSectionTitle(ctrl);
+
+      // Reajusta o topo após terminar a animação de expansão (importante para seções no fim da página)
+      if (wasCollapsed && !reducedMotion) {
+        let aligned = false;
+        const alignAfterExpand = () => {
+          if (aligned) return;
+          aligned = true;
+          scrollToSectionTop(sec, "smooth");
+        };
+        ctrl.collapse.addEventListener("transitionend", alignAfterExpand, { once: true });
+        setTimeout(alignAfterExpand, 380);
+      }
+    });
+  }
+
+  // Menu mobile toggle
   if (sidebar && toggleBtn) {
     toggleBtn.addEventListener("click", () => {
       const open = sidebar.classList.toggle("open");
       toggleBtn.setAttribute("aria-expanded", String(open));
       toggleBtn.textContent = open ? "Fechar ✕" : "Sumário ☰";
     });
+  }
 
-    navLinks.forEach((link) => {
-      link.addEventListener("click", () => {
-        if (sidebar.classList.contains("open")) {
-          sidebar.classList.remove("open");
-          toggleBtn.setAttribute("aria-expanded", "false");
-          toggleBtn.textContent = "Sumário ☰";
-        }
-      });
+  // Botão recolher/expandir todas
+  if (toggleAllBtn) {
+    toggleAllBtn.addEventListener("click", () => {
+      const anyExpanded = sections.some((s) => !s.classList.contains("is-collapsed"));
+      sections.forEach((sec) => setSectionExpanded(sec, !anyExpanded));
+      closeMobileSidebar();
     });
   }
 
-  const tocLinks = document.querySelectorAll("#sidebar nav a[href^='#']");
-  const sections = [...tocLinks]
-    .map((a) => document.querySelector(a.getAttribute("href")))
-    .filter(Boolean);
+  // Navegação pelos links do sumário (expande automaticamente e leva ao topo)
+  tocLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      const id = link.getAttribute("href").slice(1);
+      if (sectionControls.has(id)) {
+        e.preventDefault();
+        navigateToSection(id, { pushHash: true });
+      } else {
+        closeMobileSidebar();
+      }
+    });
+  });
 
-  if (typeof IntersectionObserver !== "undefined" && sections.length) {
-    const linkById = new Map([...tocLinks].map((a) => [a.getAttribute("href").slice(1), a]));
-    const observer = new IntersectionObserver(
-      (entries) => {
+  // Navegação por histórico / hash da URL
+  window.addEventListener("hashchange", () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (sectionControls.has(id)) {
+      navigateToSection(id, { pushHash: false });
+    }
+  });
+
+  // Animação suave de entrada das seções ao rolar (somente abaixo da dobra)
+  if (!reducedMotion && typeof IntersectionObserver !== "undefined" && sections.length) {
+    const revealObs = new IntersectionObserver(
+      (entries, obs) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            tocLinks.forEach((a) => a.classList.remove("active"));
-            const activeLink = linkById.get(entry.target.id);
-            if (activeLink) activeLink.classList.add("active");
+            entry.target.classList.remove("reveal-pending");
+            entry.target.classList.add("is-revealed");
+            obs.unobserve(entry.target);
           }
         }
       },
-      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+      { rootMargin: "0px 0px -6% 0px", threshold: 0.02 }
     );
-    sections.forEach((sec) => observer.observe(sec));
+
+    const vh = window.innerHeight || 800;
+    sections.forEach((sec) => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top > vh * 0.96) {
+        sec.classList.add("reveal-pending");
+        revealObs.observe(sec);
+      } else {
+        sec.classList.add("is-revealed");
+      }
+    });
+  }
+
+  // Destaque da seção ativa no sumário conforme a rolagem
+  if (typeof IntersectionObserver !== "undefined" && sections.length) {
+    const spyObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveLink(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-15% 0px -72% 0px", threshold: 0 }
+    );
+    sections.forEach((sec) => spyObserver.observe(sec));
+  }
+
+  // Se abriu a página já com #ancora na URL, expande e foca corretamente
+  const initialId = decodeURIComponent(location.hash.slice(1));
+  if (initialId && sectionControls.has(initialId)) {
+    setTimeout(() => navigateToSection(initialId, { pushHash: false, instant: true }), 40);
   }
 })();
 </script>
