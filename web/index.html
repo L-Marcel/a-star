@@ -765,6 +765,31 @@
       max-width: 100%;
     }
 
+    .formula-parts {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 6px 18px;
+    }
+
+    .formula-chain {
+      gap: 6px 8px;
+    }
+
+    .formula-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .formula-row .formula-box {
+      flex: 1 1 auto;
+      margin: 0;
+      white-space: nowrap;
+    }
+
     .formula-banner {
       width: 100%;
       padding: clamp(16px, 2.5vw, 22px) 24px;
@@ -1652,7 +1677,10 @@
       <div class="grid-2">
         <div class="card">
           <h4>Admissibilidade (otimismo)</h4>
-          <div class="formula-box">0 &le; h(n) &le; h*(n) &nbsp;&nbsp; &forall; n &isin; V</div>
+          <div class="formula-row">
+            <div class="formula-box">0 &le; h(n) &le; h*(n)</div>
+            <div class="formula-box">&forall; n &isin; V</div>
+          </div>
           <p>
             Onde <code>h*(n)</code> é o <strong>custo mínimo real</strong> de <code>n</code> até o destino <code>B</code>.
             Uma heurística admissível <strong>nunca superestima</strong> o custo restante (ela é otimista).
@@ -1666,7 +1694,10 @@
 
         <div class="card">
           <h4>Consistência (monotonicidade)</h4>
-          <div class="formula-box">h(n) &le; custo(n, n') + h(n') &nbsp;&nbsp; e &nbsp;&nbsp; h(B) = 0</div>
+          <div class="formula-row">
+            <div class="formula-box">h(n) &le; custo(n, n') + h(n')</div>
+            <div class="formula-box">h(B) = 0</div>
+          </div>
           <p>
             É uma versão da <strong>desigualdade triangular</strong>: a estimativa a partir de <code>n</code> não pode
             ser maior que dar um passo até o vizinho <code>n'</code> e estimar a partir dele.
@@ -1686,8 +1717,10 @@
         totalmente expandido, deve existir algum nó <code>n</code> desse caminho ótimo esperando no open set com seu
         custo ótimo <code>g(n) = g*(n)</code>. Como <code>h</code> é admissível:
       </p>
-      <div class="formula-box">
-        f(n) = g*(n) + h(n) &le; g*(n) + h*(n) = C* &lt; g(B) = f(B)
+      <div class="formula-box formula-parts formula-chain">
+        <span class="nowrap">f(n) = g*(n) + h(n)</span>
+        <span class="nowrap">&le; g*(n) + h*(n) = C*</span>
+        <span class="nowrap">&lt; g(B) = f(B)</span>
       </div>
       <p>
         Ou seja, <code>f(n) &lt; f(B)</code>! Isso é uma <strong>contradição</strong>, pois a fila de prioridade
