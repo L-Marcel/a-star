@@ -1172,13 +1172,16 @@
 
     .graph-svg {
       width: 100%;
-      height: auto;
-      max-height: 520px;
-      aspect-ratio: 740 / 380;
+      height: clamp(340px, 46vw, 480px);
       display: block;
       user-select: none;
       touch-action: none;
       cursor: grab;
+    }
+
+    .graph-svg:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
     }
 
     .graph-svg.is-panning {
@@ -1204,7 +1207,7 @@
       cursor: grabbing;
     }
 
-    .graph-svg.tool-delete .node-group:hover circle,
+    .graph-svg.tool-delete .node-group:hover .node-circle,
     .graph-svg.tool-delete .edge-group:hover .edge-line {
       stroke: var(--accent-danger) !important;
     }
@@ -1234,11 +1237,21 @@
       z-index: 3;
     }
 
+    .graph-zoom-label {
+      display: none;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-right: auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     button.zoom-btn {
-      height: 28px;
-      min-width: 28px;
-      padding: 0 8px;
-      font-size: 0.78rem;
+      height: 30px;
+      min-width: 30px;
+      padding: 0 9px;
+      font-size: 0.8rem;
       font-family: var(--mono);
       background: rgba(36, 50, 92, 0.75);
       border-color: var(--border);
@@ -1598,9 +1611,44 @@
       }
     }
 
+    @media (max-width: 768px) {
+      .graph-zoom-controls {
+        position: static;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        padding: 8px 10px;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+        background: rgba(15, 22, 42, 0.94);
+        backdrop-filter: none;
+      }
+      .graph-zoom-label {
+        display: inline;
+      }
+      button.zoom-btn {
+        height: 36px;
+        min-width: 38px;
+        padding: 0 11px;
+        font-size: 0.86rem;
+      }
+      .graph-svg {
+        height: clamp(340px, 56vh, 460px);
+      }
+    }
+
     @media (max-width: 640px) {
       body {
         font-size: 15px;
+      }
+      .lab-panel {
+        padding: 12px;
+      }
+      .canvas-box {
+        padding: 8px;
       }
       code {
         white-space: normal;
@@ -2350,11 +2398,12 @@
           <div class="canvas-box">
             <div class="graph-stage">
               <div class="graph-zoom-controls" aria-label="Controles de zoom">
-                <button id="gZoomIn" class="zoom-btn" type="button" title="Aproximar (zoom in)">+</button>
-                <button id="gZoomOut" class="zoom-btn" type="button" title="Afastar (zoom out)">−</button>
+                <span class="graph-zoom-label">Arraste ou pinça (2 dedos)</span>
+                <button id="gZoomIn" class="zoom-btn" type="button" title="Aproximar (zoom in)" aria-label="Aproximar zoom">+</button>
+                <button id="gZoomOut" class="zoom-btn" type="button" title="Afastar (zoom out)" aria-label="Afastar zoom">−</button>
                 <button id="gZoomFit" class="zoom-btn" type="button" title="Enquadrar todo o grafo">Ajustar</button>
               </div>
-              <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" aria-label="Grafo ponderado interativo"></svg>
+              <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" tabindex="0" role="application" aria-label="Grafo ponderado interativo — arraste para mover, faça pinça com dois dedos ou use +/− e setas para navegar"></svg>
             </div>
             <div id="graphToolHint" class="graph-tool-hint"></div>
             <div class="legend">
@@ -2640,8 +2689,8 @@
 
   const BASE_W = 740;
   const BASE_H = 380;
-  const MIN_ZOOM = 0.35;
-  const MAX_ZOOM = 2.8;
+  const MIN_ZOOM = 0.28;
+  const MAX_ZOOM = 3.2;
 
   let graphModel = null;
   let gHistory = [];
@@ -2651,23 +2700,37 @@
   let gEditNotice = null;
   let currentTool = "move";
   let cam = { x: 0, y: 0, w: BASE_W, h: BASE_H };
-  let dragMode = null; // null | "node" | "pan"
+  let userAdjustedCam = false;
+  let dragMode = null; // null | "node" | "pan" | "pinch"
+  let dragPointerId = null;
   let dragNodeId = null;
   let dragNodeMoved = false;
+  let dragNodeOrigPos = null;
   let dragOffset = { x: 0, y: 0 };
   let panStartClient = { x: 0, y: 0 };
   let panStartCam = { x: 0, y: 0 };
+  let activePointers = new Map(); // pointerId -> { x, y }
+  let pinchStart = null;
+  let pendingTap = null;
   let edgeDraftFrom = null;
   let edgeDraftPos = null;
 
   const TOOL_HINTS = {
-    move: "Arraste nós para reposicionar • Arraste o fundo para mover (pan) • Ctrl + scroll ou +/− para zoom.",
-    "add-node": "Clique em qualquer área livre para criar um novo nó (com h* calculado automaticamente).",
-    "add-edge": "Clique em dois nós para criar/atualizar uma aresta com o peso escolhido, ou clique direto em uma aresta.",
-    delete: "Clique em um nó ou aresta para remover (origem e destino não podem ser removidos diretamente).",
-    start: "Clique em um nó para defini-lo como nova origem da busca.",
-    goal: "Clique em um nó para defini-lo como novo destino (recalcula h* automaticamente)."
+    move: "Arraste nós para reposicionar • Arraste o fundo para mover • Pinça (2 dedos), Ctrl + scroll ou +/− para zoom.",
+    "add-node": "Clique ou toque em qualquer área livre para criar um nó (pinça com 2 dedos para zoom/pan).",
+    "add-edge": "Clique ou toque em dois nós para criar/atualizar uma aresta, ou toque direto em uma aresta.",
+    delete: "Clique ou toque em um nó ou aresta para remover (origem e destino não podem ser removidos diretamente).",
+    start: "Clique ou toque em um nó para defini-lo como nova origem da busca.",
+    goal: "Clique ou toque em um nó para defini-lo como novo destino (recalcula h* automaticamente)."
   };
+
+  function updateToolHint() {
+    if (currentTool === "add-edge" && edgeDraftFrom) {
+      toolHintEl.textContent = `Nó ${edgeDraftFrom} selecionado — clique ou toque no segundo nó para conectar (ou fora para cancelar).`;
+    } else {
+      toolHintEl.textContent = TOOL_HINTS[currentTool] || "";
+    }
+  }
 
   function getPreset() {
     return GRAPH_PRESETS.find(p => p.id === presetSel.value) || GRAPH_PRESETS[0];
@@ -2686,7 +2749,7 @@
     toolBtns.forEach(b => b.classList.toggle("active-tool", b.dataset.gtool === name));
     svg.classList.remove("tool-move", "tool-add-node", "tool-add-edge", "tool-delete", "tool-start", "tool-goal");
     svg.classList.add(`tool-${name}`);
-    toolHintEl.textContent = TOOL_HINTS[name] || "";
+    updateToolHint();
     if (gState) renderGraph();
   }
 
@@ -2783,12 +2846,22 @@
     return node.h;
   }
 
+  function getViewportAspect() {
+    const rect = svg.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return rect.width / rect.height;
+    return BASE_W / BASE_H;
+  }
+
   function applyCamera() {
     svg.setAttribute("viewBox", `${cam.x.toFixed(1)} ${cam.y.toFixed(1)} ${cam.w.toFixed(1)} ${cam.h.toFixed(1)}`);
   }
 
   function resetCamera() {
-    cam = { x: 0, y: 0, w: BASE_W, h: BASE_H };
+    const aspect = getViewportAspect();
+    const w = BASE_W;
+    const h = w / aspect;
+    cam = { x: 0, y: (BASE_H - h) / 2, w, h };
+    userAdjustedCam = false;
     applyCamera();
   }
 
@@ -2804,11 +2877,13 @@
       if (n.y < minY) minY = n.y;
       if (n.y > maxY) maxY = n.y;
     }
-    const padX = 95;
-    const padY = 82;
+    const rect = svg.getBoundingClientRect();
+    const isNarrow = rect.width > 0 && rect.width < 520;
+    const padX = isNarrow ? 68 : 92;
+    const padY = isNarrow ? 66 : 80;
     const boxW = Math.max(220, (maxX - minX) + padX * 2);
     const boxH = Math.max(140, (maxY - minY) + padY * 2);
-    const aspect = BASE_W / BASE_H;
+    const aspect = getViewportAspect();
     let w = boxW;
     let h = w / aspect;
     if (h < boxH) {
@@ -2820,31 +2895,39 @@
     const cx = (minX + maxX) / 2;
     const cy = (minY + maxY) / 2;
     cam = { x: cx - w / 2, y: cy - h / 2, w, h };
+    userAdjustedCam = false;
     applyCamera();
     if (gState) renderGraph();
   }
 
   function zoomAround(factor, wx, wy) {
+    const aspect = getViewportAspect();
     const nextW = Math.min(BASE_W / MIN_ZOOM, Math.max(BASE_W / MAX_ZOOM, cam.w / factor));
-    const nextH = nextW * (BASE_H / BASE_W);
+    const nextH = nextW / aspect;
     const rx = (wx - cam.x) / cam.w;
     const ry = (wy - cam.y) / cam.h;
     cam.x = wx - rx * nextW;
     cam.y = wy - ry * nextH;
     cam.w = nextW;
     cam.h = nextH;
+    userAdjustedCam = true;
     applyCamera();
     if (gState) renderGraph();
   }
 
+  function clientPointToWorld(cx, cy) {
+    const rect = svg.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      return {
+        x: cam.x + ((cx - rect.left) / rect.width) * cam.w,
+        y: cam.y + ((cy - rect.top) / rect.height) * cam.h
+      };
+    }
+    return { x: cam.x + cam.w / 2, y: cam.y + cam.h / 2 };
+  }
+
   function clientToWorld(e) {
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return { x: cam.x + cam.w / 2, y: cam.y + cam.h / 2 };
-    const pt = svg.createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
-    const res = pt.matrixTransform(ctm.inverse());
-    return { x: res.x, y: res.y };
+    return clientPointToWorld(e.clientX, e.clientY);
   }
 
   function loadGraphPreset() {
@@ -2862,7 +2945,8 @@
     recomputeHStar(graphModel);
     edgeDraftFrom = null;
     edgeDraftPos = null;
-    resetCamera();
+    updateToolHint();
+    fitGraphToView();
     renderGraphMeta();
     rebuildGraphHistory(null, { resetStep: true });
   }
@@ -3115,10 +3199,10 @@
 
       markup += `
         <g class="edge-group" data-edge-u="${u}" data-edge-v="${v}">
-          <line x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="transparent" stroke-width="18" />
+          <line x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="transparent" stroke-width="26" />
           <line class="edge-line" x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" />
-          <rect class="edge-pill" x="${mx - 15}" y="${my - 11}" width="30" height="22" rx="6" fill="#0d1326" stroke="${stroke}" stroke-width="1.2" />
-          <text x="${mx}" y="${my + 4}" text-anchor="middle" fill="#e6ecff" font-family="var(--mono)" font-size="12" font-weight="700" pointer-events="none">${w}</text>
+          <rect class="edge-pill" x="${mx - 16}" y="${my - 12}" width="32" height="24" rx="6" fill="#0d1326" stroke="${stroke}" stroke-width="1.2" />
+          <text x="${mx}" y="${my + 4.5}" text-anchor="middle" fill="#e6ecff" font-family="var(--mono)" font-size="13" font-weight="700" pointer-events="none">${w}</text>
         </g>
       `;
     }
@@ -3151,11 +3235,12 @@
 
       markup += `
         <g class="node-group" data-node-id="${n.id}">
-          ${isDraftSource ? `<circle cx="${n.x}" cy="${n.y}" r="30" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-dasharray="5 3" />` : ""}
-          <circle cx="${n.x}" cy="${n.y}" r="24" fill="${fill}" stroke="${stroke}" stroke-width="3" />
-          <text x="${n.x}" y="${n.y + 5}" text-anchor="middle" fill="${textFill}" font-family="var(--sans)" font-size="16" font-weight="800" pointer-events="none">${n.id}</text>
-          <rect x="${n.x - 52}" y="${badgeY - 12}" width="104" height="20" rx="5" fill="#0d1326" stroke="#30406f" stroke-width="1" pointer-events="none" />
-          <text x="${n.x}" y="${badgeY + 2}" text-anchor="middle" fill="#cbd5e1" font-family="var(--mono)" font-size="10.5" pointer-events="none">
+          <circle class="node-hit" cx="${n.x}" cy="${n.y}" r="34" fill="transparent" />
+          ${isDraftSource ? `<circle cx="${n.x}" cy="${n.y}" r="30" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-dasharray="5 3" pointer-events="none" />` : ""}
+          <circle class="node-circle" cx="${n.x}" cy="${n.y}" r="24" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+          <text x="${n.x}" y="${n.y + 5.5}" text-anchor="middle" fill="${textFill}" font-family="var(--sans)" font-size="16" font-weight="800" pointer-events="none">${n.id}</text>
+          <rect x="${n.x - 56}" y="${badgeY - 12}" width="112" height="21" rx="5" fill="#0d1326" stroke="#30406f" stroke-width="1" pointer-events="none" />
+          <text x="${n.x}" y="${badgeY + 2.5}" text-anchor="middle" fill="#cbd5e1" font-family="var(--mono)" font-size="11.5" font-weight="600" pointer-events="none">
             g:${gTxt} h:${hVal} f:${fTxt}
           </text>
         </g>
@@ -3264,49 +3349,11 @@
     rebuildGraphHistory(`Heurística manual atualizada: h(${nodeId}) = ${val}.`);
   });
 
-  // Interações no canvas SVG (edição de nós/arestas + pan + zoom)
-  svg.addEventListener("pointerdown", (e) => {
+  function runGraphToolTap(nodeId, edgeU, edgeV, world) {
     if (!graphModel) return;
-    const nodeEl = e.target.closest(".node-group");
-    const edgeEl = e.target.closest(".edge-group");
-    const world = clientToWorld(e);
-
-    // Botão do meio sempre faz pan em qualquer ferramenta
-    if (e.button === 1) {
-      e.preventDefault();
-      dragMode = "pan";
-      panStartClient = { x: e.clientX, y: e.clientY };
-      panStartCam = { x: cam.x, y: cam.y };
-      svg.classList.add("is-panning");
-      return;
-    }
-
-    if (e.button !== 0) return;
-
-    if (currentTool === "move") {
-      if (nodeEl) {
-        e.preventDefault();
-        const id = nodeEl.dataset.nodeId;
-        const node = graphModel.nodes.find(n => n.id === id);
-        if (!node) return;
-        dragMode = "node";
-        dragNodeId = id;
-        dragNodeMoved = false;
-        dragOffset = { x: node.x - world.x, y: node.y - world.y };
-        svg.classList.add("is-dragging-node");
-      } else {
-        e.preventDefault();
-        dragMode = "pan";
-        panStartClient = { x: e.clientX, y: e.clientY };
-        panStartCam = { x: cam.x, y: cam.y };
-        svg.classList.add("is-panning");
-      }
-      return;
-    }
 
     if (currentTool === "add-node") {
-      if (nodeEl || edgeEl) return;
-      e.preventDefault();
+      if (nodeId || edgeU) return;
       const id = nextNodeId(graphModel);
       const goal = graphModel.nodes.find(n => n.id === graphModel.goal);
       const estH = goal ? Math.floor(Math.hypot(world.x - goal.x, world.y - goal.y) / euclidScaleFor(graphModel)) : 0;
@@ -3319,41 +3366,39 @@
     }
 
     if (currentTool === "add-edge") {
-      if (nodeEl) {
-        e.preventDefault();
-        const id = nodeEl.dataset.nodeId;
+      if (nodeId) {
         if (!edgeDraftFrom) {
-          edgeDraftFrom = id;
+          edgeDraftFrom = nodeId;
           edgeDraftPos = world;
+          updateToolHint();
           renderGraph();
-        } else if (edgeDraftFrom === id) {
+        } else if (edgeDraftFrom === nodeId) {
           edgeDraftFrom = null;
           edgeDraftPos = null;
+          updateToolHint();
           renderGraph();
         } else {
           const w = getEdgeWeight();
-          const key = edgeKey(edgeDraftFrom, id);
+          const key = edgeKey(edgeDraftFrom, nodeId);
           const existing = graphModel.edges.find(([u, v]) => edgeKey(u, v) === key);
           let notice;
           if (existing) {
             existing[2] = w;
-            notice = `↻ Peso da aresta ${edgeDraftFrom}—${id} atualizado para ${w}.`;
+            notice = `↻ Peso da aresta ${edgeDraftFrom}—${nodeId} atualizado para ${w}.`;
           } else {
-            graphModel.edges.push([edgeDraftFrom, id, w]);
-            notice = `+ Aresta ${edgeDraftFrom}—${id} (peso ${w}) adicionada.`;
+            graphModel.edges.push([edgeDraftFrom, nodeId, w]);
+            notice = `+ Aresta ${edgeDraftFrom}—${nodeId} (peso ${w}) adicionada.`;
           }
           edgeDraftFrom = null;
           edgeDraftPos = null;
+          updateToolHint();
           graphModel.edited = true;
           recomputeHStar(graphModel);
           renderGraphMeta();
           rebuildGraphHistory(notice);
         }
-      } else if (edgeEl && !edgeDraftFrom) {
-        e.preventDefault();
-        const u = edgeEl.dataset.edgeU;
-        const v = edgeEl.dataset.edgeV;
-        const key = edgeKey(u, v);
+      } else if (edgeU && edgeV && !edgeDraftFrom) {
+        const key = edgeKey(edgeU, edgeV);
         const existing = graphModel.edges.find(([a, b]) => edgeKey(a, b) === key);
         if (existing) {
           const w = getEdgeWeight();
@@ -3361,75 +3406,206 @@
           graphModel.edited = true;
           recomputeHStar(graphModel);
           renderGraphMeta();
-          rebuildGraphHistory(`↻ Peso da aresta ${u}—${v} atualizado para ${w}.`);
+          rebuildGraphHistory(`↻ Peso da aresta ${edgeU}—${edgeV} atualizado para ${w}.`);
         }
-      } else {
+      } else if (edgeDraftFrom) {
         edgeDraftFrom = null;
         edgeDraftPos = null;
+        updateToolHint();
         renderGraph();
       }
       return;
     }
 
     if (currentTool === "delete") {
-      if (nodeEl) {
-        e.preventDefault();
-        const id = nodeEl.dataset.nodeId;
-        if (id === graphModel.start || id === graphModel.goal) {
-          gTransientNotice = `Não é possível remover ${id} enquanto for origem ou destino (troque antes com Origem/Destino).`;
+      if (nodeId) {
+        if (nodeId === graphModel.start || nodeId === graphModel.goal) {
+          gTransientNotice = `Não é possível remover ${nodeId} enquanto for origem ou destino (troque antes com Origem/Destino).`;
           renderGraph();
           return;
         }
-        graphModel.nodes = graphModel.nodes.filter(n => n.id !== id);
-        graphModel.edges = graphModel.edges.filter(([u, v]) => u !== id && v !== id);
+        graphModel.nodes = graphModel.nodes.filter(n => n.id !== nodeId);
+        graphModel.edges = graphModel.edges.filter(([u, v]) => u !== nodeId && v !== nodeId);
         graphModel.edited = true;
         recomputeHStar(graphModel);
         renderGraphMeta();
-        rebuildGraphHistory(`− Nó ${id} e suas arestas foram removidos.`);
-      } else if (edgeEl) {
-        e.preventDefault();
-        const u = edgeEl.dataset.edgeU;
-        const v = edgeEl.dataset.edgeV;
-        const key = edgeKey(u, v);
+        rebuildGraphHistory(`− Nó ${nodeId} e suas arestas foram removidos.`);
+      } else if (edgeU && edgeV) {
+        const key = edgeKey(edgeU, edgeV);
         graphModel.edges = graphModel.edges.filter(([a, b]) => edgeKey(a, b) !== key);
         graphModel.edited = true;
         recomputeHStar(graphModel);
         renderGraphMeta();
-        rebuildGraphHistory(`− Aresta ${u}—${v} removida.`);
+        rebuildGraphHistory(`− Aresta ${edgeU}—${edgeV} removida.`);
       }
       return;
     }
 
-    if (currentTool === "start" && nodeEl) {
-      e.preventDefault();
-      const id = nodeEl.dataset.nodeId;
-      if (id === graphModel.goal) return;
-      graphModel.start = id;
+    if (currentTool === "start" && nodeId) {
+      if (nodeId === graphModel.goal) return;
+      graphModel.start = nodeId;
       graphModel.edited = true;
       renderGraphMeta();
-      rebuildGraphHistory(`Origem alterada para ${id}.`);
+      rebuildGraphHistory(`Origem alterada para ${nodeId}.`);
       return;
     }
 
-    if (currentTool === "goal" && nodeEl) {
-      e.preventDefault();
-      const id = nodeEl.dataset.nodeId;
-      if (id === graphModel.start) return;
-      graphModel.goal = id;
+    if (currentTool === "goal" && nodeId) {
+      if (nodeId === graphModel.start) return;
+      graphModel.goal = nodeId;
       graphModel.edited = true;
       recomputeHStar(graphModel);
       renderGraphMeta();
-      rebuildGraphHistory(`Destino alterado para ${id} (h* recalculado).`);
+      rebuildGraphHistory(`Destino alterado para ${nodeId} (h* recalculado).`);
     }
+  }
+
+  function startPinchGesture() {
+    const pts = Array.from(activePointers.values());
+    if (pts.length < 2) return;
+    if (dragMode === "node" && dragNodeId && dragNodeOrigPos) {
+      const node = graphModel.nodes.find(n => n.id === dragNodeId);
+      if (node) {
+        node.x = dragNodeOrigPos.x;
+        node.y = dragNodeOrigPos.y;
+      }
+    }
+    pendingTap = null;
+    dragMode = "pinch";
+    dragPointerId = null;
+    dragNodeId = null;
+    dragNodeMoved = false;
+    dragNodeOrigPos = null;
+    svg.classList.remove("is-dragging-node");
+    svg.classList.add("is-panning");
+
+    const p1 = pts[0];
+    const p2 = pts[1];
+    const midClient = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+    pinchStart = {
+      dist: Math.max(10, Math.hypot(p2.x - p1.x, p2.y - p1.y)),
+      midWorld: clientPointToWorld(midClient.x, midClient.y),
+      camStart: { ...cam }
+    };
+  }
+
+  // Interações no canvas SVG (edição de nós/arestas + pan + zoom + multi-touch)
+  svg.addEventListener("pointerdown", (e) => {
+    if (!graphModel) return;
+
+    if (e.pointerType === "touch") {
+      e.preventDefault();
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePointers.size >= 2) {
+        startPinchGesture();
+        return;
+      }
+    }
+
+    const nodeEl = e.target.closest(".node-group");
+    const edgeEl = e.target.closest(".edge-group");
+    const nodeId = nodeEl ? nodeEl.dataset.nodeId : null;
+    const edgeU = edgeEl ? edgeEl.dataset.edgeU : null;
+    const edgeV = edgeEl ? edgeEl.dataset.edgeV : null;
+    const world = clientToWorld(e);
+
+    // Botão do meio sempre faz pan em qualquer ferramenta
+    if (e.button === 1) {
+      e.preventDefault();
+      dragMode = "pan";
+      dragPointerId = e.pointerId;
+      panStartClient = { x: e.clientX, y: e.clientY };
+      panStartCam = { x: cam.x, y: cam.y };
+      svg.classList.add("is-panning");
+      return;
+    }
+
+    if (e.pointerType !== "touch" && e.button !== 0) return;
+
+    if (currentTool === "move") {
+      e.preventDefault();
+      if (nodeId) {
+        const node = graphModel.nodes.find(n => n.id === nodeId);
+        if (!node) return;
+        dragMode = "node";
+        dragPointerId = e.pointerId;
+        dragNodeId = nodeId;
+        dragNodeMoved = false;
+        dragNodeOrigPos = { x: node.x, y: node.y };
+        dragOffset = { x: node.x - world.x, y: node.y - world.y };
+        svg.classList.add("is-dragging-node");
+      } else {
+        dragMode = "pan";
+        dragPointerId = e.pointerId;
+        panStartClient = { x: e.clientX, y: e.clientY };
+        panStartCam = { x: cam.x, y: cam.y };
+        svg.classList.add("is-panning");
+      }
+      return;
+    }
+
+    // No touch, adia o clique da ferramenta para pointerup para permitir pinça com 2 dedos sem disparar edições acidentais
+    if (e.pointerType === "touch") {
+      pendingTap = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        nodeId,
+        edgeU,
+        edgeV,
+        world,
+        cancelled: false
+      };
+      return;
+    }
+
+    e.preventDefault();
+    runGraphToolTap(nodeId, edgeU, edgeV, world);
   });
 
   window.addEventListener("pointermove", (e) => {
     if (!graphModel) return;
+
+    if (activePointers.has(e.pointerId)) {
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    if (pendingTap && pendingTap.pointerId === e.pointerId) {
+      if (Math.hypot(e.clientX - pendingTap.startX, e.clientY - pendingTap.startY) > 14) {
+        pendingTap.cancelled = true;
+      }
+    }
+
+    if (dragMode === "pinch" && pinchStart && activePointers.size >= 2) {
+      const pts = Array.from(activePointers.values());
+      const p1 = pts[0];
+      const p2 = pts[1];
+      const dist = Math.max(10, Math.hypot(p2.x - p1.x, p2.y - p1.y));
+      const scale = dist / pinchStart.dist;
+      const midClient = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const rect = svg.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        const aspect = rect.width / rect.height;
+        const nextW = Math.min(BASE_W / MIN_ZOOM, Math.max(BASE_W / MAX_ZOOM, pinchStart.camStart.w / scale));
+        const nextH = nextW / aspect;
+        const rx = (midClient.x - rect.left) / rect.width;
+        const ry = (midClient.y - rect.top) / rect.height;
+        cam.w = nextW;
+        cam.h = nextH;
+        cam.x = pinchStart.midWorld.x - rx * nextW;
+        cam.y = pinchStart.midWorld.y - ry * nextH;
+        userAdjustedCam = true;
+        applyCamera();
+        renderGraph();
+      }
+      return;
+    }
+
     if (dragMode && e.pointerType === "mouse" && e.buttons === 0) {
       stopGraphDrag();
       return;
     }
-    if (dragMode === "node" && dragNodeId) {
+    if (dragMode === "node" && dragNodeId && (dragPointerId === null || e.pointerId === dragPointerId)) {
       const node = graphModel.nodes.find(n => n.id === dragNodeId);
       if (!node) return;
       const world = clientToWorld(e);
@@ -3440,30 +3616,62 @@
       return;
     }
 
-    if (dragMode === "pan") {
+    if (dragMode === "pan" && (dragPointerId === null || e.pointerId === dragPointerId)) {
       const rect = svg.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         const dx = (e.clientX - panStartClient.x) * (cam.w / rect.width);
         const dy = (e.clientY - panStartClient.y) * (cam.h / rect.height);
         cam.x = panStartCam.x - dx;
         cam.y = panStartCam.y - dy;
+        userAdjustedCam = true;
         applyCamera();
         renderGraph();
       }
       return;
     }
 
-    if (currentTool === "add-edge" && edgeDraftFrom) {
+    if (currentTool === "add-edge" && edgeDraftFrom && e.pointerType !== "touch") {
       edgeDraftPos = clientToWorld(e);
       renderGraph();
     }
   });
 
-  function stopGraphDrag() {
+  function stopGraphDrag(e) {
+    if (e && e.pointerId !== undefined) {
+      activePointers.delete(e.pointerId);
+    } else {
+      activePointers.clear();
+    }
+
+    if (pendingTap && (!e || e.pointerId === pendingTap.pointerId)) {
+      const tap = pendingTap;
+      pendingTap = null;
+      if (e && e.type === "pointerup" && !tap.cancelled) {
+        runGraphToolTap(tap.nodeId, tap.edgeU, tap.edgeV, tap.world);
+      }
+    }
+
+    if (dragMode === "pinch") {
+      if (activePointers.size >= 2) {
+        startPinchGesture();
+        return;
+      }
+      dragMode = null;
+      pinchStart = null;
+      svg.classList.remove("is-panning");
+      return;
+    }
+
+    if (e && dragPointerId !== null && e.pointerId !== undefined && e.pointerId !== dragPointerId) {
+      return;
+    }
+
     const movedNode = dragMode === "node" && dragNodeMoved;
     dragMode = null;
+    dragPointerId = null;
     dragNodeId = null;
     dragNodeMoved = false;
+    dragNodeOrigPos = null;
     svg.classList.remove("is-panning", "is-dragging-node");
     if (movedNode && graphModel) {
       graphModel.edited = true;
@@ -3476,14 +3684,81 @@
 
   window.addEventListener("pointerup", stopGraphDrag);
   window.addEventListener("pointercancel", stopGraphDrag);
-  window.addEventListener("blur", stopGraphDrag);
+  window.addEventListener("blur", () => stopGraphDrag());
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && edgeDraftFrom) {
       edgeDraftFrom = null;
       edgeDraftPos = null;
+      updateToolHint();
       renderGraph();
     }
   });
+
+  // Acessibilidade via teclado quando o canvas do grafo estiver em foco
+  svg.addEventListener("keydown", (e) => {
+    if (!graphModel) return;
+    const panStep = cam.w * 0.1;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      cam.x -= panStep;
+      userAdjustedCam = true;
+      applyCamera();
+      renderGraph();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      cam.x += panStep;
+      userAdjustedCam = true;
+      applyCamera();
+      renderGraph();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      cam.y -= panStep;
+      userAdjustedCam = true;
+      applyCamera();
+      renderGraph();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      cam.y += panStep;
+      userAdjustedCam = true;
+      applyCamera();
+      renderGraph();
+    } else if (e.key === "+" || e.key === "=") {
+      e.preventDefault();
+      zoomAround(1.2, cam.x + cam.w / 2, cam.y + cam.h / 2);
+    } else if (e.key === "-" || e.key === "_") {
+      e.preventDefault();
+      zoomAround(1 / 1.2, cam.x + cam.w / 2, cam.y + cam.h / 2);
+    } else if (e.key === "0") {
+      e.preventDefault();
+      fitGraphToView();
+    }
+  });
+
+  if (typeof ResizeObserver !== "undefined") {
+    let lastSvgW = 0;
+    let lastSvgH = 0;
+    new ResizeObserver((entries) => {
+      const rect = entries[0].contentRect;
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
+      if (w <= 0 || h <= 0 || (w === lastSvgW && h === lastSvgH)) return;
+      lastSvgW = w;
+      lastSvgH = h;
+      if (!graphModel) return;
+      if (!userAdjustedCam) {
+        fitGraphToView();
+      } else {
+        const aspect = w / h;
+        const cx = cam.x + cam.w / 2;
+        const cy = cam.y + cam.h / 2;
+        cam.h = cam.w / aspect;
+        cam.x = cx - cam.w / 2;
+        cam.y = cy - cam.h / 2;
+        applyCamera();
+        if (gState) renderGraph();
+      }
+    }).observe(svg);
+  }
 
   svg.addEventListener("wheel", (e) => {
     if (!e.ctrlKey && !e.metaKey) return;
