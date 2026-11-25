@@ -582,23 +582,76 @@
       cursor: not-allowed;
     }
 
-    .weight-input {
-      width: 58px;
+    .weight-stepper {
+      display: inline-flex;
+      align-items: center;
       height: 36px;
       background: var(--bg-code);
-      color: var(--text);
       border: 1px solid var(--border-light);
       border-radius: 8px;
-      padding: 0 8px;
+      overflow: hidden;
+    }
+
+    .weight-stepper:focus-within {
+      border-color: var(--accent);
+    }
+
+    .weight-step-btn {
+      width: 28px;
+      height: 100%;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1;
+      transform: none !important;
+    }
+
+    .weight-step-btn:hover:not(:disabled) {
+      background: rgba(96, 165, 250, 0.16);
+      color: var(--text);
+    }
+
+    .weight-input {
+      width: 36px;
+      height: 100%;
+      background: transparent;
+      color: var(--text);
+      border: none;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 0 2px;
       font-family: var(--mono);
       font-size: 0.86rem;
       font-weight: 700;
       text-align: center;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    .weight-input::-webkit-inner-spin-button,
+    .weight-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     .weight-input:focus {
       outline: none;
-      border-color: var(--accent-2);
+    }
+
+    .heur-explain {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      background: rgba(96, 165, 250, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin: 0 0 12px;
+      line-height: 1.45;
     }
 
     .speed-val {
@@ -1509,9 +1562,10 @@
     <section id="simulador-grafo">
       <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Simulador: grafos ponderados</span></h2>
       <p>
-        Em grafos genéricos (sem grade fixa), a heurística <code>h(n)</code> é fornecida como uma estimativa por nó.
-        Alterne entre o <strong>algoritmo</strong> e diferentes <strong>heurísticas</strong> (da tabela do grafo até
-        estimativas exatas, fracas ou superestimadas) para ver na prática o efeito sobre os nós expandidos e a otimalidade.
+        Em grafos genéricos (como mapas rodoviários entre cidades), a heurística <code>h(n)</code> representa uma
+        estimativa externa do custo até o destino <code>G</code> — por exemplo, a distância em linha reta ou valores
+        didáticos de uma tabela. Escolha o <strong>algoritmo</strong> e a <strong>heurística</strong> para observar
+        como a qualidade de <code>h(n)</code> afeta o número de nós expandidos e a otimalidade.
       </p>
 
       <div class="lab-panel">
@@ -1532,8 +1586,9 @@
           <div class="control-group">
             <label for="graphHeuristic">Heurística h(n):</label>
             <select id="graphHeuristic">
-              <option value="preset">Tabela do grafo · padrão</option>
-              <option value="exact">Exata · h*(n) real</option>
+              <option value="preset">Estimativa do exemplo (manual)</option>
+              <option value="euclid">Distância em linha reta (Euclidiana)</option>
+              <option value="exact">Perfeita · h(n) = h*(n)</option>
               <option value="weak">Fraca · 50% de h*(n)</option>
               <option value="zero">Nula · h(n) = 0</option>
               <option value="over">Superestimada · 1,5× h*(n)</option>
@@ -1553,6 +1608,7 @@
         </div>
 
         <div id="graphMeta" class="sim-meta"></div>
+        <div id="graphHeurExplain" class="heur-explain"></div>
         <p id="graphLesson" style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 14px;"></p>
 
         <div class="sim-grid">
@@ -1644,7 +1700,11 @@
             <button class="brush-btn active-tool" data-brush="wall">Parede</button>
             <button class="brush-btn" data-brush="empty">Livre</button>
             <button class="brush-btn" data-brush="weight">Custo:</button>
-            <input id="brushWeight" class="weight-input" type="number" min="1" max="99" value="3" aria-label="Custo da célula" />
+            <div class="weight-stepper">
+              <button id="weightDec" class="weight-step-btn" type="button" aria-label="Diminuir custo">−</button>
+              <input id="brushWeight" class="weight-input" type="number" min="1" max="99" value="3" aria-label="Custo da célula" />
+              <button id="weightInc" class="weight-step-btn" type="button" aria-label="Aumentar custo">+</button>
+            </div>
             <button class="brush-btn" data-brush="start">Origem (A)</button>
             <button class="brush-btn" data-brush="end">Destino (B)</button>
           </div>
@@ -1803,6 +1863,7 @@
   const speedSlider = document.getElementById("gSpeed");
   const speedValEl = document.getElementById("gSpeedVal");
   const graphMetaEl = document.getElementById("graphMeta");
+  const heurExplainEl = document.getElementById("graphHeurExplain");
   const svg = document.getElementById("graphSvg");
   const lessonEl = document.getElementById("graphLesson");
   const openListEl = document.getElementById("gOpenList");
@@ -1835,10 +1896,31 @@
     return g + h;
   }
 
-  function effectiveH(node) {
+  function euclidScaleFor(preset) {
+    const goal = preset.nodes.find(n => n.id === preset.goal);
+    if (!goal) return 1;
+    let maxRatio = 1;
+    for (const n of preset.nodes) {
+      if (n.hStar > 0) {
+        const d = Math.hypot(n.x - goal.x, n.y - goal.y);
+        const r = d / n.hStar;
+        if (r > maxRatio) maxRatio = r;
+      }
+    }
+    return maxRatio;
+  }
+
+  function effectiveH(node, presetOverride) {
     if (algoSel.value === "dijkstra") return 0;
     const hMode = heurSel.value;
     if (hMode === "zero") return 0;
+    if (hMode === "euclid") {
+      const preset = presetOverride || getPreset();
+      const goal = preset.nodes.find(n => n.id === preset.goal);
+      if (!goal || node.id === goal.id) return 0;
+      const d = Math.hypot(node.x - goal.x, node.y - goal.y);
+      return Math.floor(d / euclidScaleFor(preset));
+    }
     if (hMode === "exact") return node.hStar;
     if (hMode === "weak") return Math.floor(node.hStar * 0.5);
     if (hMode === "over") return Math.ceil(node.hStar * 1.5);
@@ -2128,13 +2210,25 @@
       weighted: "f = g + 2h"
     };
     const heurLabelMap = {
-      preset: "h(n): tabela do grafo",
-      exact: "h(n): exata h*(n)",
-      weak: "h(n): fraca (50%)",
+      preset: "h(n): estimativa do exemplo",
+      euclid: "h(n): distância em linha reta",
+      exact: "h(n) = h*(n)",
+      weak: "h(n) = 50% de h*(n)",
       zero: "h(n) = 0",
-      over: "h(n): superestimada (1,5×)"
+      over: "h(n) = 1,5× h*(n)"
     };
-    const allAdmissible = preset.nodes.every(n => effectiveH(n) <= n.hStar);
+    const allAdmissible = preset.nodes.every(n => effectiveH(n, preset) <= n.hStar);
+
+    const explainMap = {
+      preset: allAdmissible
+        ? "<strong>Estimativa do exemplo:</strong> valores manuais atribuídos a cada nó deste grafo (como uma tabela de distâncias estimadas até G — confira cada valor ao lado)."
+        : "<strong>Estimativa do exemplo:</strong> valores manuais preparados de propósito com pelo menos um nó superestimado (<code>h &gt; h*</code>) para mostrar quando o A* perde o caminho mínimo.",
+      euclid: "<strong>Distância em linha reta (Euclidiana):</strong> calculada diretamente pela posição visual <code>(x, y)</code> de cada nó até <code>G</code>, convertida para a escala de custos do grafo (sempre admissível).",
+      exact: "<strong>Heurística perfeita:</strong> usa o menor custo real restante <code>h*(n)</code>. Na prática não conhecemos <code>h*</code> antes da busca, mas serve para ver o limite ideal: o A* segue direto pelo caminho ótimo.",
+      weak: "<strong>Heurística fraca:</strong> estima apenas <code>50%</code> de <code>h*(n)</code>. Continua admissível e encontra o menor caminho, porém expande mais nós do que uma heurística mais forte.",
+      zero: "<strong>Heurística nula:</strong> fixa <code>h(n) = 0</code> para todos os nós, fazendo o A* se comportar exatamente como o algoritmo de Dijkstra.",
+      over: "<strong>Heurística superestimada:</strong> multiplica o custo real restante por <code>1,5</code> (<code>h &gt; h*</code>). Viola a admissibilidade e pode fazer o A* parar em um caminho subótimo."
+    };
 
     let statusText = "Heurística admissível";
     let statusCls = "ok";
@@ -2156,6 +2250,9 @@
       `<span class="badge">${formulaMap[algo]}</span>` +
       `<span class="badge">${heurBadge}</span>` +
       `<span class="badge ${statusCls}">${statusText}</span>`;
+    heurExplainEl.innerHTML = isDijkstra
+      ? "<strong>Dijkstra:</strong> ignora a heurística (<code>h(n) = 0</code>) e escolhe o próximo nó exclusivamente pelo menor custo acumulado <code>g(n)</code>."
+      : explainMap[hMode];
   }
 
   presetSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
@@ -2340,6 +2437,8 @@
   const algoSel = document.getElementById("gridAlgo");
   const dirsSel = document.getElementById("gridDirs");
   const brushWeightInput = document.getElementById("brushWeight");
+  const weightDecBtn = document.getElementById("weightDec");
+  const weightIncBtn = document.getElementById("weightInc");
   const stepBtn = document.getElementById("gridStepBtn");
   const runBtn = document.getElementById("gridRunBtn");
   const clearSearchBtn = document.getElementById("gridClearSearchBtn");
@@ -2391,6 +2490,16 @@
   brushWeightInput.addEventListener("input", () => selectBrush("weight"));
   brushWeightInput.addEventListener("change", () => {
     brushWeightInput.value = String(getBrushWeight());
+    selectBrush("weight");
+  });
+
+  weightDecBtn.addEventListener("click", () => {
+    brushWeightInput.value = String(Math.max(1, getBrushWeight() - 1));
+    selectBrush("weight");
+  });
+
+  weightIncBtn.addEventListener("click", () => {
+    brushWeightInput.value = String(Math.min(99, getBrushWeight() + 1));
     selectBrush("weight");
   });
 
