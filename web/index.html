@@ -1110,11 +1110,126 @@
       min-width: 0;
     }
 
+    .graph-stage {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(54, 71, 125, 0.55);
+      background: #0a1020;
+    }
+
     .graph-svg {
       width: 100%;
       height: auto;
+      aspect-ratio: 740 / 380;
       display: block;
       user-select: none;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .graph-svg.is-panning {
+      cursor: grabbing;
+    }
+
+    .graph-svg.tool-add-node {
+      cursor: crosshair;
+    }
+
+    .graph-svg.tool-add-edge,
+    .graph-svg.tool-delete,
+    .graph-svg.tool-start,
+    .graph-svg.tool-goal {
+      cursor: pointer;
+    }
+
+    .graph-svg .node-group {
+      cursor: grab;
+    }
+
+    .graph-svg.is-dragging-node .node-group {
+      cursor: grabbing;
+    }
+
+    .graph-svg.tool-delete .node-group:hover circle,
+    .graph-svg.tool-delete .edge-group:hover .edge-line {
+      stroke: var(--accent-danger) !important;
+    }
+
+    .graph-svg.tool-delete .edge-group:hover .edge-pill {
+      stroke: var(--accent-danger) !important;
+      fill: #3b1218;
+    }
+
+    .graph-svg.tool-add-edge .edge-group:hover .edge-line,
+    .graph-svg.tool-add-edge .edge-group:hover .edge-pill {
+      stroke: var(--accent) !important;
+    }
+
+    .graph-zoom-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(11, 16, 32, 0.86);
+      border: 1px solid var(--border-light);
+      border-radius: 9px;
+      padding: 4px;
+      backdrop-filter: blur(6px);
+      z-index: 3;
+    }
+
+    button.zoom-btn {
+      height: 28px;
+      min-width: 28px;
+      padding: 0 8px;
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      background: rgba(36, 50, 92, 0.75);
+      border-color: var(--border);
+      border-radius: 6px;
+      transform: none !important;
+    }
+
+    button.zoom-btn:hover:not(:disabled) {
+      background: #2f4175;
+      border-color: var(--accent);
+    }
+
+    .graph-tool-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    .h-table-input {
+      width: 48px;
+      height: 24px;
+      background: var(--bg-code);
+      color: var(--text);
+      border: 1px solid var(--border-light);
+      border-radius: 5px;
+      padding: 0 5px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-align: center;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    .h-table-input::-webkit-inner-spin-button,
+    .h-table-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .h-table-input:focus {
+      outline: none;
+      border-color: var(--accent);
     }
 
     .legend {
@@ -2116,9 +2231,27 @@
         </div>
 
         <div class="controls-bar">
+          <div class="control-group" style="gap:6px;">
+            <label>Ferramenta:</label>
+            <button class="gtool-btn active-tool" data-gtool="move" type="button">Mover</button>
+            <button class="gtool-btn" data-gtool="add-node" type="button">+ Nó</button>
+            <button class="gtool-btn" data-gtool="add-edge" type="button">+ Aresta</button>
+            <div class="weight-stepper" title="Peso da aresta">
+              <button id="edgeWeightDec" class="weight-step-btn" type="button" aria-label="Diminuir peso da aresta">−</button>
+              <input id="edgeWeight" class="weight-input" type="number" min="1" max="99" value="4" aria-label="Peso da aresta" />
+              <button id="edgeWeightInc" class="weight-step-btn" type="button" aria-label="Aumentar peso da aresta">+</button>
+            </div>
+            <button class="gtool-btn" data-gtool="delete" type="button">Remover</button>
+            <button class="gtool-btn" data-gtool="start" type="button">Origem</button>
+            <button class="gtool-btn" data-gtool="goal" type="button">Destino</button>
+          </div>
+        </div>
+
+        <div class="controls-bar">
           <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
           <button id="gRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
-          <button id="gResetBtn">Reiniciar <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
+          <button id="gClearSearchBtn" type="button">Limpar busca</button>
+          <button id="gResetBtn" type="button">Restaurar grafo <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
           <div class="control-group">
             <label for="gSpeed">Velocidade:</label>
             <input id="gSpeed" type="range" min="0.5" max="8" step="0.5" value="2" />
@@ -2132,10 +2265,18 @@
 
         <div class="sim-grid">
           <div class="canvas-box">
-            <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" aria-label="Grafo ponderado interativo"></svg>
+            <div class="graph-stage">
+              <div class="graph-zoom-controls" aria-label="Controles de zoom">
+                <button id="gZoomIn" class="zoom-btn" type="button" title="Aproximar (zoom in)">+</button>
+                <button id="gZoomOut" class="zoom-btn" type="button" title="Afastar (zoom out)">−</button>
+                <button id="gZoomFit" class="zoom-btn" type="button" title="Enquadrar todo o grafo">Ajustar</button>
+              </div>
+              <svg id="graphSvg" class="graph-svg" viewBox="0 0 740 380" aria-label="Grafo ponderado interativo"></svg>
+            </div>
+            <div id="graphToolHint" class="graph-tool-hint"></div>
             <div class="legend">
-              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> Origem (A)</span>
-              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> Destino (G)</span>
+              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> <span id="gLegendStart">Origem (A)</span></span>
+              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> <span id="gLegendGoal">Destino (G)</span></span>
               <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open set</span>
               <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Expandindo</span>
               <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed set</span>
@@ -2378,11 +2519,15 @@
   const heurSel = document.getElementById("graphHeuristic");
   const stepBtn = document.getElementById("gStepBtn");
   const runBtn = document.getElementById("gRunBtn");
+  const clearSearchBtn = document.getElementById("gClearSearchBtn");
   const resetBtn = document.getElementById("gResetBtn");
   const speedSlider = document.getElementById("gSpeed");
   const speedValEl = document.getElementById("gSpeedVal");
   const graphMetaEl = document.getElementById("graphMeta");
   const heurExplainEl = document.getElementById("graphHeurExplain");
+  const toolHintEl = document.getElementById("graphToolHint");
+  const legendStartEl = document.getElementById("gLegendStart");
+  const legendGoalEl = document.getElementById("gLegendGoal");
   const svg = document.getElementById("graphSvg");
   const lessonEl = document.getElementById("graphLesson");
   const openListEl = document.getElementById("gOpenList");
@@ -2391,6 +2536,13 @@
   const logEl = document.getElementById("gLog");
   const expandedEl = document.getElementById("gExpandedCount");
   const foundCostEl = document.getElementById("gFoundCost");
+  const toolBtns = document.querySelectorAll(".gtool-btn");
+  const edgeWeightInput = document.getElementById("edgeWeight");
+  const edgeWeightDecBtn = document.getElementById("edgeWeightDec");
+  const edgeWeightIncBtn = document.getElementById("edgeWeightInc");
+  const zoomInBtn = document.getElementById("gZoomIn");
+  const zoomOutBtn = document.getElementById("gZoomOut");
+  const zoomFitBtn = document.getElementById("gZoomFit");
 
   GRAPH_PRESETS.forEach((p, idx) => {
     const opt = document.createElement("option");
@@ -2400,11 +2552,106 @@
     presetSel.appendChild(opt);
   });
 
+  const BASE_W = 740;
+  const BASE_H = 380;
+  const MIN_ZOOM = 0.35;
+  const MAX_ZOOM = 2.8;
+
+  let graphModel = null;
   let gState = null;
   let gTimer = null;
+  let currentTool = "move";
+  let cam = { x: 0, y: 0, w: BASE_W, h: BASE_H };
+  let dragMode = null; // null | "node" | "pan"
+  let dragNodeId = null;
+  let dragNodeMoved = false;
+  let dragOffset = { x: 0, y: 0 };
+  let panStartClient = { x: 0, y: 0 };
+  let panStartCam = { x: 0, y: 0 };
+  let edgeDraftFrom = null;
+  let edgeDraftPos = null;
+
+  const TOOL_HINTS = {
+    move: "Arraste nós para reposicionar • Arraste o fundo para mover (pan) • Ctrl + scroll ou +/− para zoom.",
+    "add-node": "Clique em qualquer área livre para criar um novo nó (com h* calculado automaticamente).",
+    "add-edge": "Clique em dois nós para criar/atualizar uma aresta com o peso escolhido, ou clique direto em uma aresta.",
+    delete: "Clique em um nó ou aresta para remover (origem e destino não podem ser removidos diretamente).",
+    start: "Clique em um nó para defini-lo como nova origem da busca.",
+    goal: "Clique em um nó para defini-lo como novo destino (recalcula h* automaticamente)."
+  };
 
   function getPreset() {
     return GRAPH_PRESETS.find(p => p.id === presetSel.value) || GRAPH_PRESETS[0];
+  }
+
+  function getEdgeWeight() {
+    const val = parseInt(edgeWeightInput.value, 10);
+    if (!Number.isFinite(val) || val < 1) return 1;
+    return Math.min(99, val);
+  }
+
+  function selectTool(name) {
+    currentTool = name;
+    edgeDraftFrom = null;
+    edgeDraftPos = null;
+    toolBtns.forEach(b => b.classList.toggle("active-tool", b.dataset.gtool === name));
+    svg.classList.remove("tool-move", "tool-add-node", "tool-add-edge", "tool-delete", "tool-start", "tool-goal");
+    svg.classList.add(`tool-${name}`);
+    toolHintEl.textContent = TOOL_HINTS[name] || "";
+    if (gState) renderGraph();
+  }
+
+  function buildAdjacency(model) {
+    const adj = {};
+    model.nodes.forEach(n => { adj[n.id] = []; });
+    model.edges.forEach(([u, v, w]) => {
+      if (adj[u] && adj[v]) {
+        adj[u].push({ to: v, w });
+        adj[v].push({ to: u, w });
+      }
+    });
+    return adj;
+  }
+
+  // Recalcula h*(n) real até o destino atual via Dijkstra reverso
+  function recomputeHStar(model) {
+    const adj = buildAdjacency(model);
+    const dist = {};
+    model.nodes.forEach(n => { dist[n.id] = Infinity; });
+    if (dist[model.goal] === undefined) return;
+    dist[model.goal] = 0;
+
+    const visited = new Set();
+    const queue = [{ id: model.goal, d: 0 }];
+    while (queue.length > 0) {
+      queue.sort((a, b) => a.d - b.d);
+      const { id, d } = queue.shift();
+      if (visited.has(id) || d > dist[id]) continue;
+      visited.add(id);
+      for (const { to, w } of adj[id]) {
+        const nd = d + w;
+        if (nd < dist[to]) {
+          dist[to] = nd;
+          queue.push({ id: to, d: nd });
+        }
+      }
+    }
+
+    model.nodes.forEach(n => {
+      n.hStar = dist[n.id];
+      if (n.id === model.goal) n.h = 0;
+    });
+  }
+
+  function nextNodeId(model) {
+    const used = new Set(model.nodes.map(n => n.id));
+    for (let code = 65; code <= 90; code++) {
+      const ch = String.fromCharCode(code);
+      if (!used.has(ch)) return ch;
+    }
+    let idx = 1;
+    while (used.has(`N${idx}`)) idx++;
+    return `N${idx}`;
   }
 
   function computeF(g, h) {
@@ -2415,86 +2662,168 @@
     return g + h;
   }
 
-  function euclidScaleFor(preset) {
-    const goal = preset.nodes.find(n => n.id === preset.goal);
+  function euclidScaleFor(model) {
+    const goal = model.nodes.find(n => n.id === model.goal);
     if (!goal) return 1;
-    let maxRatio = 1;
-    for (const n of preset.nodes) {
-      if (n.hStar > 0) {
+    let maxRatio = 0;
+    for (const n of model.nodes) {
+      if (Number.isFinite(n.hStar) && n.hStar > 0) {
         const d = Math.hypot(n.x - goal.x, n.y - goal.y);
         const r = d / n.hStar;
         if (r > maxRatio) maxRatio = r;
       }
     }
-    return maxRatio;
+    return maxRatio > 0 ? maxRatio : 50;
   }
 
-  function effectiveH(node, presetOverride) {
+  function effectiveH(node, modelOverride) {
     if (algoSel.value === "dijkstra") return 0;
+    const model = modelOverride || graphModel;
+    if (!model || node.id === model.goal) return 0;
     const hMode = heurSel.value;
     if (hMode === "zero") return 0;
     if (hMode === "euclid") {
-      const preset = presetOverride || getPreset();
-      const goal = preset.nodes.find(n => n.id === preset.goal);
-      if (!goal || node.id === goal.id) return 0;
+      const goal = model.nodes.find(n => n.id === model.goal);
+      if (!goal) return 0;
       const d = Math.hypot(node.x - goal.x, node.y - goal.y);
-      return Math.floor(d / euclidScaleFor(preset));
+      return Math.floor(d / euclidScaleFor(model));
     }
-    if (hMode === "exact") return node.hStar;
-    if (hMode === "weak") return Math.floor(node.hStar * 0.5);
-    if (hMode === "over") return Math.ceil(node.hStar * 1.5);
+    if (hMode === "exact") return Number.isFinite(node.hStar) ? node.hStar : 0;
+    if (hMode === "weak") return Number.isFinite(node.hStar) ? Math.floor(node.hStar * 0.5) : 0;
+    if (hMode === "over") return Number.isFinite(node.hStar) ? Math.ceil(node.hStar * 1.5) : 0;
     return node.h;
   }
 
-  function buildAdjacency(preset) {
-    const adj = {};
-    preset.nodes.forEach(n => { adj[n.id] = []; });
-    preset.edges.forEach(([u, v, w]) => {
-      adj[u].push({ to: v, w });
-      adj[v].push({ to: u, w });
-    });
-    return adj;
+  function applyCamera() {
+    svg.setAttribute("viewBox", `${cam.x.toFixed(1)} ${cam.y.toFixed(1)} ${cam.w.toFixed(1)} ${cam.h.toFixed(1)}`);
   }
 
-  function initGraphSim() {
-    stopGraphTimer();
+  function resetCamera() {
+    cam = { x: 0, y: 0, w: BASE_W, h: BASE_H };
+    applyCamera();
+  }
+
+  function fitGraphToView() {
+    if (!graphModel || !graphModel.nodes.length) {
+      resetCamera();
+      return;
+    }
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const n of graphModel.nodes) {
+      if (n.x < minX) minX = n.x;
+      if (n.x > maxX) maxX = n.x;
+      if (n.y < minY) minY = n.y;
+      if (n.y > maxY) maxY = n.y;
+    }
+    const padX = 95;
+    const padY = 82;
+    const boxW = Math.max(220, (maxX - minX) + padX * 2);
+    const boxH = Math.max(140, (maxY - minY) + padY * 2);
+    const aspect = BASE_W / BASE_H;
+    let w = boxW;
+    let h = w / aspect;
+    if (h < boxH) {
+      h = boxH;
+      w = h * aspect;
+    }
+    w = Math.min(BASE_W / MIN_ZOOM, Math.max(BASE_W / MAX_ZOOM, w));
+    h = w / aspect;
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    cam = { x: cx - w / 2, y: cy - h / 2, w, h };
+    applyCamera();
+    if (gState) renderGraph();
+  }
+
+  function zoomAround(factor, wx, wy) {
+    const nextW = Math.min(BASE_W / MIN_ZOOM, Math.max(BASE_W / MAX_ZOOM, cam.w / factor));
+    const nextH = nextW * (BASE_H / BASE_W);
+    const rx = (wx - cam.x) / cam.w;
+    const ry = (wy - cam.y) / cam.h;
+    cam.x = wx - rx * nextW;
+    cam.y = wy - ry * nextH;
+    cam.w = nextW;
+    cam.h = nextH;
+    applyCamera();
+    if (gState) renderGraph();
+  }
+
+  function clientToWorld(e) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: cam.x + cam.w / 2, y: cam.y + cam.h / 2 };
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const res = pt.matrixTransform(ctm.inverse());
+    return { x: res.x, y: res.y };
+  }
+
+  function loadGraphPreset() {
     const preset = getPreset();
-    const adj = buildAdjacency(preset);
+    graphModel = {
+      id: preset.id,
+      name: preset.name,
+      lesson: preset.lesson,
+      edited: false,
+      start: preset.start,
+      goal: preset.goal,
+      nodes: preset.nodes.map(n => ({ ...n })),
+      edges: preset.edges.map(([u, v, w]) => [u, v, w])
+    };
+    recomputeHStar(graphModel);
+    edgeDraftFrom = null;
+    edgeDraftPos = null;
+    resetCamera();
+    renderGraphMeta();
+    initGraphSim();
+  }
+
+  function initGraphSim(customNotice) {
+    stopGraphTimer();
+    const model = graphModel;
+    const adj = buildAdjacency(model);
     const nodeMap = {};
-    preset.nodes.forEach(n => { nodeMap[n.id] = n; });
+    model.nodes.forEach(n => { nodeMap[n.id] = n; });
 
     const gScore = {};
     const fScore = {};
     const parent = {};
-    preset.nodes.forEach(n => {
+    model.nodes.forEach(n => {
       gScore[n.id] = Infinity;
       fScore[n.id] = Infinity;
       parent[n.id] = null;
     });
 
-    gScore[preset.start] = 0;
-    const h0 = effectiveH(nodeMap[preset.start]);
-    fScore[preset.start] = computeF(0, h0);
+    gScore[model.start] = 0;
+    const h0 = effectiveH(nodeMap[model.start], model);
+    fScore[model.start] = computeF(0, h0);
+
+    const logs = [`Inicializado: origem ${model.start} inserida no open set com g=0, h=${h0}, f=${fScore[model.start]}.`];
+    if (customNotice) logs.unshift(customNotice);
 
     gState = {
-      preset,
+      preset: model,
       adj,
       nodeMap,
       gScore,
       fScore,
       parent,
-      open: [{ id: preset.start, g: 0, h: h0, f: fScore[preset.start] }],
+      open: [{ id: model.start, g: 0, h: h0, f: fScore[model.start] }],
       closed: new Set(),
       current: null,
       relaxedEdges: new Set(),
       finalPath: [],
       finished: false,
       expandedCount: 0,
-      logs: [`Inicializado: origem ${preset.start} inserida no Open Set com g=0, h=${h0}, f=${fScore[preset.start]}.`]
+      logs
     };
 
-    lessonEl.textContent = preset.lesson;
-    renderHeuristicTable(preset);
+    legendStartEl.textContent = `Origem (${model.start})`;
+    legendGoalEl.textContent = `Destino (${model.goal})`;
+    lessonEl.textContent = model.edited
+      ? `Grafo editado (${model.nodes.length} nós, ${model.edges.length} arestas): h*(n) foi recalculado automaticamente até ${model.goal}.`
+      : model.lesson;
+    renderHeuristicTable(model);
     renderGraph();
   }
 
@@ -2522,13 +2851,11 @@
     const s = gState;
     s.relaxedEdges.clear();
 
-    // Sort open queue: smallest f, then smallest h (tie-breaker)
     s.open.sort((a, b) => (a.f - b.f) || (a.h - b.h) || a.id.localeCompare(b.id));
 
     let chosen = null;
     while (s.open.length > 0) {
       const cand = s.open.shift();
-      // Skip stale lazy entries or already closed
       if (cand.g > s.gScore[cand.id] || s.closed.has(cand.id)) continue;
       chosen = cand;
       break;
@@ -2537,7 +2864,7 @@
     if (!chosen) {
       s.finished = true;
       s.current = null;
-      s.logs.unshift("Open Set vazio: nenhum caminho encontrado até o destino.");
+      s.logs.unshift("Open set vazio: nenhum caminho encontrado até o destino.");
       stopGraphTimer();
       renderGraph();
       return;
@@ -2548,7 +2875,6 @@
     s.expandedCount++;
 
     if (chosen.id === s.preset.goal) {
-      // Reconstruct path
       const path = [];
       let cur = s.preset.goal;
       while (cur) {
@@ -2568,13 +2894,11 @@
 
     for (const { to, w } of s.adj[chosen.id]) {
       if (s.closed.has(to)) {
-        // Still check if non-admissible / non-consistent would improve, for educational clarity we skip closed unless strictly better?
-        // In standard Graph-Search with consistent heuristic, closed nodes aren't reopened.
-        msgParts.push(`${to} já no Closed Set`);
+        msgParts.push(`${to} já no closed set`);
         continue;
       }
       const tentativeG = chosen.g + w;
-      const hVal = effectiveH(s.nodeMap[to]);
+      const hVal = effectiveH(s.nodeMap[to], s.preset);
       const newF = computeF(tentativeG, hVal);
 
       if (tentativeG < s.gScore[to]) {
@@ -2598,14 +2922,19 @@
     renderGraph();
   }
 
-  function renderHeuristicTable(preset) {
-    const rows = preset.nodes.map(n => {
-      const hVal = effectiveH(n);
+  function renderHeuristicTable(model) {
+    const editableManual = heurSel.value === "preset" && algoSel.value !== "dijkstra";
+    const rows = model.nodes.map(n => {
+      const hVal = effectiveH(n, model);
+      const hStarTxt = Number.isFinite(n.hStar) ? n.hStar : "∞";
       const ok = hVal <= n.hStar;
+      const hCell = editableManual && n.id !== model.goal
+        ? `<input class="h-table-input" type="number" min="0" max="999" value="${n.h}" data-h-node="${n.id}" aria-label="h(${n.id})" />`
+        : `${hVal}`;
       return `<tr>
         <td><strong>${n.id}</strong></td>
-        <td>${hVal}</td>
-        <td>${n.hStar}</td>
+        <td>${hCell}</td>
+        <td>${hStarTxt}</td>
         <td>${ok ? '<span class="badge ok">Admissível</span>' : '<span class="badge bad">Superestimada!</span>'}</td>
       </tr>`;
     }).join("");
@@ -2617,7 +2946,7 @@
 
   function renderGraph() {
     const s = gState;
-    const { preset, nodeMap, gScore, fScore, open, closed, current, finalPath, relaxedEdges } = s;
+    const { preset: model, nodeMap, gScore, fScore, open, closed, current, finalPath, relaxedEdges } = s;
 
     const pathEdges = new Set();
     for (let i = 0; i + 1 < finalPath.length; i++) {
@@ -2625,12 +2954,30 @@
     }
     const openIds = new Set(open.filter(x => x.g === gScore[x.id] && !closed.has(x.id)).map(x => x.id));
 
-    let markup = "";
+    const avgY = model.nodes.length
+      ? model.nodes.reduce((acc, n) => acc + n.y, 0) / model.nodes.length
+      : 190;
+
+    let markup = `
+      <defs>
+        <pattern id="graphDotGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+          <circle cx="1.5" cy="1.5" r="1.2" fill="rgba(148, 163, 184, 0.16)" />
+        </pattern>
+      </defs>
+      <rect x="${cam.x - 4000}" y="${cam.y - 4000}" width="${cam.w + 8000}" height="${cam.h + 8000}" fill="url(#graphDotGrid)" />
+    `;
+
+    // Draft edge preview line
+    if (currentTool === "add-edge" && edgeDraftFrom && nodeMap[edgeDraftFrom] && edgeDraftPos) {
+      const nf = nodeMap[edgeDraftFrom];
+      markup += `<line x1="${nf.x}" y1="${nf.y}" x2="${edgeDraftPos.x}" y2="${edgeDraftPos.y}" stroke="#60a5fa" stroke-width="2.5" stroke-dasharray="6 4" pointer-events="none" />`;
+    }
 
     // Edges
-    for (const [u, v, w] of preset.edges) {
+    for (const [u, v, w] of model.edges) {
       const nu = nodeMap[u];
       const nv = nodeMap[v];
+      if (!nu || !nv) continue;
       const key = edgeKey(u, v);
       const isPath = pathEdges.has(key);
       const isRelaxed = relaxedEdges.has(key);
@@ -2641,14 +2988,17 @@
       const my = (nu.y + nv.y) / 2;
 
       markup += `
-        <line x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" />
-        <rect x="${mx - 14}" y="${my - 11}" width="28" height="22" rx="6" fill="#0d1326" stroke="${stroke}" stroke-width="1.2" />
-        <text x="${mx}" y="${my + 4}" text-anchor="middle" fill="#e6ecff" font-family="var(--mono)" font-size="12" font-weight="700">${w}</text>
+        <g class="edge-group" data-edge-u="${u}" data-edge-v="${v}">
+          <line x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="transparent" stroke-width="18" />
+          <line class="edge-line" x1="${nu.x}" y1="${nu.y}" x2="${nv.x}" y2="${nv.y}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" />
+          <rect class="edge-pill" x="${mx - 15}" y="${my - 11}" width="30" height="22" rx="6" fill="#0d1326" stroke="${stroke}" stroke-width="1.2" />
+          <text x="${mx}" y="${my + 4}" text-anchor="middle" fill="#e6ecff" font-family="var(--mono)" font-size="12" font-weight="700" pointer-events="none">${w}</text>
+        </g>
       `;
     }
 
     // Nodes
-    for (const n of preset.nodes) {
+    for (const n of model.nodes) {
       let fill = "#1e2949";
       let stroke = "#5166a3";
       let textFill = "#f1f5ff";
@@ -2657,9 +3007,9 @@
         fill = "#eab308"; stroke = "#fef08a"; textFill = "#1f1600";
       } else if (n.id === current) {
         fill = "#f97316"; stroke = "#fed7aa"; textFill = "#1f0900";
-      } else if (n.id === preset.start) {
+      } else if (n.id === model.start) {
         fill = "#10b981"; stroke = "#a7f3d0"; textFill = "#03261c";
-      } else if (n.id === preset.goal) {
+      } else if (n.id === model.goal) {
         fill = "#ef4444"; stroke = "#fecaca"; textFill = "#ffffff";
       } else if (closed.has(n.id)) {
         fill = "#5b21b6"; stroke = "#a78bfa";
@@ -2667,18 +3017,19 @@
         fill = "#0369a1"; stroke = "#38bdf8";
       }
 
+      const isDraftSource = currentTool === "add-edge" && edgeDraftFrom === n.id;
       const gTxt = gScore[n.id] === Infinity ? "∞" : gScore[n.id];
-      const hVal = effectiveH(n);
+      const hVal = effectiveH(n, model);
       const fTxt = fScore[n.id] === Infinity ? "∞" : fScore[n.id];
-
-      const badgeY = n.y > 250 ? n.y + 42 : n.y - 34;
+      const badgeY = n.y > avgY + 55 ? n.y + 42 : n.y - 34;
 
       markup += `
-        <g>
+        <g class="node-group" data-node-id="${n.id}">
+          ${isDraftSource ? `<circle cx="${n.x}" cy="${n.y}" r="30" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-dasharray="5 3" />` : ""}
           <circle cx="${n.x}" cy="${n.y}" r="24" fill="${fill}" stroke="${stroke}" stroke-width="3" />
-          <text x="${n.x}" y="${n.y + 5}" text-anchor="middle" fill="${textFill}" font-family="var(--sans)" font-size="16" font-weight="800">${n.id}</text>
-          <rect x="${n.x - 52}" y="${badgeY - 12}" width="104" height="20" rx="5" fill="#0d1326" stroke="#30406f" stroke-width="1" />
-          <text x="${n.x}" y="${badgeY + 2}" text-anchor="middle" fill="#cbd5e1" font-family="var(--mono)" font-size="10.5">
+          <text x="${n.x}" y="${n.y + 5}" text-anchor="middle" fill="${textFill}" font-family="var(--sans)" font-size="16" font-weight="800" pointer-events="none">${n.id}</text>
+          <rect x="${n.x - 52}" y="${badgeY - 12}" width="104" height="20" rx="5" fill="#0d1326" stroke="#30406f" stroke-width="1" pointer-events="none" />
+          <text x="${n.x}" y="${badgeY + 2}" text-anchor="middle" fill="#cbd5e1" font-family="var(--mono)" font-size="10.5" pointer-events="none">
             g:${gTxt} h:${hVal} f:${fTxt}
           </text>
         </g>
@@ -2689,7 +3040,7 @@
 
     // Inspector
     expandedEl.textContent = s.expandedCount;
-    foundCostEl.textContent = s.finalPath.length ? s.gScore[preset.goal] : (s.finished ? "Sem caminho" : "—");
+    foundCostEl.textContent = s.finalPath.length ? s.gScore[model.goal] : (s.finished ? "Sem caminho" : "—");
 
     const activeOpen = open
       .filter(x => x.g === gScore[x.id] && !closed.has(x.id))
@@ -2718,7 +3069,8 @@
   function renderGraphMeta() {
     const algo = algoSel.value;
     const hMode = heurSel.value;
-    const preset = getPreset();
+    const model = graphModel;
+    if (!model) return;
     const isDijkstra = algo === "dijkstra";
     heurSel.disabled = isDijkstra;
 
@@ -2729,24 +3081,24 @@
       weighted: "f = g + 2h"
     };
     const heurLabelMap = {
-      preset: "h(n): estimativa do exemplo",
+      preset: "h(n): estimativa manual",
       euclid: "h(n): distância em linha reta",
       exact: "h(n) = h*(n)",
       weak: "h(n) = 50% de h*(n)",
       zero: "h(n) = 0",
       over: "h(n) = 1,5× h*(n)"
     };
-    const allAdmissible = preset.nodes.every(n => effectiveH(n, preset) <= n.hStar);
+    const allAdmissible = model.nodes.every(n => effectiveH(n, model) <= n.hStar);
 
     const explainMap = {
       preset: allAdmissible
-        ? "<strong>Estimativa do exemplo:</strong> valores manuais atribuídos a cada nó deste grafo (como uma tabela de distâncias estimadas até G — confira cada valor ao lado)."
-        : "<strong>Estimativa do exemplo:</strong> valores manuais preparados de propósito com pelo menos um nó superestimado (<code>h &gt; h*</code>) para mostrar quando o A* perde o caminho mínimo.",
-      euclid: "<strong>Distância em linha reta (Euclidiana):</strong> calculada diretamente pela posição visual <code>(x, y)</code> de cada nó até <code>G</code>, convertida para a escala de custos do grafo (sempre admissível).",
-      exact: "<strong>Heurística perfeita:</strong> usa o menor custo real restante <code>h*(n)</code>. Na prática não conhecemos <code>h*</code> antes da busca, mas serve para ver o limite ideal: o A* segue direto pelo caminho ótimo.",
-      weak: "<strong>Heurística fraca:</strong> estima apenas <code>50%</code> de <code>h*(n)</code>. Continua admissível e encontra o menor caminho, porém expande mais nós do que uma heurística mais forte.",
+        ? `<strong>Estimativa manual:</strong> valores atribuídos a cada nó até <code>${model.goal}</code> — você pode editar cada <code>h(n)</code> diretamente na tabela ao lado.`
+        : `<strong>Estimativa manual:</strong> há pelo menos um nó superestimado (<code>h &gt; h*</code>), mostrando quando o A* pode perder o caminho mínimo.`,
+      euclid: `<strong>Distância em linha reta (Euclidiana):</strong> calculada diretamente pela posição visual <code>(x, y)</code> de cada nó até <code>${model.goal}</code>, convertida para a escala de custos do grafo (sempre admissível).`,
+      exact: "<strong>Heurística perfeita:</strong> usa o menor custo real restante <code>h*(n)</code>. Serve para ver o limite ideal: o A* segue direto pelo caminho ótimo.",
+      weak: "<strong>Heurística fraca:</strong> estima apenas <code>50%</code> de <code>h*(n)</code>. Continua admissível e encontra o menor caminho, porém expande mais nós.",
       zero: "<strong>Heurística nula:</strong> fixa <code>h(n) = 0</code> para todos os nós, fazendo o A* se comportar exatamente como o algoritmo de Dijkstra.",
-      over: "<strong>Heurística superestimada:</strong> multiplica o custo real restante por <code>1,5</code> (<code>h &gt; h*</code>). Viola a admissibilidade e pode fazer o A* parar em um caminho subótimo."
+      over: "<strong>Heurística superestimada:</strong> multiplica o custo real restante por <code>1,5</code> (<code>h &gt; h*</code>). Viola a admissibilidade e pode encontrar um caminho subótimo."
     };
 
     let statusText = "Heurística admissível";
@@ -2774,10 +3126,281 @@
       : explainMap[hMode];
   }
 
-  presetSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
+  // Edição direta de h(n) na tabela quando modo manual estiver ativo
+  hTableEl.addEventListener("change", (e) => {
+    const input = e.target.closest(".h-table-input");
+    if (!input || !graphModel) return;
+    const nodeId = input.dataset.hNode;
+    const node = graphModel.nodes.find(n => n.id === nodeId);
+    if (!node) return;
+    const val = Math.max(0, Math.min(999, parseInt(input.value, 10) || 0));
+    node.h = val;
+    input.value = String(val);
+    graphModel.edited = true;
+    renderGraphMeta();
+    initGraphSim(`Heurística manual atualizada: h(${nodeId}) = ${val}.`);
+  });
+
+  // Interações no canvas SVG (edição de nós/arestas + pan + zoom)
+  svg.addEventListener("pointerdown", (e) => {
+    if (!graphModel) return;
+    const nodeEl = e.target.closest(".node-group");
+    const edgeEl = e.target.closest(".edge-group");
+    const world = clientToWorld(e);
+
+    // Botão do meio sempre faz pan em qualquer ferramenta
+    if (e.button === 1) {
+      e.preventDefault();
+      dragMode = "pan";
+      panStartClient = { x: e.clientX, y: e.clientY };
+      panStartCam = { x: cam.x, y: cam.y };
+      svg.classList.add("is-panning");
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    if (currentTool === "move") {
+      if (nodeEl) {
+        e.preventDefault();
+        const id = nodeEl.dataset.nodeId;
+        const node = graphModel.nodes.find(n => n.id === id);
+        if (!node) return;
+        dragMode = "node";
+        dragNodeId = id;
+        dragNodeMoved = false;
+        dragOffset = { x: node.x - world.x, y: node.y - world.y };
+        svg.classList.add("is-dragging-node");
+      } else {
+        e.preventDefault();
+        dragMode = "pan";
+        panStartClient = { x: e.clientX, y: e.clientY };
+        panStartCam = { x: cam.x, y: cam.y };
+        svg.classList.add("is-panning");
+      }
+      return;
+    }
+
+    if (currentTool === "add-node") {
+      if (nodeEl || edgeEl) return;
+      e.preventDefault();
+      const id = nextNodeId(graphModel);
+      const goal = graphModel.nodes.find(n => n.id === graphModel.goal);
+      const estH = goal ? Math.floor(Math.hypot(world.x - goal.x, world.y - goal.y) / euclidScaleFor(graphModel)) : 0;
+      graphModel.nodes.push({ id, x: Math.round(world.x), y: Math.round(world.y), h: estH, hStar: Infinity });
+      graphModel.edited = true;
+      recomputeHStar(graphModel);
+      renderGraphMeta();
+      initGraphSim(`+ Nó ${id} adicionado.`);
+      return;
+    }
+
+    if (currentTool === "add-edge") {
+      if (nodeEl) {
+        e.preventDefault();
+        const id = nodeEl.dataset.nodeId;
+        if (!edgeDraftFrom) {
+          edgeDraftFrom = id;
+          edgeDraftPos = world;
+          renderGraph();
+        } else if (edgeDraftFrom === id) {
+          edgeDraftFrom = null;
+          edgeDraftPos = null;
+          renderGraph();
+        } else {
+          const w = getEdgeWeight();
+          const key = edgeKey(edgeDraftFrom, id);
+          const existing = graphModel.edges.find(([u, v]) => edgeKey(u, v) === key);
+          let notice;
+          if (existing) {
+            existing[2] = w;
+            notice = `↻ Peso da aresta ${edgeDraftFrom}—${id} atualizado para ${w}.`;
+          } else {
+            graphModel.edges.push([edgeDraftFrom, id, w]);
+            notice = `+ Aresta ${edgeDraftFrom}—${id} (peso ${w}) adicionada.`;
+          }
+          edgeDraftFrom = null;
+          edgeDraftPos = null;
+          graphModel.edited = true;
+          recomputeHStar(graphModel);
+          renderGraphMeta();
+          initGraphSim(notice);
+        }
+      } else if (edgeEl && !edgeDraftFrom) {
+        e.preventDefault();
+        const u = edgeEl.dataset.edgeU;
+        const v = edgeEl.dataset.edgeV;
+        const key = edgeKey(u, v);
+        const existing = graphModel.edges.find(([a, b]) => edgeKey(a, b) === key);
+        if (existing) {
+          const w = getEdgeWeight();
+          existing[2] = w;
+          graphModel.edited = true;
+          recomputeHStar(graphModel);
+          renderGraphMeta();
+          initGraphSim(`↻ Peso da aresta ${u}—${v} atualizado para ${w}.`);
+        }
+      } else {
+        edgeDraftFrom = null;
+        edgeDraftPos = null;
+        renderGraph();
+      }
+      return;
+    }
+
+    if (currentTool === "delete") {
+      if (nodeEl) {
+        e.preventDefault();
+        const id = nodeEl.dataset.nodeId;
+        if (id === graphModel.start || id === graphModel.goal) {
+          gState.logs.unshift(`Não é possível remover ${id} enquanto for origem ou destino (troque antes com Origem/Destino).`);
+          renderGraph();
+          return;
+        }
+        graphModel.nodes = graphModel.nodes.filter(n => n.id !== id);
+        graphModel.edges = graphModel.edges.filter(([u, v]) => u !== id && v !== id);
+        graphModel.edited = true;
+        recomputeHStar(graphModel);
+        renderGraphMeta();
+        initGraphSim(`− Nó ${id} e suas arestas foram removidos.`);
+      } else if (edgeEl) {
+        e.preventDefault();
+        const u = edgeEl.dataset.edgeU;
+        const v = edgeEl.dataset.edgeV;
+        const key = edgeKey(u, v);
+        graphModel.edges = graphModel.edges.filter(([a, b]) => edgeKey(a, b) !== key);
+        graphModel.edited = true;
+        recomputeHStar(graphModel);
+        renderGraphMeta();
+        initGraphSim(`− Aresta ${u}—${v} removida.`);
+      }
+      return;
+    }
+
+    if (currentTool === "start" && nodeEl) {
+      e.preventDefault();
+      const id = nodeEl.dataset.nodeId;
+      if (id === graphModel.goal) return;
+      graphModel.start = id;
+      graphModel.edited = true;
+      renderGraphMeta();
+      initGraphSim(`Origem alterada para ${id}.`);
+      return;
+    }
+
+    if (currentTool === "goal" && nodeEl) {
+      e.preventDefault();
+      const id = nodeEl.dataset.nodeId;
+      if (id === graphModel.start) return;
+      graphModel.goal = id;
+      graphModel.edited = true;
+      recomputeHStar(graphModel);
+      renderGraphMeta();
+      initGraphSim(`Destino alterado para ${id} (h* recalculado).`);
+    }
+  });
+
+  window.addEventListener("pointermove", (e) => {
+    if (!graphModel) return;
+    if (dragMode && e.pointerType === "mouse" && e.buttons === 0) {
+      stopGraphDrag();
+      return;
+    }
+    if (dragMode === "node" && dragNodeId) {
+      const node = graphModel.nodes.find(n => n.id === dragNodeId);
+      if (!node) return;
+      const world = clientToWorld(e);
+      node.x = Math.round(world.x + dragOffset.x);
+      node.y = Math.round(world.y + dragOffset.y);
+      dragNodeMoved = true;
+      renderGraph();
+      return;
+    }
+
+    if (dragMode === "pan") {
+      const rect = svg.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        const dx = (e.clientX - panStartClient.x) * (cam.w / rect.width);
+        const dy = (e.clientY - panStartClient.y) * (cam.h / rect.height);
+        cam.x = panStartCam.x - dx;
+        cam.y = panStartCam.y - dy;
+        applyCamera();
+        renderGraph();
+      }
+      return;
+    }
+
+    if (currentTool === "add-edge" && edgeDraftFrom) {
+      edgeDraftPos = clientToWorld(e);
+      renderGraph();
+    }
+  });
+
+  function stopGraphDrag() {
+    const movedNode = dragMode === "node" && dragNodeMoved;
+    dragMode = null;
+    dragNodeId = null;
+    dragNodeMoved = false;
+    svg.classList.remove("is-panning", "is-dragging-node");
+    if (movedNode && graphModel) {
+      graphModel.edited = true;
+      if (heurSel.value === "euclid") {
+        renderGraphMeta();
+        initGraphSim();
+      }
+    }
+  }
+
+  window.addEventListener("pointerup", stopGraphDrag);
+  window.addEventListener("pointercancel", stopGraphDrag);
+  window.addEventListener("blur", stopGraphDrag);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && edgeDraftFrom) {
+      edgeDraftFrom = null;
+      edgeDraftPos = null;
+      renderGraph();
+    }
+  });
+
+  svg.addEventListener("wheel", (e) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const world = clientToWorld(e);
+    const factor = e.deltaY < 0 ? 1.18 : 1 / 1.18;
+    zoomAround(factor, world.x, world.y);
+  }, { passive: false });
+
+  svg.addEventListener("dblclick", (e) => {
+    if (currentTool === "move" && !e.target.closest(".node-group") && !e.target.closest(".edge-group")) {
+      fitGraphToView();
+    }
+  });
+
+  zoomInBtn.addEventListener("click", () => zoomAround(1.25, cam.x + cam.w / 2, cam.y + cam.h / 2));
+  zoomOutBtn.addEventListener("click", () => zoomAround(1 / 1.25, cam.x + cam.w / 2, cam.y + cam.h / 2));
+  zoomFitBtn.addEventListener("click", fitGraphToView);
+
+  toolBtns.forEach(btn => btn.addEventListener("click", () => selectTool(btn.dataset.gtool)));
+  edgeWeightInput.addEventListener("focus", () => selectTool("add-edge"));
+  edgeWeightInput.addEventListener("input", () => selectTool("add-edge"));
+  edgeWeightInput.addEventListener("change", () => {
+    edgeWeightInput.value = String(getEdgeWeight());
+    selectTool("add-edge");
+  });
+  edgeWeightDecBtn.addEventListener("click", () => {
+    edgeWeightInput.value = String(Math.max(1, getEdgeWeight() - 1));
+    selectTool("add-edge");
+  });
+  edgeWeightIncBtn.addEventListener("click", () => {
+    edgeWeightInput.value = String(Math.min(99, getEdgeWeight() + 1));
+    selectTool("add-edge");
+  });
+
+  presetSel.addEventListener("change", loadGraphPreset);
   algoSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
   heurSel.addEventListener("change", () => { renderGraphMeta(); initGraphSim(); });
-  resetBtn.addEventListener("click", initGraphSim);
+  clearSearchBtn.addEventListener("click", () => initGraphSim());
+  resetBtn.addEventListener("click", loadGraphPreset);
   stepBtn.addEventListener("click", () => { stopGraphTimer(); stepGraph(); });
   runBtn.addEventListener("click", () => {
     if (gTimer) {
@@ -2798,8 +3421,8 @@
   });
 
   updateGraphSpeedLabel();
-  renderGraphMeta();
-  initGraphSim();
+  selectTool("move");
+  loadGraphPreset();
 })();
 
 /* ============================================================================
