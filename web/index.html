@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Algoritmo A* (A-Star) — Explicação Completa &amp; Laboratório Interativo</title>
+  <title>Algoritmo A* (A-Star) — explicação completa e laboratório interativo</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -131,13 +131,15 @@
     }
 
     .sidebar nav a {
-      display: block;
+      display: flex;
+      align-items: center;
       padding: 7px 10px;
       margin: 2px 0;
       border-radius: 8px;
       color: var(--text-muted);
       text-decoration: none;
       font-size: 0.88rem;
+      line-height: 1.35;
       transition: 0.15s ease;
       border-left: 2px solid transparent;
     }
@@ -435,6 +437,17 @@
       text-align: center;
       overflow-x: auto;
       max-width: 100%;
+    }
+
+    .formula-banner {
+      width: 100%;
+      padding: clamp(16px, 2.5vw, 22px) 24px;
+      margin: 16px 0 20px;
+      font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(52, 211, 153, 0.06)), var(--bg-code);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
     }
 
     /* Interactive Simulators */
@@ -855,8 +868,14 @@
       }
       .sidebar nav {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 4px 10px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        align-items: start;
+        gap: 6px 10px;
+      }
+      .sidebar nav a {
+        margin: 0;
+        padding: 8px 10px;
+        line-height: 1.3;
       }
       .nav-group-label {
         margin: 12px 0 6px 4px;
@@ -910,8 +929,8 @@
       <div class="brand">
         <div class="brand-badge">A*</div>
         <div>
-          <h2>Guia Completo A*</h2>
-          <div class="brand-sub">Busca Informada em Grafos</div>
+          <h2>Guia completo A*</h2>
+          <div class="brand-sub">Busca informada em grafos</div>
         </div>
       </div>
       <button id="menuToggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebarNav">
@@ -922,20 +941,20 @@
     <div class="sidebar-nav-content" id="sidebarNav">
       <div class="nav-group-label">Fundamentos</div>
       <nav id="toc">
-        <a href="#visao-geral">1. Visão Geral e Motivação</a>
-        <a href="#equacao">2. A Equação f(n) = g(n) + h(n)</a>
-        <a href="#estruturas">3. Estruturas e Passo a Passo</a>
-        <a href="#simulador-grafo">4. Simulador: Grafos Ponderados</a>
-        <a href="#propriedades">5. Admissibilidade e Consistência</a>
-        <a href="#heuristicas">6. Funções Heurísticas</a>
-        <a href="#complexidade">7. Complexidade e Variações</a>
-        <a href="#simulador-grade">8. Simulador: Grafos em Grade</a>
+        <a href="#visao-geral">1. Visão geral e motivação</a>
+        <a href="#equacao">2. Equação fundamental</a>
+        <a href="#estruturas">3. Estruturas e passo a passo</a>
+        <a href="#simulador-grafo">4. Simulador: grafos ponderados</a>
+        <a href="#propriedades">5. Admissibilidade e consistência</a>
+        <a href="#heuristicas">6. Funções heurísticas</a>
+        <a href="#complexidade">7. Complexidade e variações</a>
+        <a href="#simulador-grade">8. Simulador: grafos em grade</a>
       </nav>
 
-      <div class="nav-group-label">Atalhos Rápidos</div>
+      <div class="nav-group-label">Atalhos rápidos</div>
       <nav>
-        <a href="#simulador-grafo">▶ Testar Grafo Ponderado</a>
-        <a href="#simulador-grade">▶ Testar Labirintos &amp; Água</a>
+        <a href="#simulador-grafo">▶ Testar grafo ponderado</a>
+        <a href="#simulador-grade">▶ Testar labirintos e água</a>
       </nav>
     </div>
   </aside>
@@ -943,11 +962,11 @@
   <main>
     <header class="hero">
       <div class="hero-tags">
-        <span class="hero-tag">Disciplina de Grafos</span>
-        <span class="hero-tag">Explicação Completa</span>
-        <span class="hero-tag">Laboratório Interativo</span>
+        <span class="hero-tag">Disciplina de grafos</span>
+        <span class="hero-tag">Explicação completa</span>
+        <span class="hero-tag">Laboratório interativo</span>
       </div>
-      <h1>Algoritmo A* (A-Star): Do Conceito à Prática</h1>
+      <h1>Algoritmo A* (A-Star): do conceito à prática</h1>
       <p>
         O <strong>A*</strong> é um dos algoritmos mais importantes da Ciência da Computação para encontrar
         o <strong>caminho mínimo</strong> em grafos e mapas. Ele une a garantia de otimalidade da busca de
@@ -956,14 +975,14 @@
       <div class="hero-formula">
         <span class="hero-eq"><span class="f-sym">f(n)</span> = <span class="g-sym">g(n)</span> + <span class="h-sym">h(n)</span></span>
         <span class="hero-formula-note">
-          (Custo Total Estimado = Custo Real Percorrido + Estimativa até o Destino)
+          (custo total estimado = custo real percorrido + estimativa até o destino)
         </span>
       </div>
     </header>
 
     <!-- SEÇÃO 1 -->
     <section id="visao-geral">
-      <h2 class="sec-title"><span class="sec-num">01</span><span class="sec-title-text">Visão Geral e Motivação</span></h2>
+      <h2 class="sec-title"><span class="sec-num">01</span><span class="sec-title-text">Visão geral e motivação</span></h2>
       <p>
         Publicado em <strong>1968</strong> por Peter Hart, Nils Nilsson e Bertram Raphael (para guiar o robô
         <em>Shakey</em> no Stanford Research Institute), o algoritmo <strong>A*</strong> resolve o problema do
@@ -980,14 +999,14 @@
           <thead>
             <tr>
               <th>Algoritmo</th>
-              <th>Função de Prioridade</th>
-              <th>Garante Caminho Ótimo?</th>
-              <th>Comportamento da Busca</th>
+              <th>Função de prioridade</th>
+              <th>Garante caminho ótimo?</th>
+              <th>Comportamento da busca</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>Busca em Largura (BFS)</strong></td>
+              <td><strong>Busca em largura (BFS)</strong></td>
               <td>Número de arestas (nível)</td>
               <td>Apenas se todas as arestas tiverem mesmo peso</td>
               <td>Expande em anéis uniformes sem considerar custos reais nem destino.</td>
@@ -999,7 +1018,7 @@
               <td>Expande igualmente em todas as direções ("cego" ao destino <code>B</code>).</td>
             </tr>
             <tr>
-              <td><strong>Busca Gulosa (Best-First)</strong></td>
+              <td><strong>Busca gulosa (best-first)</strong></td>
               <td><code>f(n) = h(n)</code></td>
               <td><span class="badge bad">Não</span></td>
               <td>Corre direto para <code>B</code>, mas ignora o custo já gasto e cai em armadilhas.</td>
@@ -1016,7 +1035,7 @@
 
       <div class="callout">
         <strong class="title">Intuição central</strong>
-        O Dijkstra olha apenas para o <em>passado</em> ("quanto já gastei até aqui?"). A Busca Gulosa olha apenas
+        O Dijkstra olha apenas para o <em>passado</em> ("quanto já gastei até aqui?"). A busca gulosa olha apenas
         para o <em>futuro</em> ("quanto parece faltar até o destino?"). O <strong>A*</strong> equilibra passado e futuro
         a cada passo.
       </div>
@@ -1024,11 +1043,15 @@
 
     <!-- SEÇÃO 2 -->
     <section id="equacao">
-      <h2 class="sec-title"><span class="sec-num">02</span><span class="sec-title-text">A Equação Fundamental: <span class="nowrap">f(n) = g(n) + h(n)</span></span></h2>
+      <h2 class="sec-title"><span class="sec-num">02</span><span class="sec-title-text">Equação fundamental</span></h2>
+
+      <div class="formula-box formula-banner">
+        <span class="f-sym">f(n)</span> = <span class="g-sym">g(n)</span> + <span class="h-sym">h(n)</span>
+      </div>
 
       <div class="grid-3">
         <div class="card">
-          <h4><span class="g-sym">g(n)</span> — Custo Real</h4>
+          <h4><span class="g-sym">g(n)</span> — custo real</h4>
           <p>
             É a soma exata dos pesos das arestas no melhor caminho conhecido da origem <code>A</code> até o nó <code>n</code>.
           </p>
@@ -1039,7 +1062,7 @@
         </div>
 
         <div class="card">
-          <h4><span class="h-sym">h(n)</span> — Heurística</h4>
+          <h4><span class="h-sym">h(n)</span> — heurística</h4>
           <p>
             É uma <strong>estimativa</strong> do menor custo restante do nó <code>n</code> até o destino <code>B</code>.
           </p>
@@ -1050,7 +1073,7 @@
         </div>
 
         <div class="card">
-          <h4><span class="f-sym">f(n)</span> — Custo Total Estimado</h4>
+          <h4><span class="f-sym">f(n)</span> — custo total estimado</h4>
           <p>
             Estima o custo completo de ir de <code>A</code> até <code>B</code> <strong>passando por <code>n</code></strong>.
           </p>
@@ -1065,21 +1088,21 @@
         Repare em dois casos extremos importantes:
       </p>
       <ul>
-        <li>Se definirmos <code>h(n) = 0</code> para todo nó, então <code>f(n) = g(n)</code>: o A* reduz-se exatamente ao <strong>Algoritmo de Dijkstra</strong>.</li>
-        <li>Se multiplicarmos <code>h(n)</code> por um peso grande <code>w &gg; 1</code> (ou zerarmos <code>g(n)</code>), o algoritmo passa a se comportar como a <strong>Busca Gulosa</strong>, ficando mais rápido porém perdendo a garantia de caminho mínimo.</li>
+        <li>Se definirmos <code>h(n) = 0</code> para todo nó, então <code>f(n) = g(n)</code>: o A* reduz-se exatamente ao <strong>algoritmo de Dijkstra</strong>.</li>
+        <li>Se multiplicarmos <code>h(n)</code> por um peso grande <code>w &gg; 1</code> (ou zerarmos <code>g(n)</code>), o algoritmo passa a se comportar como a <strong>busca gulosa</strong>, ficando mais rápido porém perdendo a garantia de caminho mínimo.</li>
       </ul>
     </section>
 
     <!-- SEÇÃO 3 -->
     <section id="estruturas">
-      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Estruturas de Dados e Funcionamento Passo a Passo</span></h2>
+      <h2 class="sec-title"><span class="sec-num">03</span><span class="sec-title-text">Estruturas de dados e funcionamento passo a passo</span></h2>
 
       <div class="grid-2">
         <div class="card">
-          <h4>1. Open Set (Fronteira / Fila de Prioridade)</h4>
+          <h4>1. Open set (fronteira / fila de prioridade)</h4>
           <p>
             Armazena os nós já descobertos cujos vizinhos ainda não foram totalmente explorados. Normalmente é
-            implementado com um <strong>Min-Heap (Heap Binário)</strong> ordenado por menor <code>f(n)</code>.
+            implementado com um <strong>min-heap (heap binário)</strong> ordenado por menor <code>f(n)</code>.
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
             <strong>Desempate:</strong> quando dois nós têm o mesmo <code>f(n)</code>, costuma-se preferir o de
@@ -1089,13 +1112,13 @@
         </div>
 
         <div class="card">
-          <h4>2. gScore (<code>min_cost</code>) e Closed Set</h4>
+          <h4>2. gScore (<code>min_cost</code>) e closed set</h4>
           <p>
             O mapa <code>gScore[n]</code> guarda o menor custo real <code>g(n)</code> encontrado até o momento
             (inicia como <code>&infin;</code> para todos, exceto <code>gScore[A] = 0</code>).
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem;">
-            O <strong>Closed Set</strong> registra nós já expandidos. Em implementações práticas com
+            O <strong>closed set</strong> registra nós já expandidos. Em implementações práticas com
             <code>BinaryHeap</code> (como no código Rust deste repositório), em vez de remover entradas antigas
             do heap quando um nó é relaxado, insere-se a nova entrada e descartam-se entradas obsoletas na remoção
             (<em>lazy deletion</em>: se <code>g_popped &gt; gScore[n]</code>, ignore).
@@ -1103,29 +1126,29 @@
         </div>
       </div>
 
-      <h3>Fluxo de Execução e Relaxamento</h3>
+      <h3>Fluxo de execução e relaxamento</h3>
       <ol>
-        <li><strong>Inicialização:</strong> Insira a origem <code>A</code> no Open Set com <code>g(A) = 0</code> e <code>f(A) = h(A)</code>.</li>
-        <li><strong>Seleção:</strong> Enquanto o Open Set não estiver vazio, retire o nó <code>atual</code> com o menor <code>f(atual)</code>.</li>
-        <li><strong>Teste de Objetivo:</strong> Se <code>atual == B</code>, pare e reconstrua o caminho seguindo os ponteiros <code>cameFrom</code> de <code>B</code> até <code>A</code>.</li>
-        <li><strong>Expansão e Relaxamento:</strong> Para cada vizinho acessível <code>v</code> de <code>atual</code>:
+        <li><strong>Inicialização:</strong> Insira a origem <code>A</code> no open set com <code>g(A) = 0</code> e <code>f(A) = h(A)</code>.</li>
+        <li><strong>Seleção:</strong> Enquanto o open set não estiver vazio, retire o nó <code>atual</code> com o menor <code>f(atual)</code>.</li>
+        <li><strong>Teste de objetivo:</strong> Se <code>atual == B</code>, pare e reconstrua o caminho seguindo os ponteiros <code>cameFrom</code> de <code>B</code> até <code>A</code>.</li>
+        <li><strong>Expansão e relaxamento:</strong> Para cada vizinho acessível <code>v</code> de <code>atual</code>:
           <ul>
             <li>Calcule o custo candidato: <code>tentative_g = gScore[atual] + custo(atual, v)</code>.</li>
-            <li>Se <code>tentative_g &lt; gScore[v]</code>, encontramos um caminho melhor até <code>v</code>! Registre <code>cameFrom[v] = atual</code>, atualize <code>gScore[v] = tentative_g</code>, calcule <code>f(v) = tentative_g + h(v)</code> e insira/atualize <code>v</code> no Open Set.</li>
+            <li>Se <code>tentative_g &lt; gScore[v]</code>, encontramos um caminho melhor até <code>v</code>! Registre <code>cameFrom[v] = atual</code>, atualize <code>gScore[v] = tentative_g</code>, calcule <code>f(v) = tentative_g + h(v)</code> e insira/atualize <code>v</code> no open set.</li>
           </ul>
         </li>
-        <li><strong>Sem Solução:</strong> Se o Open Set esvaziar sem expandir <code>B</code>, não existe caminho entre <code>A</code> e <code>B</code>.</li>
+        <li><strong>Sem solução:</strong> Se o open set esvaziar sem expandir <code>B</code>, não existe caminho entre <code>A</code> e <code>B</code>.</li>
       </ol>
 
       <div class="callout warn">
         <strong class="title">Armadilha clássica: quando parar o A*?</strong>
         Nunca pare quando o destino <code>B</code> for <strong>descoberto pela primeira vez</strong> como vizinho!
-        Pode haver outro nó no Open Set com um caminho mais curto até <code>B</code>. O algoritmo só termina com garantia
-        de otimalidade quando <code>B</code> é <strong>retirado (expandido) do topo do Open Set</strong>, momento em que
+        Pode haver outro nó no open set com um caminho mais curto até <code>B</code>. O algoritmo só termina com garantia
+        de otimalidade quando <code>B</code> é <strong>retirado (expandido) do topo do open set</strong>, momento em que
         <code>f(B) = g(B) + 0 = g(B)</code> é menor ou igual ao <code>f(n)</code> de qualquer outro candidato restante.
       </div>
 
-      <h3>Pseudocódigo Completo</h3>
+      <h3>Pseudocódigo completo</h3>
 <pre><span class="kw">função</span> <span class="fn">A_Estrela</span>(grafo, origem, destino, h):
     open_set ← MinHeap()
     g_score  ← mapa com valor padrão +∞
@@ -1162,11 +1185,11 @@
 
     <!-- SEÇÃO 4: SIMULADOR DE GRAFOS PONDERADOS -->
     <section id="simulador-grafo">
-      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Simulador Interativo: Grafos Ponderados</span></h2>
+      <h2 class="sec-title"><span class="sec-num">04</span><span class="sec-title-text">Simulador interativo: grafos ponderados</span></h2>
       <p>
         Explore grafos ponderados passo a passo. Observe cada nó exibindo seu valor heurístico <code>h</code> e, durante
         a busca, os valores <code>g</code> e <code>f = g + h</code>. Alterne entre <strong>A*</strong>, <strong>Dijkstra</strong>,
-        <strong>Busca Gulosa</strong> e <strong>A* Ponderado</strong> para comparar o comportamento em cada exemplo!
+        <strong>busca gulosa</strong> e <strong>A* ponderado</strong> para comparar o comportamento em cada exemplo!
       </p>
 
       <div class="lab-panel">
@@ -1180,8 +1203,8 @@
             <select id="graphAlgo">
               <option value="astar">A* (f = g + h)</option>
               <option value="dijkstra">Dijkstra (f = g, h = 0)</option>
-              <option value="greedy">Busca Gulosa (f = h)</option>
-              <option value="weighted">A* Ponderado (f = g + 2h)</option>
+              <option value="greedy">Busca gulosa (f = h)</option>
+              <option value="weighted">A* ponderado (f = g + 2h)</option>
             </select>
           </div>
           <button id="gStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
@@ -1201,39 +1224,39 @@
             <div class="legend">
               <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> Origem (A)</span>
               <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> Destino (G)</span>
-              <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open Set</span>
+              <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open set</span>
               <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Expandindo</span>
-              <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed Set</span>
-              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho Final</span>
+              <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed set</span>
+              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho final</span>
             </div>
           </div>
 
           <div class="inspector">
             <div class="inspector-box">
-              <h4>Métricas da Execução</h4>
+              <h4>Métricas da execução</h4>
               <div class="stats-row">
-                <div class="stat-pill"><span class="label">Nós Expandidos</span><span class="val" id="gExpandedCount">0</span></div>
-                <div class="stat-pill"><span class="label">Custo Encontrado</span><span class="val" id="gFoundCost">—</span></div>
+                <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gExpandedCount">0</span></div>
+                <div class="stat-pill"><span class="label">Custo encontrado</span><span class="val" id="gFoundCost">—</span></div>
               </div>
             </div>
 
             <div class="inspector-box">
-              <h4>Open Set (ordenado por f)</h4>
+              <h4>Open set (ordenado por f)</h4>
               <div class="queue-list" id="gOpenList"></div>
             </div>
 
             <div class="inspector-box">
-              <h4>Closed Set (já expandidos)</h4>
+              <h4>Closed set (já expandidos)</h4>
               <div class="queue-list" id="gClosedList"></div>
             </div>
 
             <div class="inspector-box">
-              <h4>Tabela de Heurísticas: h(n) vs h*(n) real</h4>
+              <h4>Tabela de heurísticas: h(n) vs h*(n) real</h4>
               <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem; overflow-x: auto;"></div>
             </div>
 
             <div class="inspector-box">
-              <h4>Log Passo a Passo</h4>
+              <h4>Log passo a passo</h4>
               <div class="log-box" id="gLog"></div>
             </div>
           </div>
@@ -1243,7 +1266,7 @@
 
     <!-- SEÇÃO 5 -->
     <section id="propriedades">
-      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Admissibilidade, Consistência e Garantias Matemáticas</span></h2>
+      <h2 class="sec-title"><span class="sec-num">05</span><span class="sec-title-text">Admissibilidade, consistência e garantias matemáticas</span></h2>
       <p>
         Nem toda função <code>h(n)</code> garante que o A* encontre o menor caminho. A qualidade da resposta depende
         diretamente de duas propriedades matemáticas formais.
@@ -1251,7 +1274,7 @@
 
       <div class="grid-2">
         <div class="card">
-          <h4>Admissibilidade (Otimismo)</h4>
+          <h4>Admissibilidade (otimismo)</h4>
           <div class="formula-box">0 &le; h(n) &le; h*(n) &nbsp;&nbsp; &forall; n &isin; V</div>
           <p>
             Onde <code>h*(n)</code> é o <strong>custo mínimo real</strong> de <code>n</code> até o destino <code>B</code>.
@@ -1265,7 +1288,7 @@
         </div>
 
         <div class="card">
-          <h4>Consistência (Monotonicidade)</h4>
+          <h4>Consistência (monotonicidade)</h4>
           <div class="formula-box">h(n) &le; custo(n, n') + h(n') &nbsp;&nbsp; e &nbsp;&nbsp; h(B) = 0</div>
           <p>
             É uma versão da <strong>desigualdade triangular</strong>: a estimativa a partir de <code>n</code> não pode
@@ -1274,16 +1297,16 @@
           <p style="color: var(--text-muted); font-size: 0.9rem;">
             <strong>Consequência prática:</strong> Toda heurística consistente é admissível. Além disso, os valores de
             <code>f(n)</code> ao longo de qualquer caminho nunca diminuem, garantindo que o <strong>primeiro</strong>
-            momento em que um nó é expandido já possui seu <code>g(n)</code> definitivo — sem precisar reabrir o Closed Set!
+            momento em que um nó é expandido já possui seu <code>g(n)</code> definitivo — sem precisar reabrir o closed set!
           </p>
         </div>
       </div>
 
-      <h3>Por que a Admissibilidade Garante a Otimalidade?</h3>
+      <h3>Por que a admissibilidade garante a otimalidade?</h3>
       <p>
         Suponha que exista um caminho ótimo com custo total <code>C*</code>, mas o A* tenha acabado de retirar o destino
         <code>B</code> da fila com um caminho subótimo <code>g(B) &gt; C*</code>. Como o caminho ótimo ainda não foi
-        totalmente expandido, deve existir algum nó <code>n</code> desse caminho ótimo esperando no Open Set com seu
+        totalmente expandido, deve existir algum nó <code>n</code> desse caminho ótimo esperando no open set com seu
         custo ótimo <code>g(n) = g*(n)</code>. Como <code>h</code> é admissível:
       </p>
       <div class="formula-box">
@@ -1295,7 +1318,7 @@
         Portanto, <code>g(B)</code> só pode ser igual a <code>C*</code>!
       </p>
 
-      <h3>Dominância (Informatividade) e A* Ponderado</h3>
+      <h3>Dominância (informatividade) e A* ponderado</h3>
       <ul>
         <li>
           <strong>Dominância:</strong> Dadas duas heurísticas admissíveis <code>h₁</code> e <code>h₂</code>, se
@@ -1304,7 +1327,7 @@
           Exemplo: em grades com 4 direções, Manhattan domina Euclidiana, que por sua vez domina <code>h = 0</code> (Dijkstra).
         </li>
         <li>
-          <strong>A* Ponderado (<code>f(n) = g(n) + w &middot; h(n)</code>, com <code>w &gt; 1</code>):</strong>
+          <strong>A* ponderado (<code>f(n) = g(n) + w &middot; h(n)</code>, com <code>w &gt; 1</code>):</strong>
           Deixa a heurística mais agressiva. Não garante o menor caminho absoluto, mas garante que o custo encontrado
           será no máximo <code>w &middot; C*</code> (<strong>&epsilon;-admissível</strong>), acelerando bastante mapas grandes.
         </li>
@@ -1313,7 +1336,7 @@
 
     <!-- SEÇÃO 6 -->
     <section id="heuristicas">
-      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Principais Funções Heurísticas (Grades e Espaços 2D)</span></h2>
+      <h2 class="sec-title"><span class="sec-num">06</span><span class="sec-title-text">Principais funções heurísticas (grades e espaços 2D)</span></h2>
 
       <div class="table-wrap">
         <table>
@@ -1321,7 +1344,7 @@
             <tr>
               <th>Heurística</th>
               <th>Fórmula (<code>dx = |x₁ - x₂|, dy = |y₁ - y₂|</code>)</th>
-              <th>Movimento Indicado</th>
+              <th>Movimento indicado</th>
               <th>Observação</th>
             </tr>
           </thead>
@@ -1355,23 +1378,23 @@
       </div>
 
       <div class="callout success">
-        <strong class="title">Cuidado com pesos de terreno (ex.: Água custando 2)!</strong>
+        <strong class="title">Cuidado com pesos de terreno (ex.: água custando 2)!</strong>
         Para que a distância geométrica seja admissível, multiplique-a pelo <strong>menor custo possível de passo</strong>
         <code>c_min</code>. No projeto deste repositório, terreno comum custa <code>1</code> e água custa <code>2</code>,
-        então <code>c_min = 1</code>: a Distância de Manhattan pura continua admissível! Mas se existisse algum terreno
+        então <code>c_min = 1</code>: a distância de Manhattan pura continua admissível! Mas se existisse algum terreno
         "rodovia rápida" custando <code>0.5</code>, a Manhattan sem fator <code>0.5</code> deixaria de ser admissível.
       </div>
     </section>
 
     <!-- SEÇÃO 7 -->
     <section id="complexidade">
-      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade, Limitações e Variações</span></h2>
+      <h2 class="sec-title"><span class="sec-num">07</span><span class="sec-title-text">Complexidade, limitações e variações</span></h2>
 
       <div class="grid-2">
         <div class="card">
-          <h4>Complexidade de Tempo</h4>
+          <h4>Complexidade de tempo</h4>
           <p>
-            Em um grafo explícito com <code>|V|</code> vértices e <code>|E|</code> arestas usando Heap Binário, o pior caso
+            Em um grafo explícito com <code>|V|</code> vértices e <code>|E|</code> arestas usando heap binário, o pior caso
             é equivalente ao de Dijkstra: <code>O((|V| + |E|) log |V|)</code> (ou exponencial <code>O(b^d)</code> em
             árvores de busca implícitas se a heurística tiver erro absoluto grande).
           </p>
@@ -1381,27 +1404,27 @@
         </div>
 
         <div class="card">
-          <h4>Complexidade de Espaço (Principal Gargalo)</h4>
+          <h4>Complexidade de espaço (principal gargalo)</h4>
           <p>
-            <code>O(|V|)</code> na memória, pois o A* mantém todos os nós gerados no Open Set, em <code>gScore</code> e
+            <code>O(|V|)</code> na memória, pois o A* mantém todos os nós gerados no open set, em <code>gScore</code> e
             em <code>cameFrom</code>. Em grafos gigantes (como mapas rodoviários continentais ou quebra-cabeças com milhões
             de estados), a RAM costuma acabar antes do tempo de CPU.
           </p>
         </div>
       </div>
 
-      <h3>Principais Variações do A*</h3>
+      <h3>Principais variações do A*</h3>
       <ul>
         <li><strong>IDA* (Iterative Deepening A*):</strong> troca a fila de prioridade por busca em profundidade limitada por um limiar de <code>f(n)</code>, reduzindo a memória para <code>O(d)</code>.</li>
-        <li><strong>A* Bidirecional:</strong> dispara duas buscas simultâneas — uma de <code>A &rarr; B</code> e outra de <code>B &rarr; A</code> — reduzindo a área explorada.</li>
+        <li><strong>A* bidirecional:</strong> dispara duas buscas simultâneas — uma de <code>A &rarr; B</code> e outra de <code>B &rarr; A</code> — reduzindo a área explorada.</li>
         <li><strong>Jump Point Search (JPS):</strong> otimização para grades uniformes que "pula" células simétricas em linha reta sem colocá-las no heap.</li>
-        <li><strong>A* Concorrente / Paralelo:</strong> distribui a expansão ou o cálculo de vizinhos entre múltiplas threads (tema comparado no código deste repositório!).</li>
+        <li><strong>A* concorrente / paralelo:</strong> distribui a expansão ou o cálculo de vizinhos entre múltiplas threads (tema comparado no código deste repositório!).</li>
       </ul>
     </section>
 
     <!-- SEÇÃO 8: SIMULADOR DE GRADES -->
     <section id="simulador-grade">
-      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Simulador Interativo: Grafos em Grade (Compatível com <code>graphs/*.txt</code>)</span></h2>
+      <h2 class="sec-title"><span class="sec-num">08</span><span class="sec-title-text">Simulador interativo: grafos em grade (compatível com <code>graphs/*.txt</code>)</span></h2>
       <p>
         Aqui você pode testar grafos de exemplo prontos — incluindo os <strong>novos exemplos criados para estudo</strong>
         e os mapas originais do projeto — além de desenhar seus próprios obstáculos, blocos de água e importar/exportar
@@ -1411,23 +1434,23 @@
       <div class="lab-panel">
         <div class="controls-bar">
           <div class="control-group">
-            <label for="gridPreset">Mapa Exemplo:</label>
+            <label for="gridPreset">Mapa exemplo:</label>
             <select id="gridPreset"></select>
           </div>
 
           <div class="control-group">
-            <label for="gridAlgo">Busca / Heurística:</label>
+            <label for="gridAlgo">Busca / heurística:</label>
             <select id="gridAlgo">
               <option value="manhattan">A* — Manhattan (4-dir)</option>
               <option value="euclidean">A* — Euclidiana</option>
               <option value="dijkstra">Dijkstra (h = 0)</option>
-              <option value="greedy">Busca Gulosa (g = 0)</option>
+              <option value="greedy">Busca gulosa (g = 0)</option>
             </select>
           </div>
 
           <div class="control-group">
             <input type="checkbox" id="waterMode" checked />
-            <label for="waterMode" style="cursor:pointer;">Modo Água <code>-w</code> (custo 2)</label>
+            <label for="waterMode" style="cursor:pointer;">Modo água <code>-w</code> (custo 2)</label>
           </div>
 
           <div class="control-group">
@@ -1442,14 +1465,14 @@
             <button class="brush-btn active-tool" data-brush="wall"># Parede</button>
             <button class="brush-btn" data-brush="water">_ Água</button>
             <button class="brush-btn" data-brush="empty">Espaço</button>
-            <button class="brush-btn" data-brush="start">A Origem</button>
-            <button class="brush-btn" data-brush="end">B Destino</button>
+            <button class="brush-btn" data-brush="start">A origem</button>
+            <button class="brush-btn" data-brush="end">B destino</button>
           </div>
 
           <button id="gridStepBtn" class="primary">Passo <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2.2 10 6 3 9.8Z"/></svg></button>
           <button id="gridRunBtn" class="success btn-run">Executar <svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 2.4 6.2 6 1.5 9.6Zm5 0L11.2 6 6.5 9.6Z"/></svg></button>
-          <button id="gridClearSearchBtn">Limpar Busca</button>
-          <button id="gridResetBtn">Restaurar Mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
+          <button id="gridClearSearchBtn">Limpar busca</button>
+          <button id="gridResetBtn">Restaurar mapa <svg class="btn-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5a3.8 3.8 0 1 1 .8 2.8"/><path d="M2.5 2.6v2.9h2.9"/></svg></button>
 
           <div class="control-group">
             <label for="gridSpeed">Vel:</label>
@@ -1465,40 +1488,40 @@
               <div id="gridBoard" class="grid-board"></div>
             </div>
             <div class="legend">
-              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> A (Origem)</span>
-              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> B (Destino)</span>
+              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> A (origem)</span>
+              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> B (destino)</span>
               <span class="legend-item"><span class="swatch" style="background:#1e293b;"></span> # Parede</span>
               <span class="legend-item"><span class="swatch" style="background:#075985;"></span> _ Água (custo 2)</span>
-              <span class="legend-item"><span class="swatch" style="background:rgba(56,189,248,0.45);"></span> Open Set</span>
+              <span class="legend-item"><span class="swatch" style="background:rgba(56,189,248,0.45);"></span> Open set</span>
               <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Atual</span>
-              <span class="legend-item"><span class="swatch" style="background:rgba(139,92,246,0.45);"></span> Closed Set</span>
-              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho Ótimo</span>
+              <span class="legend-item"><span class="swatch" style="background:rgba(139,92,246,0.45);"></span> Closed set</span>
+              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho ótimo</span>
             </div>
           </div>
 
           <div class="inspector">
             <div class="inspector-box">
-              <h4>Resultado &amp; Desempenho</h4>
+              <h4>Resultado e desempenho</h4>
               <div class="stats-row">
-                <div class="stat-pill"><span class="label">Nós Expandidos</span><span class="val" id="gridExpanded">0</span></div>
-                <div class="stat-pill"><span class="label">Descobertos (Open)</span><span class="val" id="gridDiscovered">0</span></div>
-                <div class="stat-pill"><span class="label">Custo Total</span><span class="val" id="gridCost">—</span></div>
-                <div class="stat-pill"><span class="label">Passos no Caminho</span><span class="val" id="gridSteps">—</span></div>
+                <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gridExpanded">0</span></div>
+                <div class="stat-pill"><span class="label">Descobertos (open)</span><span class="val" id="gridDiscovered">0</span></div>
+                <div class="stat-pill"><span class="label">Custo total</span><span class="val" id="gridCost">—</span></div>
+                <div class="stat-pill"><span class="label">Passos no caminho</span><span class="val" id="gridSteps">—</span></div>
               </div>
               <div id="gridStatus" style="margin-top: 10px; font-size: 0.86rem; color: var(--text-muted);"></div>
             </div>
 
             <div class="inspector-box">
-              <h4>Formato <code>.txt</code> do Projeto (Importar / Exportar)</h4>
+              <h4>Formato <code>.txt</code> do projeto (importar / exportar)</h4>
               <textarea id="gridTxtArea" class="txt-io" spellcheck="false"></textarea>
               <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-                <button id="gridImportBtn">Carregar Texto ↑</button>
+                <button id="gridImportBtn">Carregar texto ↑</button>
                 <button id="gridCopyBtn">Copiar .txt</button>
               </div>
             </div>
 
             <div class="inspector-box">
-              <h4>Últimas Ações</h4>
+              <h4>Últimas ações</h4>
               <div class="log-box" id="gridLog" style="max-height: 150px;"></div>
             </div>
           </div>
@@ -1516,7 +1539,7 @@
   const GRAPH_PRESETS = [
     {
       id: "routing",
-      name: "1. Roteamento Clássico (A* vs Dijkstra)",
+      name: "1. Roteamento clássico (A* vs Dijkstra)",
       lesson: "Exemplo clássico com heurística consistente (h ≤ h*). O A* expande apenas A → B → D → G (custo 14), enquanto o Dijkstra expande vários nós desnecessários.",
       start: "A",
       goal: "G",
@@ -1540,7 +1563,7 @@
     },
     {
       id: "greedy_trap",
-      name: "2. Armadilha da Busca Gulosa",
+      name: "2. Armadilha da busca gulosa",
       lesson: "O nó B parece muito perto do destino (h=2), mas a aresta A→B custa 10! A Busca Gulosa cai na isca (custo 18). O A* soma g+h e encontra A→C→D→E→G (custo 9).",
       start: "A",
       goal: "G",
@@ -1560,7 +1583,7 @@
     },
     {
       id: "relaxation",
-      name: "3. Relaxamento de Arestas no Open Set",
+      name: "3. Relaxamento de arestas no open set",
       lesson: "O nó D é descoberto primeiro via B com g=11 (f=14). Depois, ao expandir C, o A* descobre um atalho até D com g=6 (f=9) e atualiza seu predecessor para C!",
       start: "A",
       goal: "G",
@@ -1581,7 +1604,7 @@
     },
     {
       id: "inadmissible",
-      name: "4. Perigo da Heurística Não Admissível",
+      name: "4. Perigo da heurística não admissível",
       lesson: "ATENÇÃO: Aqui h(C) = 10 superestima o custo real h*(C) = 3! Isso faz o A* expandir B→G (custo 9) e parar antes de explorar C, perdendo o caminho ótimo A→C→G (custo 5). Compare com Dijkstra!",
       start: "A",
       goal: "G",
@@ -1931,7 +1954,7 @@
   const GRID_PRESETS = [
     {
       id: "agua_decisao",
-      name: "Novo: Decisão com Água (exemplo_agua_decisao.txt)",
+      name: "Novo: decisão com água (exemplo_agua_decisao.txt)",
       desc: "Com Modo Água (-w) ligado, o lago central (7 águas = custo 16) é mais caro que o vau raso embaixo (1 água = custo 14). Desligue o Modo Água para ver o A* contornar por fora (custo 16)!",
       txt: `11
 ###########
@@ -1948,7 +1971,7 @@
     },
     {
       id: "armadilha_u",
-      name: "Novo: Armadilha em U (exemplo_armadilha_u.txt)",
+      name: "Novo: armadilha em U (exemplo_armadilha_u.txt)",
       desc: "Uma barreira em formato de U bloqueia o caminho reto entre A e B. Teste A* vs Busca Gulosa para ver como a Gulosa preenche o interior do U antes de contornar.",
       txt: `11
 ###########
@@ -1965,7 +1988,7 @@
     },
     {
       id: "labirinto",
-      name: "Novo: Labirinto com Becos (exemplo_labirinto.txt)",
+      name: "Novo: labirinto com becos (exemplo_labirinto.txt)",
       desc: "Labirinto 13x13 com bifurcações e corredores sem saída. O A* usa f = g + h para evitar explorar becos distantes do caminho ótimo.",
       txt: `13
 #############
@@ -1984,7 +2007,7 @@
     },
     {
       id: "campo_aberto",
-      name: "Novo: Campo Aberto — A* vs Dijkstra (exemplo_campo_aberto.txt)",
+      name: "Novo: campo aberto — A* vs Dijkstra (exemplo_campo_aberto.txt)",
       desc: "Compare A* (Manhattan) com Dijkstra (h = 0) neste mapa aberto com dois pilares: veja a enorme diferença na quantidade de nós expandidos!",
       txt: `11
 ###########
@@ -2001,7 +2024,7 @@
     },
     {
       id: "sem_caminho",
-      name: "Novo: Sem Caminho Possível (exemplo_sem_caminho.txt)",
+      name: "Novo: sem caminho possível (exemplo_sem_caminho.txt)",
       desc: "O destino B está completamente cercado por paredes. O Open Set se esgota e o A* prova matematicamente que não existe rota.",
       txt: `9
 #########
