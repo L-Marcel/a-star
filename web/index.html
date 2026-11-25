@@ -1391,10 +1391,20 @@
     .queue-list {
       display: flex;
       flex-wrap: wrap;
+      align-content: flex-start;
       gap: 6px;
       min-height: 30px;
+      max-height: 132px;
+      overflow-y: auto;
       font-family: var(--mono);
       font-size: 0.78rem;
+    }
+
+    .h-table-scroll {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      max-height: 290px;
+      overflow: auto;
     }
 
     .q-chip {
@@ -1414,7 +1424,7 @@
     .log-box {
       font-family: var(--mono);
       font-size: 0.78rem;
-      max-height: 195px;
+      max-height: 290px;
       overflow-y: auto;
       background: var(--bg-code);
       border: 1px solid var(--border);
@@ -1674,12 +1684,35 @@
         width: 100%;
       }
       .timeline-track {
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+          "label label counter"
+          "prev slider next";
+        align-items: center;
+        gap: 8px;
         width: 100%;
+        padding: 8px 10px;
       }
-      .timeline-counter {
+      .timeline-track label {
+        grid-area: label;
+      }
+      .timeline-track .timeline-counter {
+        grid-area: counter;
         min-width: 0;
-        margin-left: auto;
+        margin-left: 0;
+        text-align: right;
+      }
+      .timeline-track .timeline-prev {
+        grid-area: prev;
+      }
+      .timeline-track .timeline-slider {
+        grid-area: slider;
+        width: 100%;
+        min-width: 0;
+      }
+      .timeline-track .timeline-next {
+        grid-area: next;
       }
       .card {
         padding: 15px 16px;
@@ -2382,9 +2415,9 @@
           <div class="timeline-bar">
             <div class="timeline-track">
               <label for="gProgress">Progresso:</label>
-              <button id="gPrevBtn" class="timeline-step-btn" type="button" title="Passo anterior" aria-label="Passo anterior"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M8.8 2.2 2.2 6l6.6 3.8Z"/></svg></button>
+              <button id="gPrevBtn" class="timeline-step-btn timeline-prev" type="button" title="Passo anterior" aria-label="Passo anterior"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M8.8 2.2 2.2 6l6.6 3.8Z"/></svg></button>
               <input id="gProgress" class="timeline-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Progresso da busca no grafo" />
-              <button id="gNextBtn" class="timeline-step-btn" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
+              <button id="gNextBtn" class="timeline-step-btn timeline-next" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
               <span id="gStepCounter" class="timeline-counter">Passo 0 / 0</span>
             </div>
           </div>
@@ -2437,7 +2470,7 @@
 
             <div class="inspector-box">
               <h4>Tabela de heurísticas: h(n) vs h*(n) real</h4>
-              <div id="gHeuristicTable" style="font-family: var(--mono); font-size: 0.78rem; overflow-x: auto;"></div>
+              <div id="gHeuristicTable" class="h-table-scroll"></div>
             </div>
 
             <div class="inspector-box">
@@ -2509,9 +2542,9 @@
           <div class="timeline-bar">
             <div class="timeline-track">
               <label for="gridProgress">Progresso:</label>
-              <button id="gridPrevBtn" class="timeline-step-btn" type="button" title="Passo anterior" aria-label="Passo anterior"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M8.8 2.2 2.2 6l6.6 3.8Z"/></svg></button>
+              <button id="gridPrevBtn" class="timeline-step-btn timeline-prev" type="button" title="Passo anterior" aria-label="Passo anterior"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M8.8 2.2 2.2 6l6.6 3.8Z"/></svg></button>
               <input id="gridProgress" class="timeline-slider" type="range" min="0" max="0" step="1" value="0" aria-label="Progresso da busca na grade" />
-              <button id="gridNextBtn" class="timeline-step-btn" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
+              <button id="gridNextBtn" class="timeline-step-btn timeline-next" type="button" title="Próximo passo" aria-label="Próximo passo"><svg class="btn-icon" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3.2 2.2 9.8 6 3.2 9.8Z"/></svg></button>
               <span id="gridStepCounter" class="timeline-counter">Passo 0 / 0</span>
             </div>
           </div>
@@ -2526,32 +2559,46 @@
               <div id="gridBoard" class="grid-board"></div>
             </div>
             <div class="legend">
-              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> A (origem)</span>
-              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> B (destino)</span>
+              <span class="legend-item"><span class="swatch" style="background:#10b981;"></span> Origem (A)</span>
+              <span class="legend-item"><span class="swatch" style="background:#ef4444;"></span> Destino (B)</span>
+              <span class="legend-item"><span class="swatch" style="background:#38bdf8;"></span> Open set</span>
+              <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Expandindo</span>
+              <span class="legend-item"><span class="swatch" style="background:#8b5cf6;"></span> Closed set</span>
+              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho final</span>
               <span class="legend-item"><span class="swatch swatch-wall"></span> Parede</span>
               <span class="legend-item"><span class="swatch" style="background:#0c1324; border-color:rgba(148,163,184,0.3);"></span> Livre</span>
-              <span class="legend-item"><span class="swatch" style="background:rgba(56,189,248,0.45);"></span> Open set</span>
-              <span class="legend-item"><span class="swatch" style="background:#f97316;"></span> Atual</span>
-              <span class="legend-item"><span class="swatch" style="background:rgba(139,92,246,0.45);"></span> Closed set</span>
-              <span class="legend-item"><span class="swatch" style="background:#eab308;"></span> Caminho ótimo</span>
             </div>
           </div>
 
           <div class="inspector">
-            <div class="inspector-box">
-              <h4>Resultado e desempenho</h4>
+            <div class="inspector-box span-2">
+              <h4>Métricas da execução</h4>
               <div class="stats-row">
                 <div class="stat-pill"><span class="label">Nós expandidos</span><span class="val" id="gridExpanded">0</span></div>
-                <div class="stat-pill"><span class="label">Descobertos (open)</span><span class="val" id="gridDiscovered">0</span></div>
-                <div class="stat-pill"><span class="label">Custo total</span><span class="val" id="gridCost">—</span></div>
+                <div class="stat-pill"><span class="label">Custo encontrado</span><span class="val" id="gridCost">—</span></div>
                 <div class="stat-pill"><span class="label">Passos no caminho</span><span class="val" id="gridSteps">—</span></div>
               </div>
-              <div id="gridStatus" style="margin-top: 10px; font-size: 0.86rem; color: var(--text-muted);"></div>
+              <div id="gridStatus" style="margin-top: 8px; font-size: 0.82rem; color: var(--text-muted);"></div>
+            </div>
+
+            <div class="inspector-box span-2">
+              <h4>Open set (ordenado por f)</h4>
+              <div class="queue-list" id="gridOpenList"></div>
+            </div>
+
+            <div class="inspector-box span-2">
+              <h4>Closed set (já expandidos)</h4>
+              <div class="queue-list" id="gridClosedList"></div>
             </div>
 
             <div class="inspector-box">
-              <h4>Últimas ações</h4>
-              <div class="log-box" id="gridLog" style="max-height: 220px;"></div>
+              <h4>Tabela de heurísticas: h(n) vs h*(n) real</h4>
+              <div id="gridHeuristicTable" class="h-table-scroll"></div>
+            </div>
+
+            <div class="inspector-box">
+              <h4>Log passo a passo</h4>
+              <div class="log-box" id="gridLog"></div>
             </div>
           </div>
         </div>
@@ -3971,10 +4018,12 @@
   const boardEl = document.getElementById("gridBoard");
   const descEl = document.getElementById("gridDesc");
   const expandedEl = document.getElementById("gridExpanded");
-  const discoveredEl = document.getElementById("gridDiscovered");
   const costEl = document.getElementById("gridCost");
   const stepsEl = document.getElementById("gridSteps");
   const statusEl = document.getElementById("gridStatus");
+  const openListEl = document.getElementById("gridOpenList");
+  const closedListEl = document.getElementById("gridClosedList");
+  const hTableEl = document.getElementById("gridHeuristicTable");
   const logEl = document.getElementById("gridLog");
   const brushBtns = document.querySelectorAll(".brush-btn");
 
@@ -3991,6 +4040,8 @@
   let lastPaintedKey = null;
   let gridModel = null; // { n, cells: 2D array of { wall, weight }, start: [c,r], end: [c,r] }
   let gridHistory = [];
+  let gridClosedOrder = [];
+  let gridHStar = null;
   let gridStepIdx = 0;
   let cellEls = [];
   let renderedGridN = 0;
@@ -4205,6 +4256,55 @@
     return top;
   }
 
+  // Dijkstra reverso a partir do destino B para calcular o custo mínimo real h*(n) de cada célula
+  function computeGridHStar() {
+    const n = gridModel.n;
+    const size = n * n;
+    const [ec, er] = gridModel.end;
+    const endIdx = er * n + ec;
+    const dirs = getActiveDirs();
+    const dist = new Float64Array(size).fill(Infinity);
+    const visited = new Uint8Array(size);
+
+    dist[endIdx] = 0;
+    const heap = [{ c: ec, r: er, idx: endIdx, f: 0, h: 0 }];
+
+    while (heap.length > 0) {
+      const cur = heapPop(heap);
+      if (visited[cur.idx] || cur.f > dist[cur.idx]) continue;
+      visited[cur.idx] = 1;
+
+      for (const [dc, dr, mult] of dirs) {
+        const pc = cur.c - dc;
+        const pr = cur.r - dr;
+        if (pc < 0 || pr < 0 || pc >= n || pr >= n) continue;
+        if (gridModel.cells[pr][pc].wall) continue;
+        if (dc !== 0 && dr !== 0 && gridModel.cells[pr][cur.c].wall && gridModel.cells[cur.r][pc].wall) continue;
+
+        // Custo do passo direto (pc,pr) -> (cur.c,cur.r) depende do peso da célula de destino (cur.c,cur.r)
+        const forwardCost = stepCostTo(cur.c, cur.r, mult);
+        if (forwardCost === null) continue;
+
+        const pIdx = pr * n + pc;
+        const nd = round1(cur.f + forwardCost);
+        if (nd < dist[pIdx]) {
+          dist[pIdx] = nd;
+          heapPush(heap, { c: pc, r: pr, idx: pIdx, f: nd, h: 0 });
+        }
+      }
+    }
+
+    return dist;
+  }
+
+  function cellLabel(idx, n) {
+    const c = idx % n;
+    const r = (idx - c) / n;
+    if (c === gridModel.start[0] && r === gridModel.start[1]) return `A (${c},${r})`;
+    if (c === gridModel.end[0] && r === gridModel.end[1]) return `B (${c},${r})`;
+    return `(${c},${r})`;
+  }
+
   // Estado por célula no snapshot: 0=nenhum, 1=open, 2=closed, 3=current, 4=path
   function computeGridHistory() {
     const n = gridModel.n;
@@ -4214,6 +4314,9 @@
     const startIdx = sr * n + sc;
     const endIdx = er * n + ec;
     const dirs = getActiveDirs();
+
+    gridHStar = computeGridHStar();
+    gridClosedOrder = [];
 
     const stateBase = new Uint8Array(size);
     const gArr = new Float64Array(size).fill(-1);
@@ -4274,6 +4377,7 @@
 
       if (stateBase[cur.idx] === 1) openCount--;
       stateBase[cur.idx] = 2;
+      gridClosedOrder.push(cur.idx);
       expandedCount++;
 
       if (cur.idx === endIdx) {
@@ -4512,8 +4616,7 @@
     }
 
     expandedEl.textContent = snap.expandedCount;
-    discoveredEl.textContent = snap.openCount;
-    costEl.textContent = snap.foundCost !== null ? snap.foundCost : "—";
+    costEl.textContent = snap.foundCost !== null ? snap.foundCost : (snap.finished ? "Sem caminho" : "—");
     stepsEl.textContent = snap.foundCost !== null ? snap.pathSteps : "—";
 
     if (snap.finished && snap.foundCost !== null) {
@@ -4525,6 +4628,71 @@
     } else {
       statusEl.textContent = `Passo ${gridStepIdx} de ${gridHistory.length - 1}.`;
     }
+
+    // Open set ordenado por f
+    const openItems = [];
+    for (let idx = 0; idx < state.length; idx++) {
+      if (state[idx] === 1) {
+        openItems.push({ idx, f: fArr[idx], g: gArr[idx], h: hArr[idx] });
+      }
+    }
+    openItems.sort((a, b) => (a.f - b.f) || (a.h - b.h) || (a.idx - b.idx));
+    openListEl.innerHTML = openItems.length
+      ? openItems.map(x => `<span class="q-chip">${cellLabel(x.idx, n)} (f=${x.f}, g=${x.g}, h=${x.h})</span>`).join("")
+      : `<span style="color:var(--text-muted); font-size:0.8rem;">vazio</span>`;
+
+    // Closed set na ordem de expansão
+    const closedCount = Math.min(snap.expandedCount, gridClosedOrder.length);
+    if (closedCount > 0) {
+      const chips = [];
+      for (let i = 0; i < closedCount; i++) {
+        const idx = gridClosedOrder[i];
+        chips.push(`<span class="q-chip closed">${cellLabel(idx, n)} (g=${gArr[idx]})</span>`);
+      }
+      closedListEl.innerHTML = chips.join("");
+    } else {
+      closedListEl.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">vazio</span>`;
+    }
+
+    // Tabela de heurísticas: células descobertas + destino B
+    const startIdx = sr * n + sc;
+    const endIdx = er * n + ec;
+    const tableIds = [];
+    let hasEnd = false;
+    for (let idx = 0; idx < gArr.length; idx++) {
+      if (gArr[idx] >= 0) {
+        tableIds.push(idx);
+        if (idx === endIdx) hasEnd = true;
+      }
+    }
+    if (!hasEnd) tableIds.push(endIdx);
+    tableIds.sort((a, b) => {
+      if (a === startIdx) return -1;
+      if (b === startIdx) return 1;
+      if (a === endIdx) return 1;
+      if (b === endIdx) return -1;
+      return (fArr[a] - fArr[b]) || (hArr[a] - hArr[b]) || (a - b);
+    });
+
+    const rows = tableIds.map(idx => {
+      const c = idx % n;
+      const r = (idx - c) / n;
+      const hVal = gArr[idx] >= 0 ? hArr[idx] : heuristic(c, r);
+      const hStarVal = gridHStar ? gridHStar[idx] : Infinity;
+      const hStarTxt = Number.isFinite(hStarVal) ? hStarVal : "∞";
+      const ok = hVal <= hStarVal + 1e-6;
+      return `<tr>
+        <td><strong>${cellLabel(idx, n)}</strong></td>
+        <td>${hVal}</td>
+        <td>${hStarTxt}</td>
+        <td>${ok ? '<span class="badge ok">Admissível</span>' : '<span class="badge bad">Superestimada!</span>'}</td>
+      </tr>`;
+    }).join("");
+
+    hTableEl.innerHTML = `<table style="font-size:0.76rem;">
+      <thead><tr><th>Célula</th><th>h(n)</th><th>h*(n)</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 
     const logEntries = [];
     const minLogIdx = Math.max(0, gridStepIdx - 39);
